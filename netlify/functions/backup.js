@@ -2,7 +2,6 @@ import { google } from "googleapis";
 
 export const handler = async () => {
   try {
-    // Authenticate with Google
     const auth = new google.auth.JWT(
       process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
       null,
@@ -12,56 +11,58 @@ export const handler = async () => {
 
     const sheets = google.sheets({ version: "v4", auth });
 
-    // Create a timestamp for the backup tab name
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/[:.]/g, "-")
-      .slice(0, 19);
+    const spreadsheetId = process.env.SHEET_ID;
+    const sheetName = "Master";
+    const gid = 1466458304; // your actual gid
 
-    const newSheetName = `Backup_${timestamp}`;
-
-    // 1. Copy the Master sheet
-    const copyResponse = await sheets.spreadsheets.sheets.copyTo({
-      spreadsheetId: process.env.SHEET_ID,
-      sheetId: 0, // Usually the first sheet; adjust if Master isn't sheet 0
-      requestBody: {
-        destinationSpreadsheetId: process.env.SHEET_ID,
-      },
+    // 1. Read the Master sheet
+    const readRes = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `${sheetName}!A:I`,
     });
 
-    const newSheetId = copyResponse.data.sheetId;
+    const rows = readRes.data.values || [];
 
-    // 2. Rename the copied sheet
+    // 2. Create a new backup sheet with timestamp
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const backupName = `Backup-${timestamp}`;
+
     await sheets.spreadsheets.batchUpdate({
-      spreadsheetId: process.env.SHEET_ID,
+      spreadsheetId,
       requestBody: {
         requests: [
           {
-            updateSheetProperties: {
+            addSheet: {
               properties: {
-                sheetId: newSheetId,
-                title: newSheetName,
+                title: backupName,
               },
-              fields: "title",
             },
           },
         ],
       },
     });
 
+    // 3. Write the data into the backup sheet
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${backupName}!A1`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: rows,
+      },
+    });
+
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        success: true,
-        backupName: newSheetName,
-      }),
+      body: JSON.stringify({ success: true, backupName }),
     };
   } catch (error) {
-    console.error("BACKUP ERROR:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Failed to create backup" }),
+      body: JSON.stringify({
+        success: false,
+        error: error.message,
+      }),
     };
   }
 };
-
