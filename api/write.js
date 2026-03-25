@@ -2,7 +2,18 @@ import { google } from "googleapis";
 
 export default async function handler(req, res) {
   try {
-    const { cardId, got } = JSON.parse(event.body);
+    if (req.method !== "POST") {
+      return res.status(405).json({ success: false, message: "POST only" });
+    }
+
+    const { cardId, got } = req.body;
+
+    if (!cardId || !got) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing cardId or got",
+      });
+    }
 
     const auth = new google.auth.JWT(
       process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
@@ -12,51 +23,47 @@ export default async function handler(req, res) {
     );
 
     const sheets = google.sheets({ version: "v4", auth });
-
     const spreadsheetId = process.env.SHEET_ID;
-    const sheetName = "Master"; // your tab name
-    const gid = 1466458304;     // your actual gid
+    const sheetName = "Master";
 
-    // 1. Read all rows to find the matching cardId
+    // Find the row with matching cardId
     const readRes = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range: `${sheetName}!A:I`,
     });
 
-    const rows = readRes.data.values;
-    if (!rows) throw new Error("No rows found");
+    const rows = readRes.data.values || [];
+    const rowIndex = rows.findIndex((row) => row[0] === cardId);
 
-    const header = rows[0];
-    const cardIdIndex = header.indexOf("Card ID");
-    const gotIndex = header.indexOf("Got");
+    if (rowIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: "Card ID not found",
+      });
+    }
 
-    const rowIndex = rows.findIndex((r) => r[cardIdIndex] === cardId);
-    if (rowIndex === -1) throw new Error("Card ID not found");
+    // Column I = index 8
+    const updateRange = `${sheetName}!I${rowIndex + 1}`;
 
-    const targetRow = rowIndex + 1; // Google Sheets is 1‑indexed
-
-    // 2. Write the new value
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: `${sheetName}!${String.fromCharCode(65 + gotIndex)}${targetRow}`,
+      range: updateRange,
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [[got]],
       },
     });
 
-res.status(200).json(...)
-
+    res.status(200).json({
+      success: true,
+      message: "Updated successfully",
+      updatedRow: rowIndex + 1,
+    });
   } catch (error) {
-  return {
-    statusCode: 500,
-    body: JSON.stringify({
+    res.status(500).json({
       success: false,
       message: "Write failed",
       error: error.message,
-      stack: error.stack
-    }),
-  };
+    });
+  }
 }
-
-};
