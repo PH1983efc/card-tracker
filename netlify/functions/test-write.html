@@ -1,1 +1,27 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <h2>Test Write Function</h2>
+
+  <button onclick="sendWrite()">Send Write Request</button>
+
+  <pre id="output"></pre>
+
+  <script>
+    async function sendWrite() {
+      const response = await fetch('/.netlify/functions/write', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cardId: "15980",
+          got: "TRUE"
+        })
+      });
+
+      const data = await response.json();
+      document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>
 
