@@ -50,12 +50,15 @@ export const handler = async (event) => {
       body: JSON.stringify({ success: true }),
     };
   } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        success: false,
-        error: error.message,
-      }),
-    };
-  }
+  return {
+    statusCode: 500,
+    body: JSON.stringify({
+      success: false,
+      message: "Write failed",
+      error: error.message,
+      stack: error.stack
+    }),
+  };
+}
+
 };
