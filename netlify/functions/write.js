@@ -4,14 +4,6 @@ export const handler = async (event) => {
   try {
     const { cardId, got } = JSON.parse(event.body);
 
-    if (!cardId || !got) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: "Missing cardId or got value" }),
-      };
-    }
-
-    // Authenticate with Google
     const auth = new google.auth.JWT(
       process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
       null,
@@ -21,34 +13,35 @@ export const handler = async (event) => {
 
     const sheets = google.sheets({ version: "v4", auth });
 
-    // Load all rows so we can find the correct row number
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: process.env.SHEET_ID,
-      range: "Master!A2:A", // Only Card ID column
+    const spreadsheetId = process.env.SHEET_ID;
+    const sheetName = "Master"; // your tab name
+    const gid = 1466458304;     // your actual gid
+
+    // 1. Read all rows to find the matching cardId
+    const readRes = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `${sheetName}!A:I`,
     });
 
-    const rows = response.data.values || [];
+    const rows = readRes.data.values;
+    if (!rows) throw new Error("No rows found");
 
-    // Find the row index where Card ID matches
-    const rowIndex = rows.findIndex((row) => row[0] == cardId);
+    const header = rows[0];
+    const cardIdIndex = header.indexOf("Card ID");
+    const gotIndex = header.indexOf("Got");
 
-    if (rowIndex === -1) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ error: "Card ID not found" }),
-      };
-    }
+    const rowIndex = rows.findIndex((r) => r[cardIdIndex] === cardId);
+    if (rowIndex === -1) throw new Error("Card ID not found");
 
-    // Convert row index to actual sheet row number (add 2 because header + 0-index)
-    const sheetRow = rowIndex + 2;
+    const targetRow = rowIndex + 1; // Google Sheets is 1‑indexed
 
-    // Update column I (Got)
+    // 2. Write the new value
     await sheets.spreadsheets.values.update({
-      spreadsheetId: process.env.SHEET_ID,
-      range: `Master!I${sheetRow}`,
-      valueInputOption: "RAW",
+      spreadsheetId,
+      range: `${sheetName}!${String.fromCharCode(65 + gotIndex)}${targetRow}`,
+      valueInputOption: "USER_ENTERED",
       requestBody: {
-        values: [[got]], // "Yes" or "No"
+        values: [[got]],
       },
     });
 
@@ -57,11 +50,12 @@ export const handler = async (event) => {
       body: JSON.stringify({ success: true }),
     };
   } catch (error) {
-    console.error("WRITE ERROR:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Failed to update sheet" }),
+      body: JSON.stringify({
+        success: false,
+        error: error.message,
+      }),
     };
   }
 };
-
