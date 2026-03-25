@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Card Collection Tracker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- XLSX Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+    :root {
+        --accent: #2a7de1;
+        --accent-hover: #1d5cad;
+        --bg-light: #f5f7fa;
+        --bg-dark: #1e1f22;
+        --text-light: #222;
+        --text-dark: #e6e6e6;
+        --card-bg-light: #ffffff;
+        --card-bg-dark: #2a2c31;
+        --border-light: #d0d4db;
+        --border-dark: #3a3d44;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: var(--bg-light);
+        color: var(--text-light);
+        transition: background 0.3s, color 0.3s;
+    }
+
+    body.dark-mode {
+        background: var(--bg-dark);
+        color: var(--text-dark);
+    }
+
+    h1 {
+        text-align: center;
+        margin-top: 20px;
+        font-weight: 600;
+    }
+
+    /* Layout container */
+    #controls {
+        max-width: 900px;
+        margin: 20px auto;
+        padding: 20px;
+        background: var(--card-bg-light);
+        border-radius: 8px;
+        border: 1px solid var(--border-light);
+        transition: background 0.3s, border-color 0.3s;
+    }
+
+    body.dark-mode #controls {
+        background: var(--card-bg-dark);
+        border-color: var(--border-dark);
+    }
+
+    /* Inputs */
+    input[type="text"], input[type="file"], select {
+        padding: 8px;
+        border: 1px solid var(--border-light);
+        border-radius: 4px;
+        margin: 5px 0;
+        width: 100%;
+        max-width: 350px;
+        transition: border-color 0.3s;
+    }
+
+    body.dark-mode input[type="text"],
+    body.dark-mode input[type="file"],
+    body.dark-mode select {
+        background: #2d2f34;
+        border-color: var(--border-dark);
+        color: var(--text-dark);
+    }
+
+    /* Buttons - sharp minimal */
+    button {
+        padding: 8px 14px;
+        border: 2px solid var(--accent);
+        background: transparent;
+        color: var(--accent);
+        cursor: pointer;
+        font-weight: 600;
+        border-radius: 3px;
+        transition: background 0.2s, color 0.2s;
+        margin-top: 6px;
+    }
+
+    button:hover {
+        background: var(--accent);
+        color: white;
+    }
+
+    body.dark-mode button {
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+
+    body.dark-mode button:hover {
+        background: var(--accent);
+        color: white;
+    }
+
+    .danger-btn {
+        border-color: #c62828;
+        color: #c62828;
+    }
+
+    .danger-btn:hover {
+        background: #c62828;
+        color: white;
+    }
+
+    /* Stats panel */
+    #statsPanel {
+        max-width: 900px;
+        margin: 20px auto;
+        padding: 15px;
+        background: var(--card-bg-light);
+        border-radius: 8px;
+        border: 1px solid var(--border-light);
+        transition: background 0.3s, border-color 0.3s;
+    }
+
+    body.dark-mode #statsPanel {
+        background: var(--card-bg-dark);
+        border-color: var(--border-dark);
+    }
+
+    /* Thin elegant progress bar */
+    .progress-container {
+        width: 100%;
+        height: 6px;
+        background: #d0d4db;
+        border-radius: 4px;
+        margin: 6px 0 12px 0;
+        overflow: hidden;
+    }
+
+    body.dark-mode .progress-container {
+        background: #3a3d44;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: var(--accent);
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+
+    /* Card list */
+    .set-container {
+        max-width: 900px;
+        margin: 20px auto;
+        padding: 15px;
+        background: var(--card-bg-light);
+        border-radius: 8px;
+        border: 1px solid var(--border-light);
+        transition: background 0.3s, border-color 0.3s;
+    }
+
+    body.dark-mode .set-container {
+        background: var(--card-bg-dark);
+        border-color: var(--border-dark);
+    }
+
+    .card-row {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border-light);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: background 0.2s;
+    }
+
+    body.dark-mode .card-row {
+        border-color: var(--border-dark);
+    }
+
+    .card-row:hover {
+        background: rgba(42, 125, 225, 0.08);
+    }
+
+    body.dark-mode .card-row:hover {
+        background: rgba(42, 125, 225, 0.15);
+    }
+
+    .card-row:last-child {
+        border-bottom: none;
+    }
+
+    .card-label {
+        flex: 1;
+        padding-left: 10px;
+    }
+
+    /* Collapsible headers */
+    .set-header {
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        padding: 10px;
+        border-bottom: 2px solid var(--accent);
+        margin-bottom: 10px;
+    }
+
+    .collapsed .card-row {
+        display: none;
+    }
+</style>
+</head>
+<body>
+
+<h1>Card Collection Tracker</h1>
+
+<!-- Controls Panel -->
+<div id="controls">
+
+    <h2>Upload & Settings</h2>
+
+    <input type="file" id="fileInput" accept=".xlsx,.xls">
+    <button onclick="loadExcel()">Upload Excel Checklist</button>
+
+    <button id="darkModeToggle" onclick="toggleDarkMode()">
+        Toggle Dark Mode
+    </button>
+
+    <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--border-light);">
+
+    <h2>Select Group</h2>
+
+    <select id="setSelect" onchange="showSelectedSet()">
+        <option value="">-- Select group --</option>
+    </select>
+
+    <input type="text" id="searchInput" placeholder="Search cards in group..." oninput="renderCurrentView()">
+
+    <div class="filter-options" style="margin-top: 10px;">
+        <label><input type="checkbox" id="showOnlyUnchecked" onchange="renderCurrentView()"> Show only unchecked cards</label>
+        <br>
+        <label><input type="checkbox" id="includeNonCollecting" onchange="reloadWithNonCollecting()"> Include Collecting=FALSE rows</label>
+    </div>
+
+    <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--border-light);">
+
+    <h2>Add Extra Card</h2>
+
+    <input type="text" id="addExtraCard" placeholder="Add extra card (e.g. Player - Desc - Variant)">
+    <button onclick="addExtraCardToSet()">Add Extra</button>
+
+    <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--border-light);">
+
+    <h2>Export & Share</h2>
+
+    <button onclick="exportCollection()">Export CSV</button>
+
+    <button onclick="shareNeedsList()" style="margin-left: 10px;">
+        Share Needs List
+    </button>
+
+    <button onclick="clearAllData()" class="danger-btn" style="margin-left: 10px;">
+        Reset All
+    </button>
+
+</div>
+
+<!-- Stats Panel -->
+<div id="statsPanel">
+    <h2>Collection Stats</h2>
+    <p id="statsText">Load a set to view stats.</p>
+    <div class="progress-container">
+        <div class="progress-bar" id="statsProgress"></div>
+    </div>
+</div>
+
+<!-- Set Display Container -->
+<div id="setDisplay" class="set-container">
+    <h2>Cards</h2>
+    <p>Select a group to view cards.</p>
+</div>
+
+<script>
+/* -------------------------------------------------------
+   GLOBAL STATE
+------------------------------------------------------- */
+let allSets = JSON.parse(localStorage.getItem("allSets") || "{}");
+let owned = JSON.parse(localStorage.getItem("owned") || "{}");
+let collapsedSets = JSON.parse(localStorage.getItem("collapsedSets") || "{}");
+let currentGroup = localStorage.getItem("lastViewedSet") || "";
+let includeNonCollecting = false;
+
+/* -------------------------------------------------------
+   DARK MODE
+------------------------------------------------------- */
+function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+    localStorage.setItem("darkMode", document.body.classList.contains("dark-mode"));
+}
+
+if (localStorage.getItem("darkMode") === "true") {
+    document.body.classList.add("dark-mode");
+}
+
+/* -------------------------------------------------------
+   LOAD EXCEL
+------------------------------------------------------- */
+function loadExcel() {
+    const file = document.getElementById("fileInput").files[0];
+    if (!file) return alert("Please select an Excel file first.");
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet);
+
+        allSets = {};
+        rows.forEach(row => {
+            if (!row.Group || !row.Card) return;
+            if (!includeNonCollecting && row.Collecting === false) return;
+
+            if (!allSets[row.Group]) allSets[row.Group] = [];
+            allSets[row.Group].push(row.Card);
+        });
+
+        localStorage.setItem("allSets", JSON.stringify(allSets));
+        populateSetDropdown();
+        alert("Excel loaded successfully!");
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+/* -------------------------------------------------------
+   POPULATE SET DROPDOWN
+------------------------------------------------------- */
+function populateSetDropdown() {
+    const select = document.getElementById("setSelect");
+    select.innerHTML = `<option value="">-- Select group --</option>`;
+
+    Object.keys(allSets).sort().forEach(group => {
+        const opt = document.createElement("option");
+        opt.value = group;
+        opt.textContent = group;
+        if (group === currentGroup) opt.selected = true;
+        select.appendChild(opt);
+    });
+
+    if (currentGroup) showSelectedSet();
+}
+
+/* -------------------------------------------------------
+   SHOW SELECTED SET
+------------------------------------------------------- */
+function showSelectedSet() {
+    const select = document.getElementById("setSelect");
+    currentGroup = select.value;
+    localStorage.setItem("lastViewedSet", currentGroup);
+    renderCurrentView();
+}
+
+/* -------------------------------------------------------
+   RENDER CARDS
+------------------------------------------------------- */
+function renderCurrentView() {
+    const container = document.getElementById("setDisplay");
+    container.innerHTML = "";
+
+    if (!currentGroup || !allSets[currentGroup]) {
+        container.innerHTML = "<p>Select a group to view cards.</p>";
+        updateStats();
+        return;
+    }
+
+    const search = document.getElementById("searchInput").value.toLowerCase();
+    const showOnlyUnchecked = document.getElementById("showOnlyUnchecked").checked;
+
+    const cards = allSets[currentGroup].filter(card => {
+        if (search && !card.toLowerCase().includes(search)) return false;
+        if (showOnlyUnchecked && owned[card]) return false;
+        return true;
+    });
+
+    const header = document.createElement("div");
+    header.className = "set-header";
+    header.textContent = currentGroup;
+    header.onclick = () => toggleCollapse(currentGroup);
+    container.appendChild(header);
+
+    const collapsed = collapsedSets[currentGroup];
+
+    cards.forEach(card => {
+        const row = document.createElement("div");
+        row.className = "card-row";
+        if (collapsed) row.style.display = "none";
+
+        const label = document.createElement("span");
+        label.className = "card-label";
+        label.textContent = card;
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = !!owned[card];
+        checkbox.onchange = () => toggleOwned(card);
+
+        row.appendChild(label);
+        row.appendChild(checkbox);
+        container.appendChild(row);
+    });
+
+    updateStats();
+}
+
+/* -------------------------------------------------------
+   COLLAPSE GROUP
+------------------------------------------------------- */
+function toggleCollapse(group) {
+    collapsedSets[group] = !collapsedSets[group];
+    localStorage.setItem("collapsedSets", JSON.stringify(collapsedSets));
+    renderCurrentView();
+}
+
+/* -------------------------------------------------------
+   TOGGLE OWNED
+------------------------------------------------------- */
+function toggleOwned(card) {
+    owned[card] = !owned[card];
+    localStorage.setItem("owned", JSON.stringify(owned));
+    renderCurrentView();
+}
+
+/* -------------------------------------------------------
+   UPDATE STATS
+------------------------------------------------------- */
+function updateStats() {
+    const statsText = document.getElementById("statsText");
+    const bar = document.getElementById("statsProgress");
+
+    if (!currentGroup || !allSets[currentGroup]) {
+        statsText.textContent = "Load a set to view stats.";
+        bar.style.width = "0%";
+        return;
+    }
+
+    const total = allSets[currentGroup].length;
+    const have = allSets[currentGroup].filter(c => owned[c]).length;
+    const pct = total ? Math.round((have / total) * 100) : 0;
+
+    statsText.textContent = `${have} / ${total} cards (${pct}%)`;
+    bar.style.width = pct + "%";
+}
+
+/* -------------------------------------------------------
+   ADD EXTRA CARD
+------------------------------------------------------- */
+function addExtraCardToSet() {
+    if (!currentGroup) return alert("Select a group first.");
+
+    const input = document.getElementById("addExtraCard");
+    const card = input.value.trim();
+    if (!card) return;
+
+    allSets[currentGroup].push(card);
+    localStorage.setItem("allSets", JSON.stringify(allSets));
+
+    input.value = "";
+    renderCurrentView();
+}
+
+/* -------------------------------------------------------
+   EXPORT CSV
+------------------------------------------------------- */
+function exportCollection() {
+    let csv = "Group,Card,Owned\n";
+
+    Object.keys(allSets).forEach(group => {
+        allSets[group].forEach(card => {
+            csv += `${group},"${card}",${owned[card] ? "Yes" : "No"}\n`;
+        });
+    });
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "collection_export.csv";
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
+
+/* -------------------------------------------------------
+   SHARE NEEDS LIST
+------------------------------------------------------- */
+function shareNeedsList() {
+    if (!currentGroup || !allSets[currentGroup]) {
+        alert("Select a group first.");
+        return;
+    }
+
+    const missing = allSets[currentGroup].filter(c => !owned[c]);
+
+    if (missing.length === 0) {
+        alert("You have all cards in this set!");
+        return;
+    }
+
+    let output = `NEEDS LIST – ${currentGroup}\n`;
+    output += "-------------------------------------------\n";
+    missing.forEach(card => output += `• ${card}\n`);
+
+    navigator.clipboard.writeText(output)
+        .then(() => alert("Needs list copied to clipboard!"))
+        .catch(() => alert("Could not copy to clipboard."));
+}
+
+/* -------------------------------------------------------
+   CLEAR ALL DATA
+------------------------------------------------------- */
+function clearAllData() {
+    if (!confirm("Are you sure you want to reset everything?")) return;
+
+    localStorage.clear();
+    allSets = {};
+    owned = {};
+    collapsedSets = {};
+    currentGroup = "";
+
+    document.getElementById("setSelect").innerHTML = "";
+    document.getElementById("setDisplay").innerHTML = "<p>Select a group to view cards.</p>";
+    updateStats();
+}
+
+/* -------------------------------------------------------
+   INITIAL LOAD
+------------------------------------------------------- */
+populateSetDropdown();
+renderCurrentView();
+</script>
+
+</body>
+</html>
