@@ -57,12 +57,14 @@ export const handler = async () => {
       body: JSON.stringify({ success: true, backupName }),
     };
   } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        success: false,
-        error: error.message,
-      }),
-    };
-  }
+  return {
+    statusCode: 500,
+    body: JSON.stringify({
+      success: false,
+      message: "Backup failed",
+      error: error.message,
+      stack: error.stack
+    }),
+  };
+}
 };
