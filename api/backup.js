@@ -10,12 +10,10 @@ export default async function handler(req, res) {
     );
 
     const sheets = google.sheets({ version: "v4", auth });
-
     const spreadsheetId = process.env.SHEET_ID;
     const sheetName = "Master";
-    const gid = 1466458304; // your actual gid
 
-    // 1. Read the Master sheet
+    // Read all rows from Master sheet
     const readRes = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range: `${sheetName}!A:I`,
@@ -23,47 +21,38 @@ export default async function handler(req, res) {
 
     const rows = readRes.data.values || [];
 
-    // 2. Create a new backup sheet with timestamp
+    // Create backup sheet name
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const backupName = `Backup-${timestamp}`;
 
+    // Create new sheet
     await sheets.spreadsheets.batchUpdate({
       spreadsheetId,
       requestBody: {
         requests: [
           {
             addSheet: {
-              properties: {
-                title: backupName,
-              },
+              properties: { title: backupName },
             },
           },
         ],
       },
     });
 
-    // 3. Write the data into the backup sheet
+    // Write rows into new sheet
     await sheets.spreadsheets.values.update({
       spreadsheetId,
       range: `${backupName}!A1`,
       valueInputOption: "USER_ENTERED",
-      requestBody: {
-        values: rows,
-      },
+      requestBody: { values: rows },
     });
 
-res.status(200).json(...)
-
+    res.status(200).json({ success: true, backupName });
   } catch (error) {
-  return {
-    statusCode: 500,
-    body: JSON.stringify({
+    res.status(500).json({
       success: false,
       message: "Backup failed",
       error: error.message,
-      stack: error.stack
-    }),
-  };
+    });
+  }
 }
-};
-
