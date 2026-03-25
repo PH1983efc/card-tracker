@@ -33,10 +33,8 @@ export default async function handler(req, res) {
       got: row[8] || "",
     }));
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(cards),
-    };
+res.status(200).json(...)
+
   } catch (error) {
     console.error("READ ERROR:", error);
     return {
