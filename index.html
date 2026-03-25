@@ -543,5 +543,37 @@ populateSetDropdown();
 renderCurrentView();
 </script>
 
+<script>
+async function sendWrite() {
+  const cardId = document.getElementById("cardId").value;
+  const got = document.getElementById("gotValue").value;
+
+  const resultBox = document.getElementById("result");
+  resultBox.textContent = "Sending...";
+
+  try {
+    const response = await fetch('/api/write', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cardId, got })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      resultBox.textContent = "Updated successfully!";
+      resultBox.style.color = "green";
+    } else {
+      resultBox.textContent = "Error: " + data.message;
+      resultBox.style.color = "red";
+    }
+  } catch (err) {
+    resultBox.textContent = "Request failed: " + err.message;
+    resultBox.style.color = "red";
+  }
+}
+</script>
+    
+
 </body>
 </html>
