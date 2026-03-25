@@ -2,7 +2,6 @@ import { google } from "googleapis";
 
 export default async function handler(req, res) {
   try {
-    // Authenticate with Google
     const auth = new google.auth.JWT(
       process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
       null,
@@ -11,36 +10,23 @@ export default async function handler(req, res) {
     );
 
     const sheets = google.sheets({ version: "v4", auth });
+    const spreadsheetId = process.env.SHEET_ID;
+    const sheetName = "Master";
 
-    // Read all rows from the Master tab
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: process.env.SHEET_ID,
-      range: "Master!A2:I", // Skip header row
+    const readRes = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `${sheetName}!A:I`,
     });
 
-    const rows = response.data.values || [];
-
-    // Convert rows into clean JSON objects
-    const cards = rows.map((row) => ({
-      cardId: row[0] || "",
-      year: row[1] || "",
-      cardSet: row[2] || "",
-      cardNo: row[3] || "",
-      playerName: row[4] || "",
-      cardDescription: row[5] || "",
-      variant: row[6] || "",
-      collecting: row[7] || "",
-      got: row[8] || "",
-    }));
-
-res.status(200).json(...)
-
+    res.status(200).json({
+      success: true,
+      rows: readRes.data.values || [],
+    });
   } catch (error) {
-    console.error("READ ERROR:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Failed to read sheet" }),
-    };
+    res.status(500).json({
+      success: false,
+      message: "Read failed",
+      error: error.message,
+    });
   }
-};
-
+}
