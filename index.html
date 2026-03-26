@@ -359,13 +359,12 @@ async function loadCardsFromGoogleSheets() {
 }
 </script>
 
-
+<script>
 /* ============================================================
-   GOOGLE SHEETS → UPDATE CARD
+GOOGLE SHEETS → UPDATE CARD
 ============================================================ */
 async function updateCardToGoogleSheets(cardId) {
     const newValue = prompt("Enter new value for GOT (TRUE/FALSE):");
-
     if (!newValue) return;
 
     try {
@@ -383,20 +382,16 @@ async function updateCardToGoogleSheets(cardId) {
         } else {
             alert("Error: " + data.message);
         }
-
     } catch (err) {
         alert("Request failed: " + err.message);
     }
 }
 
 /* ============================================================
-   INITIAL LOAD
+INITIAL LOAD
 ============================================================ */
 (async function init() {
     await loadCardsFromGoogleSheets();
     applyFilters();
 })();
 </script>
-
-</body>
-</html>
