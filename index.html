@@ -5,310 +5,430 @@
 <title>Card Collection Tracker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,300;0,400;0,600;1,300&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
     :root {
-        --gold: #c9a84c;
-        --gold-light: #e8cc7a;
-        --gold-dim: #7a6228;
-        --bg: #0d0d10;
-        --bg-2: #13131a;
-        --bg-3: #1a1a24;
-        --surface: #1e1e2a;
-        --surface-2: #252535;
-        --border: #2e2e42;
-        --border-gold: rgba(201,168,76,0.3);
-        --text: #e8e0d0;
-        --text-dim: #8a8070;
-        --got-color: #4caf82;
-        --missing-color: #c94c4c;
-        --collecting-color: #4c7ec9;
+        --blue:        #003399;
+        --blue-mid:    #0a2d8f;
+        --blue-deep:   #001a5e;
+        --blue-darker: #000e36;
+        --royal:       #1a3faa;
+        --white:       #f0f4ff;
+        --white-dim:   #8a9ac4;
+        --white-faint: #2a3660;
+        --toffee:      #d4a017;
+        --toffee-light:#f0bf3a;
+        --toffee-dim:  #7a5c0a;
+        --got-color:   #2ecc71;
+        --missing-color: #e74c3c;
+        --collecting-color: #d4a017;
+        --bg:          #010a1f;
+        --surface:     #071535;
+        --surface-2:   #0c1f4a;
+        --border:      #152452;
+        --border-bright: rgba(26,63,170,0.6);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-        font-family: 'Crimson Pro', Georgia, serif;
+        font-family: 'Barlow', sans-serif;
         background: var(--bg);
-        color: var(--text);
+        color: var(--white);
         min-height: 100vh;
         overflow-x: hidden;
     }
 
-    /* Background texture */
     body::before {
         content: '';
         position: fixed;
         inset: 0;
         background:
-            radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201,168,76,0.07) 0%, transparent 70%),
-            repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 2px,
-                rgba(255,255,255,0.01) 2px,
-                rgba(255,255,255,0.01) 4px
-            );
+            radial-gradient(ellipse 100% 60% at 50% 0%, rgba(26,63,170,0.25) 0%, transparent 65%),
+            radial-gradient(ellipse 60% 40% at 80% 100%, rgba(0,51,153,0.15) 0%, transparent 60%),
+            repeating-linear-gradient(90deg, transparent 0px, transparent 80px, rgba(255,255,255,0.012) 80px, rgba(255,255,255,0.012) 81px),
+            repeating-linear-gradient(0deg, transparent 0px, transparent 80px, rgba(255,255,255,0.008) 80px, rgba(255,255,255,0.008) 81px);
         pointer-events: none;
         z-index: 0;
     }
 
-    /* HEADER */
+    /* ── HEADER ── */
     header {
         position: relative;
-        text-align: center;
-        padding: 48px 20px 32px;
-        border-bottom: 1px solid var(--border-gold);
-        z-index: 1;
+        z-index: 2;
+        background: linear-gradient(180deg, #000d2e 0%, var(--blue-deep) 60%, transparent 100%);
+        padding: 0 0 30px;
+        overflow: hidden;
     }
 
-    header::after {
+    header::before {
         content: '';
         position: absolute;
-        bottom: -1px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 120px;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        top: 0; left: -10%; right: -10%;
+        height: 6px;
+        background: repeating-linear-gradient(90deg, var(--blue) 0px, var(--blue) 40px, var(--toffee) 40px, var(--toffee) 50px);
     }
 
+    .header-inner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 28px;
+        padding: 36px 24px 10px;
+        position: relative;
+    }
+
+    .crest {
+        width: 72px;
+        height: 72px;
+        flex-shrink: 0;
+        filter: drop-shadow(0 0 16px rgba(26,63,170,0.8));
+        animation: crestIn 0.6s ease both;
+    }
+
+    @keyframes crestIn {
+        from { opacity: 0; transform: scale(0.7) rotate(-10deg); }
+        to   { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+
+    .header-text { text-align: center; }
+
     .header-eyebrow {
-        font-family: 'Cinzel', serif;
-        font-size: 10px;
-        letter-spacing: 0.4em;
-        color: var(--gold-dim);
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.45em;
+        color: var(--toffee);
         text-transform: uppercase;
-        margin-bottom: 10px;
+        margin-bottom: 6px;
+        animation: fadeUp 0.5s 0.1s ease both;
     }
 
     h1 {
-        font-family: 'Cinzel', serif;
-        font-size: clamp(24px, 5vw, 42px);
-        font-weight: 700;
-        color: var(--gold-light);
-        letter-spacing: 0.05em;
-        text-shadow: 0 0 40px rgba(201,168,76,0.3);
-        line-height: 1.1;
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: clamp(32px, 7vw, 58px);
+        color: var(--white);
+        letter-spacing: 0.06em;
+        line-height: 1;
+        text-shadow: 0 2px 20px rgba(0,51,153,0.8);
+        animation: fadeUp 0.5s 0.15s ease both;
     }
 
-    /* STATS BAR */
+    h1 span { color: var(--toffee-light); }
+
+    .header-sub {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 13px;
+        letter-spacing: 0.25em;
+        color: var(--white-dim);
+        margin-top: 4px;
+        animation: fadeUp 0.5s 0.2s ease both;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── STATS BAR ── */
     .stats-bar {
         display: flex;
         justify-content: center;
-        gap: 0;
-        padding: 0 20px;
         position: relative;
-        z-index: 1;
-        border-bottom: 1px solid var(--border);
-        background: var(--bg-2);
+        z-index: 2;
+        background: rgba(0,13,46,0.85);
+        border-top: 1px solid var(--border-bright);
+        border-bottom: 1px solid var(--border-bright);
+        backdrop-filter: blur(8px);
     }
 
     .stat {
-        padding: 14px 28px;
+        padding: 14px 32px;
         text-align: center;
         border-right: 1px solid var(--border);
-        min-width: 100px;
+        flex: 1;
+        max-width: 160px;
     }
 
     .stat:first-child { border-left: 1px solid var(--border); }
 
     .stat-value {
-        font-family: 'Cinzel', serif;
-        font-size: 22px;
-        color: var(--gold);
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 28px;
         display: block;
         line-height: 1;
     }
 
     .stat-label {
-        font-size: 11px;
-        letter-spacing: 0.15em;
-        color: var(--text-dim);
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        color: var(--white-dim);
         text-transform: uppercase;
-        margin-top: 4px;
+        margin-top: 3px;
         display: block;
     }
 
-    /* NAV */
+    /* ── SET PROGRESS ── */
+    .set-progress {
+        display: none;
+        position: relative;
+        z-index: 2;
+        padding: 14px 24px;
+        background: rgba(0,26,94,0.7);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .set-progress.visible {
+        display: block;
+        animation: slideDown 0.25s ease both;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .set-progress-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 8px;
+    }
+
+    .set-progress-name {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--white-dim);
+    }
+
+    .set-progress-count {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 18px;
+        color: var(--toffee-light);
+    }
+
+    .set-progress-track {
+        height: 6px;
+        background: var(--border);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .set-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--blue), var(--toffee));
+        border-radius: 3px;
+        transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+        width: 0%;
+    }
+
+    .set-progress-pct {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 11px;
+        color: var(--white-dim);
+        margin-top: 5px;
+        text-align: right;
+    }
+
+    /* ── NAV ── */
     nav {
         display: flex;
         justify-content: center;
-        gap: 8px;
-        padding: 16px 20px;
         position: relative;
-        z-index: 1;
+        z-index: 2;
+        background: var(--surface);
+        border-bottom: 2px solid var(--border-bright);
         flex-wrap: wrap;
     }
 
     .nav-btn {
-        font-family: 'Cinzel', serif;
-        font-size: 11px;
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
         letter-spacing: 0.2em;
         text-transform: uppercase;
-        padding: 10px 20px;
+        padding: 14px 28px;
         background: transparent;
-        color: var(--text-dim);
-        border: 1px solid var(--border);
-        border-radius: 2px;
+        color: var(--white-dim);
+        border: none;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
         cursor: pointer;
         transition: all 0.2s;
-        position: relative;
-        overflow: hidden;
     }
 
-    .nav-btn::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, transparent 40%, rgba(201,168,76,0.05));
-        opacity: 0;
-        transition: opacity 0.2s;
-    }
-
-    .nav-btn:hover { color: var(--gold); border-color: var(--border-gold); }
-    .nav-btn:hover::before { opacity: 1; }
+    .nav-btn:hover { color: var(--white); background: rgba(26,63,170,0.15); }
 
     .nav-btn.active {
-        color: var(--gold);
-        border-color: var(--gold);
-        background: rgba(201,168,76,0.08);
+        color: var(--toffee-light);
+        border-bottom-color: var(--toffee);
+        background: rgba(212,160,23,0.07);
     }
 
-    /* FILTERS */
+    /* ── FILTERS ── */
     .filters {
         display: flex;
         justify-content: center;
         gap: 12px;
-        padding: 0 20px 20px;
+        padding: 14px 20px;
         position: relative;
-        z-index: 1;
+        z-index: 2;
+        background: rgba(1,10,31,0.6);
+        border-bottom: 1px solid var(--border);
         flex-wrap: wrap;
     }
 
     .filters select,
     .filters input {
-        font-family: 'Crimson Pro', serif;
-        font-size: 15px;
-        padding: 10px 16px;
-        background: var(--surface);
-        color: var(--text);
+        font-family: 'Barlow', sans-serif;
+        font-size: 14px;
+        padding: 9px 14px;
+        background: var(--surface-2);
+        color: var(--white);
         border: 1px solid var(--border);
-        border-radius: 2px;
+        border-radius: 3px;
         outline: none;
         transition: border-color 0.2s;
-        min-width: 180px;
+        min-width: 200px;
     }
 
     .filters select:focus,
-    .filters input:focus {
-        border-color: var(--border-gold);
-    }
-
+    .filters input:focus { border-color: var(--royal); }
     .filters select option { background: var(--surface); }
 
-    /* CARD GRID */
+    /* ── CARD GRID ── */
     .card-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 16px;
-        padding: 10px 24px 40px;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 14px;
+        padding: 20px 20px 50px;
         position: relative;
         z-index: 1;
     }
 
-    /* CARD */
+    /* ── SKELETON ── */
+    .skeleton-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        overflow: hidden;
+        height: 210px;
+    }
+
+    .skeleton-shimmer {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, var(--surface) 0%, var(--surface-2) 40%, var(--surface) 80%);
+        background-size: 200% 100%;
+        animation: shimmer 1.4s infinite;
+    }
+
+    @keyframes shimmer {
+        0%   { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    /* ── CARD ── */
     .card {
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: 4px;
-        padding: 0;
         overflow: hidden;
         transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-        cursor: default;
-        animation: cardIn 0.3s ease both;
+        animation: cardIn 0.35s ease both;
         position: relative;
     }
 
     @keyframes cardIn {
-        from { opacity: 0; transform: translateY(12px); }
-        to   { opacity: 1; transform: translateY(0); }
+        from { opacity: 0; transform: translateY(14px) scale(0.97); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     .card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(201,168,76,0.2);
-        border-color: var(--border-gold);
+        transform: translateY(-4px);
+        box-shadow: 0 12px 36px rgba(0,0,0,0.6), 0 0 0 1px rgba(26,63,170,0.5);
+        border-color: var(--royal);
     }
 
-    .card.is-got {
-        border-color: rgba(76,175,130,0.25);
+    .card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
     }
 
     .card.is-got::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, var(--got-color), transparent);
+        background: linear-gradient(90deg, var(--blue), var(--got-color));
     }
 
     .card.is-missing::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, var(--missing-color), transparent);
+        background: linear-gradient(90deg, var(--blue), var(--missing-color));
+    }
+
+    .card.flash {
+        animation: flashCard 0.7s ease forwards;
+    }
+
+    @keyframes flashCard {
+        0%   { box-shadow: 0 0 0 2px var(--toffee-light); }
+        50%  { box-shadow: 0 0 24px 6px rgba(212,160,23,0.45); }
+        100% { box-shadow: none; }
     }
 
     .card-top {
         padding: 14px 14px 10px;
         border-bottom: 1px solid var(--border);
+        background: linear-gradient(135deg, var(--surface-2), var(--surface));
     }
 
     .card-number {
-        font-family: 'Cinzel', serif;
+        font-family: 'Barlow Condensed', sans-serif;
         font-size: 10px;
-        color: var(--gold-dim);
-        letter-spacing: 0.15em;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        color: var(--toffee-dim);
         margin-bottom: 5px;
+        text-transform: uppercase;
     }
 
     .card-name {
-        font-family: 'Cinzel', serif;
-        font-size: 14px;
-        color: var(--text);
-        line-height: 1.3;
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 17px;
+        letter-spacing: 0.05em;
+        color: var(--white);
+        line-height: 1.2;
         margin-bottom: 4px;
     }
 
     .card-set {
         font-size: 12px;
-        color: var(--text-dim);
+        color: var(--white-dim);
         font-style: italic;
     }
 
-    .card-body {
-        padding: 10px 14px;
-    }
+    .card-body { padding: 10px 14px 14px; }
 
     .card-variant {
         font-size: 12px;
-        color: var(--text-dim);
-        margin-bottom: 6px;
-        min-height: 16px;
+        color: var(--white-dim);
+        margin-bottom: 5px;
+        min-height: 15px;
     }
 
     .card-description {
         font-size: 13px;
-        color: var(--text-dim);
+        color: var(--white-dim);
         line-height: 1.4;
         margin-bottom: 12px;
         min-height: 18px;
     }
 
-    /* TOGGLE */
+    /* ── TOGGLE ── */
     .got-toggle {
         display: flex;
         align-items: center;
@@ -318,10 +438,10 @@
     }
 
     .toggle-track {
-        width: 38px;
-        height: 20px;
-        border-radius: 10px;
-        background: var(--surface-2);
+        width: 40px;
+        height: 22px;
+        border-radius: 11px;
+        background: rgba(255,255,255,0.06);
         border: 1px solid var(--border);
         position: relative;
         transition: background 0.25s, border-color 0.25s;
@@ -329,119 +449,134 @@
     }
 
     .toggle-thumb {
-        width: 14px;
-        height: 14px;
+        width: 16px;
+        height: 16px;
         border-radius: 50%;
-        background: var(--text-dim);
+        background: var(--white-dim);
         position: absolute;
         top: 2px;
         left: 2px;
-        transition: transform 0.25s, background 0.25s;
+        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.25s;
     }
 
-    .is-got .toggle-track {
-        background: rgba(76,175,130,0.2);
-        border-color: var(--got-color);
-    }
-
-    .is-got .toggle-thumb {
-        transform: translateX(18px);
-        background: var(--got-color);
-    }
+    .is-got .toggle-track { background: rgba(46,204,113,0.15); border-color: var(--got-color); }
+    .is-got .toggle-thumb { transform: translateX(18px); background: var(--got-color); }
 
     .toggle-label {
-        font-family: 'Cinzel', serif;
-        font-size: 11px;
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
         letter-spacing: 0.15em;
-        color: var(--text-dim);
+        color: var(--white-dim);
         transition: color 0.2s;
+        text-transform: uppercase;
     }
 
-    .is-got .toggle-label {
-        color: var(--got-color);
-    }
+    .is-got .toggle-label { color: var(--got-color); }
 
-    /* COLLECTING BADGE */
+    /* ── COLLECTING BADGE ── */
     .collecting-badge {
-        display: inline-block;
-        margin-top: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 9px;
+        font-family: 'Barlow Condensed', sans-serif;
         font-size: 10px;
-        font-family: 'Cinzel', serif;
-        letter-spacing: 0.1em;
-        color: var(--collecting-color);
-        border: 1px solid rgba(76,126,201,0.4);
-        padding: 2px 7px;
+        font-weight: 600;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--toffee-light);
+        border: 1px solid rgba(212,160,23,0.35);
+        background: rgba(212,160,23,0.07);
+        padding: 3px 8px;
         border-radius: 2px;
     }
 
-    /* EMPTY STATE */
+    /* ── EMPTY STATE ── */
     .empty-state {
         grid-column: 1 / -1;
         text-align: center;
         padding: 80px 20px;
-        color: var(--text-dim);
+        color: var(--white-dim);
+        animation: fadeUp 0.4s ease both;
     }
 
-    .empty-state .empty-icon {
-        font-size: 48px;
-        margin-bottom: 16px;
-        opacity: 0.3;
-    }
+    .empty-state .empty-icon { font-size: 52px; margin-bottom: 14px; opacity: 0.2; display: block; }
 
     .empty-state p {
-        font-family: 'Cinzel', serif;
-        font-size: 14px;
-        letter-spacing: 0.2em;
-        text-transform: uppercase;
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 18px;
+        letter-spacing: 0.3em;
     }
 
-    /* Hidden Excel section */
-    #excelUploadSection { display: none !important; }
-
-    /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
+    ::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--royal); }
+
+    #excelUploadSection { display: none !important; }
 </style>
 </head>
-
 <body>
 
 <header>
-    <div class="header-eyebrow">Personal Registry</div>
-    <h1>Card Collection</h1>
+    <div class="header-inner">
+        <svg class="crest" viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50 5 L90 18 L90 60 Q90 90 50 105 Q10 90 10 60 L10 18 Z" fill="#003399" stroke="#1a3faa" stroke-width="1.5"/>
+            <path d="M50 12 L84 23 L84 60 Q84 86 50 99 Q16 86 16 60 L16 23 Z" fill="none" stroke="rgba(212,160,23,0.5)" stroke-width="1"/>
+            <ellipse cx="25" cy="65" rx="10" ry="18" fill="rgba(212,160,23,0.12)" stroke="rgba(212,160,23,0.3)" stroke-width="0.8"/>
+            <ellipse cx="75" cy="65" rx="10" ry="18" fill="rgba(212,160,23,0.12)" stroke="rgba(212,160,23,0.3)" stroke-width="0.8"/>
+            <rect x="43" y="28" width="14" height="22" fill="#1a3faa"/>
+            <rect x="40" y="42" width="20" height="12" fill="#1a3faa"/>
+            <rect x="46" y="20" width="3" height="10" fill="#d4a017"/>
+            <rect x="51" y="20" width="3" height="10" fill="#d4a017"/>
+            <text x="50" y="80" font-family="Arial" font-size="7" font-weight="bold" fill="#d4a017" text-anchor="middle" letter-spacing="2">NSNO</text>
+        </svg>
+        <div class="header-text">
+            <div class="header-eyebrow">Nil Satis Nisi Optimum</div>
+            <h1>Card <span>Collection</span></h1>
+            <div class="header-sub">Everton FC · Personal Registry</div>
+        </div>
+    </div>
 </header>
 
-<!-- Stats Bar -->
 <div class="stats-bar">
     <div class="stat">
-        <span class="stat-value" id="statTotal">—</span>
+        <span class="stat-value" id="statTotal" style="color:var(--white)">—</span>
         <span class="stat-label">Total</span>
     </div>
     <div class="stat">
-        <span class="stat-value" id="statGot" style="color: var(--got-color)">—</span>
+        <span class="stat-value" id="statGot" style="color:var(--got-color)">—</span>
         <span class="stat-label">Obtained</span>
     </div>
     <div class="stat">
-        <span class="stat-value" id="statMissing" style="color: var(--missing-color)">—</span>
+        <span class="stat-value" id="statMissing" style="color:var(--missing-color)">—</span>
         <span class="stat-label">Missing</span>
     </div>
     <div class="stat">
-        <span class="stat-value" id="statCollecting" style="color: var(--collecting-color)">—</span>
+        <span class="stat-value" id="statCollecting" style="color:var(--toffee-light)">—</span>
         <span class="stat-label">Collecting</span>
     </div>
 </div>
 
-<!-- Nav -->
+<div class="set-progress" id="setProgress">
+    <div class="set-progress-header">
+        <span class="set-progress-name" id="setProgressName"></span>
+        <span class="set-progress-count" id="setProgressCount"></span>
+    </div>
+    <div class="set-progress-track">
+        <div class="set-progress-fill" id="setProgressFill"></div>
+    </div>
+    <div class="set-progress-pct" id="setProgressPct"></div>
+</div>
+
 <nav>
-    <button class="nav-btn active" onclick="switchView('all', this)">All</button>
+    <button class="nav-btn active" onclick="switchView('all', this)">All Cards</button>
     <button class="nav-btn" onclick="switchView('got', this)">Obtained</button>
     <button class="nav-btn" onclick="switchView('missing', this)">Missing</button>
     <button class="nav-btn" onclick="switchView('collecting', this)">Collecting</button>
 </nav>
 
-<!-- Filters -->
 <div class="filters">
     <select id="setFilter" onchange="applyFilters()">
         <option value="">All Sets</option>
@@ -449,48 +584,90 @@
     <input type="text" id="searchBox" placeholder="Search cards…" oninput="applyFilters()">
 </div>
 
-<!-- Card Grid -->
 <div id="cardGrid" class="card-grid"></div>
 
-<!-- Hidden Excel section -->
 <div id="excelUploadSection">
     <input type="file" id="excelFile" accept=".xlsx" />
     <button onclick="loadExcelFile()">Upload Excel</button>
 </div>
 
 <script>
-/* ============================================================
-   GLOBAL STATE
-============================================================ */
 let cards = [];
 let filteredCards = [];
 let currentView = "all";
 
-/* ============================================================
-   VIEW SWITCHING
-============================================================ */
+/* ── ANIMATED COUNTER ── */
+function animateCounter(el, to) {
+    const from = parseInt(el.textContent) || 0;
+    if (from === to || el.textContent === "—") {
+        el.textContent = to;
+        return;
+    }
+    const duration = 450;
+    const start = performance.now();
+    function step(now) {
+        const p = Math.min((now - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(from + (to - from) * ease);
+        if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+}
+
+/* ── STATS ── */
+function updateStats() {
+    animateCounter(document.getElementById("statTotal"),      cards.length);
+    animateCounter(document.getElementById("statGot"),        cards.filter(c => c.got).length);
+    animateCounter(document.getElementById("statMissing"),    cards.filter(c => !c.got).length);
+    animateCounter(document.getElementById("statCollecting"), cards.filter(c => c.collecting).length);
+}
+
+/* ── SET PROGRESS ── */
+function updateSetProgress() {
+    const setFilter  = document.getElementById("setFilter").value;
+    const progressEl = document.getElementById("setProgress");
+
+    if (!setFilter) {
+        progressEl.classList.remove("visible");
+        return;
+    }
+
+    const [filterSet, filterYear] = setFilter.split("|||");
+    const setCards = cards.filter(c => c.set === filterSet && c.year === filterYear);
+    const gotCount = setCards.filter(c => c.got).length;
+    const total    = setCards.length;
+    const pct      = total > 0 ? Math.round((gotCount / total) * 100) : 0;
+
+    document.getElementById("setProgressName").textContent  = `${filterSet} ${filterYear}`;
+    document.getElementById("setProgressCount").textContent = `${gotCount} / ${total}`;
+    document.getElementById("setProgressPct").textContent   = `${pct}% complete`;
+
+    const fill = document.getElementById("setProgressFill");
+    fill.style.width = "0%";
+    requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.width = pct + "%"; }));
+
+    progressEl.classList.remove("visible");
+    requestAnimationFrame(() => progressEl.classList.add("visible"));
+}
+
+/* ── VIEW SWITCHING ── */
 function switchView(view, btn) {
     currentView = view;
-
-    // Update active button
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
-
     applyFilters();
 }
 
-/* ============================================================
-   FILTERS
-============================================================ */
+/* ── FILTERS ── */
 function applyFilters() {
     const setFilter = document.getElementById("setFilter").value;
-    const search = document.getElementById("searchBox").value.toLowerCase();
+    const search    = document.getElementById("searchBox").value.toLowerCase();
 
     filteredCards = cards.filter(card => {
         let matchesSet = true;
-        if (setFilter !== "") {
-            const [filterSet, filterYear] = setFilter.split("|||");
-            matchesSet = card.set === filterSet && card.year === filterYear;
+        if (setFilter) {
+            const [fs, fy] = setFilter.split("|||");
+            matchesSet = card.set === fs && card.year === fy;
         }
 
         const matchesSearch =
@@ -499,67 +676,49 @@ function applyFilters() {
             card.description.toLowerCase().includes(search);
 
         let matchesView = true;
-        if (currentView === "missing") {
-            matchesView = !card.got;
-        } else if (currentView === "got") {
-            matchesView = card.got;
-        } else if (currentView === "collecting") {
-            matchesView = card.collecting === true;
-        }
+        if (currentView === "missing")         matchesView = !card.got;
+        else if (currentView === "got")        matchesView = card.got;
+        else if (currentView === "collecting") matchesView = card.collecting === true;
 
         return matchesSet && matchesSearch && matchesView;
     });
 
     renderCardGrid();
     updateStats();
+    updateSetProgress();
 }
 
-/* ============================================================
-   STATS
-============================================================ */
-function updateStats() {
-    const total = cards.length;
-    const got = cards.filter(c => c.got).length;
-    const missing = total - got;
-    const collecting = cards.filter(c => c.collecting && c.collecting.trim() !== "").length;
-
-    document.getElementById("statTotal").textContent = total;
-    document.getElementById("statGot").textContent = got;
-    document.getElementById("statMissing").textContent = missing;
-    document.getElementById("statCollecting").textContent = collecting;
-}
-
-/* ============================================================
-   POPULATE SET DROPDOWN
-============================================================ */
+/* ── POPULATE SET DROPDOWN ── */
 function populateSetDropdown() {
     const dropdown = document.getElementById("setFilter");
     const comboMap = new Map();
-
-    cards.forEach(card => {
-        const key = `${card.set}|||${card.year}`;
-        if (!comboMap.has(key)) {
-            comboMap.set(key, { set: card.set, year: card.year });
-        }
+    cards.forEach(c => {
+        const key = `${c.set}|||${c.year}`;
+        if (!comboMap.has(key)) comboMap.set(key, { set: c.set, year: c.year });
     });
-
-    const combos = Array.from(comboMap.values());
-    combos.sort((a, b) => {
-        const yearCompare = b.year.localeCompare(a.year);
-        if (yearCompare !== 0) return yearCompare;
-        return a.set.localeCompare(b.set);
+    const combos = Array.from(comboMap.values()).sort((a, b) => {
+        const yc = b.year.localeCompare(a.year);
+        return yc !== 0 ? yc : a.set.localeCompare(b.set);
     });
-
     dropdown.innerHTML = `<option value="">All Sets</option>`;
     combos.forEach(({ set, year }) => {
-        const value = `${set}|||${year}`;
-        dropdown.innerHTML += `<option value="${value}">${set} ${year}</option>`;
+        dropdown.innerHTML += `<option value="${set}|||${year}">${set} ${year}</option>`;
     });
 }
 
-/* ============================================================
-   RENDER CARD GRID
-============================================================ */
+/* ── SKELETON ── */
+function showSkeletons(count = 12) {
+    const grid = document.getElementById("cardGrid");
+    grid.innerHTML = "";
+    for (let i = 0; i < count; i++) {
+        const s = document.createElement("div");
+        s.className = "skeleton-card";
+        s.innerHTML = `<div class="skeleton-shimmer"></div>`;
+        grid.appendChild(s);
+    }
+}
+
+/* ── RENDER CARDS ── */
 function renderCardGrid() {
     const grid = document.getElementById("cardGrid");
     grid.innerHTML = "";
@@ -567,7 +726,7 @@ function renderCardGrid() {
     if (filteredCards.length === 0) {
         grid.innerHTML = `
             <div class="empty-state">
-                <div class="empty-icon">◈</div>
+                <span class="empty-icon">⚽</span>
                 <p>No cards found</p>
             </div>`;
         return;
@@ -576,11 +735,11 @@ function renderCardGrid() {
     filteredCards.forEach((card, i) => {
         const div = document.createElement("div");
         div.className = "card" + (card.got ? " is-got" : " is-missing");
-        div.style.animationDelay = `${Math.min(i * 30, 300)}ms`;
+        div.style.animationDelay = `${Math.min(i * 25, 350)}ms`;
+        div.dataset.id = card.id;
 
-        const collectingBadge = card.collecting === true
-            ? `<div class="collecting-badge">◈ Collecting</div>`
-            : "";
+        const badge = card.collecting
+            ? `<div class="collecting-badge">★ Collecting</div>` : "";
 
         div.innerHTML = `
             <div class="card-top">
@@ -592,30 +751,32 @@ function renderCardGrid() {
                 <div class="card-variant">${card.variant || ""}</div>
                 <div class="card-description">${card.description || ""}</div>
                 <label class="got-toggle" onclick="toggleGot('${card.id}')">
-                    <div class="toggle-track">
-                        <div class="toggle-thumb"></div>
-                    </div>
+                    <div class="toggle-track"><div class="toggle-thumb"></div></div>
                     <span class="toggle-label">${card.got ? "OBTAINED" : "MISSING"}</span>
                 </label>
-                ${collectingBadge}
-            </div>
-        `;
+                ${badge}
+            </div>`;
 
         grid.appendChild(div);
     });
 }
 
-/* ============================================================
-   TOGGLE GOT STATUS
-============================================================ */
+/* ── TOGGLE GOT ── */
 function toggleGot(cardId) {
     const card = cards.find(c => c.id === cardId);
     if (!card) return;
-
     card.got = !card.got;
     applyFilters();
 
-    // Fire-and-forget update to Google Sheets
+    requestAnimationFrame(() => {
+        const el = document.querySelector(`.card[data-id="${cardId}"]`);
+        if (el) {
+            el.classList.remove("flash");
+            void el.offsetWidth;
+            el.classList.add("flash");
+        }
+    });
+
     updateCardToGoogleSheets(cardId, card.got);
 }
 
@@ -631,77 +792,51 @@ async function updateCardToGoogleSheets(cardId, gotValue) {
     }
 }
 
-/* ============================================================
-   EXCEL (hidden, preserved)
-============================================================ */
+/* ── EXCEL (preserved) ── */
 async function loadExcelFile() {
-    const fileInput = document.getElementById("excelFile");
-    if (!fileInput.files.length) return;
-    const file = fileInput.files[0];
+    const fi = document.getElementById("excelFile");
+    if (!fi.files.length) return;
     const reader = new FileReader();
-    reader.onload = function (e) {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-        parseWorkbook(workbook);
-    };
-    reader.readAsArrayBuffer(file);
+    reader.onload = e => parseWorkbook(XLSX.read(new Uint8Array(e.target.result), { type: "array" }));
+    reader.readAsArrayBuffer(fi.files[0]);
 }
 
 function parseWorkbook(workbook) {
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
     cards = rows.slice(1).map(row => ({
-        id: row[0] || "",
-        year: row[1] || "",
-        set: row[2] || "",
-        number: row[3] || "",
-        name: row[4] || "",
-        description: row[5] || "",
-        variant: row[6] || "",
-        collecting: (row[7] || "").toString().toLowerCase() === "true",
-        got: (row[8] || "").toString().toLowerCase() === "true"
+        id: row[0]||"", year: row[1]||"", set: row[2]||"", number: row[3]||"",
+        name: row[4]||"", description: row[5]||"", variant: row[6]||"",
+        collecting: (row[7]||"").toString().toLowerCase() === "true",
+        got: (row[8]||"").toString().toLowerCase() === "true"
     }));
     populateSetDropdown();
     applyFilters();
 }
 
-/* ============================================================
-   GOOGLE SHEETS → LOAD CARDS
-============================================================ */
+/* ── GOOGLE SHEETS ── */
 async function loadCardsFromGoogleSheets() {
     try {
-        const res = await fetch('/api/read');
+        const res  = await fetch('/api/read');
         const data = await res.json();
-
-        if (!data.success) {
-            console.error("Failed to load Google Sheets data");
-            return;
-        }
+        if (!data.success) { console.error("Failed to load"); return; }
 
         cards = data.rows.slice(1).map(row => ({
-            id: row[0] || "",
-            year: row[1] || "",
-            set: row[2] || "",
-            number: row[3] || "",
-            name: row[4] || "",
-            description: row[5] || "",
-            variant: row[6] || "",
-            collecting: (row[7] || "").toString().toLowerCase() === "true",
-            got: (row[8] || "").toString().toLowerCase() === "true"
+            id: row[0]||"", year: row[1]||"", set: row[2]||"", number: row[3]||"",
+            name: row[4]||"", description: row[5]||"", variant: row[6]||"",
+            collecting: (row[7]||"").toString().toLowerCase() === "true",
+            got: (row[8]||"").toString().toLowerCase() === "true"
         }));
 
         populateSetDropdown();
         applyFilters();
-
     } catch (err) {
         console.error("Error loading Google Sheets:", err);
     }
 }
 
-/* ============================================================
-   INIT
-============================================================ */
+/* ── INIT ── */
 (async function init() {
+    showSkeletons(12);
     await loadCardsFromGoogleSheets();
 })();
 </script>
