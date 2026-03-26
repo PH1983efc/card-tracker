@@ -199,14 +199,21 @@ function applyFilters() {
             card.description.toLowerCase().includes(search);
 
         let matchesView = true;
-        if (currentView === "missing") matchesView = !card.got;
-        if (currentView === "got") matchesView = card.got;
+
+        if (currentView === "missing") {
+            matchesView = !card.got;
+        } else if (currentView === "got") {
+            matchesView = card.got;
+        } else if (currentView === "collecting") {
+            matchesView = card.collecting && card.collecting.trim() !== "";
+        }
 
         return matchesSet && matchesSearch && matchesView;
     });
 
     renderCardGrid();
 }
+
 
 
 
