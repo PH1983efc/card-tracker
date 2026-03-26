@@ -390,8 +390,12 @@ async function updateCardToGoogleSheets(cardId) {
 /* ============================================================
 INITIAL LOAD
 ============================================================ */
-(async function init() {
-    await loadCardsFromGoogleSheets();
+(async function loadCardsFromGoogleSheets() {
+    ...
+    cards = rows.slice(1).map(...);
+
+    populateSetDropdown();   // ← MUST be here
     applyFilters();
-})();
+}
+
 </script>
