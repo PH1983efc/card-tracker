@@ -291,7 +291,7 @@ async function loadCardsFromGoogleSheets() {
         cards = rows.slice(1).map(row => ({
             id: row[0] || "",
             year: row[1] || "",
-            set: row[2] || "",
+            set: `${row[1]} – ${row[2]}`.trim(),
             number: row[3] || "",
             name: row[4] || "",
             description: row[5] || "",
