@@ -361,41 +361,51 @@ async function loadCardsFromGoogleSheets() {
 
 <script>
 /* ============================================================
-GOOGLE SHEETS → UPDATE CARD
+   GOOGLE SHEETS → LOAD CARDS
 ============================================================ */
-async function updateCardToGoogleSheets(cardId) {
-    const newValue = prompt("Enter new value for GOT (TRUE/FALSE):");
-    if (!newValue) return;
 
+async function loadCardsFromGoogleSheets() {
     try {
-        const response = await fetch('/api/write', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cardId, got: newValue })
-        });
+        const res = await fetch('/api/read');
+        const data = await res.json();
 
-        const data = await response.json();
-
-        if (data.success) {
-            alert("Updated!");
-            await loadCardsFromGoogleSheets();
-        } else {
-            alert("Error: " + data.message);
+        if (!data.success) {
+            console.error("Failed to load Google Sheets data");
+            return;
         }
+
+        const rows = data.rows;
+
+        console.log("First data row:", rows[1]);
+
+        cards = rows.slice(1).map(row => ({
+            id: row[0] || "",
+            year: row[1] || "",
+            set: row[2] || "",
+            number: row[3] || "",
+            name: row[4] || "",
+            description: row[5] || "",
+            variant: row[6] || "",
+            collecting: row[7] || "",
+            got: (row[8] || "").toString().toLowerCase() === "true"
+        }));
+
+        populateSetDropdown();
+        applyFilters();
+
     } catch (err) {
-        alert("Request failed: " + err.message);
+        console.error("Error loading Google Sheets:", err);
     }
 }
+</script>
 
+<script>
 /* ============================================================
 INITIAL LOAD
 ============================================================ */
-(async function loadCardsFromGoogleSheets() {
-    ...
-    cards = rows.slice(1).map(...);
-
-    populateSetDropdown();   // ← MUST be here
+(async function init() {
+    await loadCardsFromGoogleSheets();
     applyFilters();
-}
-
+})();
 </script>
+
