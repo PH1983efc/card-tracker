@@ -170,11 +170,19 @@ function switchView(view) {
    FILTERS
 ============================================================ */
 function applyFilters() {
-    const setFilter = document.getElementById("setFilter").value.toLowerCase();
+    const setFilter = document.getElementById("setFilter").value; 
     const search = document.getElementById("searchBox").value.toLowerCase();
 
     filteredCards = cards.filter(card => {
-        const matchesSet = setFilter === "" || card.set.toLowerCase() === setFilter;
+        let matchesSet = true;
+
+        if (setFilter !== "") {
+            const [filterSet, filterYear] = setFilter.split("|||");
+            matchesSet =
+                card.set === filterSet &&
+                card.year === filterYear;
+        }
+
         const matchesSearch =
             card.id.toLowerCase().includes(search) ||
             card.name.toLowerCase().includes(search) ||
@@ -189,6 +197,7 @@ function applyFilters() {
 
     renderCardGrid();
 }
+
 
 /* ============================================================
    POPULATE SET DROPDOWN
