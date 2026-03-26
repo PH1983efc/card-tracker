@@ -504,7 +504,7 @@ function applyFilters() {
         } else if (currentView === "got") {
             matchesView = card.got;
         } else if (currentView === "collecting") {
-            matchesView = card.collecting && card.collecting.trim() !== "";
+            matchesView = card.collecting === true;
         }
 
         return matchesSet && matchesSearch && matchesView;
@@ -578,7 +578,7 @@ function renderCardGrid() {
         div.className = "card" + (card.got ? " is-got" : " is-missing");
         div.style.animationDelay = `${Math.min(i * 30, 300)}ms`;
 
-        const collectingBadge = (card.collecting && card.collecting.trim() !== "")
+        const collectingBadge = card.collecting === true
             ? `<div class="collecting-badge">◈ Collecting</div>`
             : "";
 
@@ -658,7 +658,7 @@ function parseWorkbook(workbook) {
         name: row[4] || "",
         description: row[5] || "",
         variant: row[6] || "",
-        collecting: row[7] || "",
+        collecting: (row[7] || "").toString().toLowerCase() === "true",
         got: (row[8] || "").toString().toLowerCase() === "true"
     }));
     populateSetDropdown();
@@ -686,7 +686,7 @@ async function loadCardsFromGoogleSheets() {
             name: row[4] || "",
             description: row[5] || "",
             variant: row[6] || "",
-            collecting: row[7] || "",
+            collecting: (row[7] || "").toString().toLowerCase() === "true",
             got: (row[8] || "").toString().toLowerCase() === "true"
         }));
 
