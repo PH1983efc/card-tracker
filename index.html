@@ -233,10 +233,11 @@ function populateSetDropdown() {
 
     combos.forEach(({ set, year }) => {
         const value = `${set}|||${year}`;
-        const label = `${set} ${year}`; // 👈 THIS is what you SEE
+        const label = `${set} ${year}`;
         dropdown.innerHTML += `<option value="${value}">${label}</option>`;
     });
 }
+
 
 /* ============================================================
    RENDER CARD GRID
