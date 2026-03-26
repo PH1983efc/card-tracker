@@ -125,6 +125,7 @@
     <button onclick="switchView('all')">All Cards</button>
     <button onclick="switchView('missing')">Missing</button>
     <button onclick="switchView('got')">Got</button>
+    <button onclick="setView('collecting')">Collecting</button>
     <button onclick="toggleDarkMode()">Dark Mode</button>
 </div>
 
@@ -149,6 +150,15 @@ let cards = [];
 let filteredCards = [];
 let currentView = "all";
 let darkMode = false;
+let matchesView = true;
+
+if (currentView === "missing") {
+    matchesView = !card.got;
+} else if (currentView === "got") {
+    matchesView = card.got;
+} else if (currentView === "collecting") {
+    matchesView = card.collecting && card.collecting.trim() !== "";
+}
 
 /* ============================================================
    DARK MODE
