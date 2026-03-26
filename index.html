@@ -195,13 +195,28 @@ function applyFilters() {
 ============================================================ */
 function populateSetDropdown() {
     const dropdown = document.getElementById("setFilter");
-    const sets = [...new Set(cards.map(c => c.set))].sort();
+
+    // Build unique combinations of (year + set)
+    const setCombos = [...new Map(
+        cards.map(card => [`${card.year}|||${card.set}`, card])
+    ).values()];
+
+    // Sort by year (newest → oldest)
+    setCombos.sort((a, b) => {
+        const yearA = a.year;
+        const yearB = b.year;
+        return yearB.localeCompare(yearA); // works for "2025-26" style
+    });
 
     dropdown.innerHTML = `<option value="">All Sets</option>`;
-    sets.forEach(set => {
-        dropdown.innerHTML += `<option value="${set}">${set}</option>`;
+
+    setCombos.forEach(card => {
+        const label = `${card.set} ${card.year}`;
+        const value = `${card.set}|||${card.year}`;
+        dropdown.innerHTML += `<option value="${value}">${label}</option>`;
     });
 }
+
 
 /* ============================================================
    RENDER CARD GRID
