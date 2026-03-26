@@ -170,7 +170,7 @@ function switchView(view) {
    FILTERS
 ============================================================ */
 function applyFilters() {
-    const setFilter = document.getElementById("setFilter").value; 
+    const setFilter = document.getElementById("setFilter").value;
     const search = document.getElementById("searchBox").value.toLowerCase();
 
     filteredCards = cards.filter(card => {
@@ -199,32 +199,44 @@ function applyFilters() {
 }
 
 
+
+
 /* ============================================================
    POPULATE SET DROPDOWN
 ============================================================ */
 function populateSetDropdown() {
     const dropdown = document.getElementById("setFilter");
 
-    // Build unique combinations of (year + set)
-    const setCombos = [...new Map(
-        cards.map(card => [`${card.year}|||${card.set}`, card])
-    ).values()];
+    // Build unique (set + year) combinations
+    const comboMap = new Map();
 
-    // Sort by year (newest → oldest)
-    setCombos.sort((a, b) => {
-        const yearA = a.year;
-        const yearB = b.year;
-        return yearB.localeCompare(yearA); // works for "2025-26" style
+    cards.forEach(card => {
+        const key = `${card.set}|||${card.year}`;
+        if (!comboMap.has(key)) {
+            comboMap.set(key, { set: card.set, year: card.year });
+        }
     });
 
+    // Convert to array
+    const combos = Array.from(comboMap.values());
+
+    // Sort by year (newest → oldest), then alphabetically by set
+    combos.sort((a, b) => {
+        const yearCompare = b.year.localeCompare(a.year); // works for "2025-26"
+        if (yearCompare !== 0) return yearCompare;
+        return a.set.localeCompare(b.set);
+    });
+
+    // Build dropdown
     dropdown.innerHTML = `<option value="">All Sets</option>`;
 
-    setCombos.forEach(card => {
-        const label = `${card.set} ${card.year}`;
-        const value = `${card.set}|||${card.year}`;
+    combos.forEach(({ set, year }) => {
+        const value = `${set}|||${year}`;
+        const label = `${set} ${year}`; // 👈 what the user sees
         dropdown.innerHTML += `<option value="${value}">${label}</option>`;
     });
 }
+
 
 
 /* ============================================================
