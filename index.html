@@ -201,6 +201,7 @@ function applyFilters() {
 
 
 
+
 /* ============================================================
    POPULATE SET DROPDOWN
 ============================================================ */
@@ -222,7 +223,7 @@ function populateSetDropdown() {
 
     // Sort by year (newest → oldest), then alphabetically by set
     combos.sort((a, b) => {
-        const yearCompare = b.year.localeCompare(a.year); // works for "2025-26"
+        const yearCompare = b.year.localeCompare(a.year);
         if (yearCompare !== 0) return yearCompare;
         return a.set.localeCompare(b.set);
     });
@@ -232,12 +233,10 @@ function populateSetDropdown() {
 
     combos.forEach(({ set, year }) => {
         const value = `${set}|||${year}`;
-        const label = `${set} ${year}`; // 👈 what the user sees
+        const label = `${set} ${year}`; // 👈 THIS is what you SEE
         dropdown.innerHTML += `<option value="${value}">${label}</option>`;
     });
 }
-
-
 
 /* ============================================================
    RENDER CARD GRID
