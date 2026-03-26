@@ -311,6 +311,7 @@ function parseWorkbook(workbook) {
 /* ============================================================
    GOOGLE SHEETS → LOAD CARDS
 ============================================================ */
+<script>
 async function loadCardsFromGoogleSheets() {
     try {
         const res = await fetch('/api/read');
@@ -323,17 +324,20 @@ async function loadCardsFromGoogleSheets() {
 
         const rows = data.rows;
 
-        // Skip header row
+        // Debug: See exactly what the sheet is returning
+        console.log("First data row:", rows[1]);
+
+        // Convert rows into card objects
         cards = rows.slice(1).map(row => ({
-            id: row[0] || "",
-            year: row[1] || "",
-            set: `${row[1]} – ${row[2]}`.trim(),
-            number: row[3] || "",
-            name: row[4] || "",
-            description: row[5] || "",
-            variant: row[6] || "",
-            collecting: row[7] || "",
-            got: (row[8] || "").toString().toLowerCase() === "true"
+            id: row[0] || "",          // Column A
+            year: row[1] || "",        // Column B  ← IMPORTANT
+            set: row[2] || "",         // Column C
+            number: row[3] || "",      // Column D
+            name: row[4] || "",        // Column E
+            description: row[5] || "", // Column F
+            variant: row[6] || "",     // Column G
+            collecting: row[7] || "",  // Column H
+            got: (row[8] || "").toString().toLowerCase() === "true" // Column I
         }));
 
         populateSetDropdown();
@@ -343,6 +347,8 @@ async function loadCardsFromGoogleSheets() {
         console.error("Error loading Google Sheets:", err);
     }
 }
+</script>
+
 
 /* ============================================================
    GOOGLE SHEETS → UPDATE CARD
