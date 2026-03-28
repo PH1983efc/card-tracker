@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   const sheets = google.sheets({ version: 'v4', auth });
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: process.env.GOOGLE_SHEET_ID,
-    range: 'Sheet1', // change if your sheet tab has a different name
+    range: 'Master', // change if your sheet tab has a different name
   });
 
   res.json({ success: true, rows: response.data.values });
