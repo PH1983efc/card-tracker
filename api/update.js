@@ -1,46 +1,70 @@
 import { google } from 'googleapis';
 
-const SHEET_NAME = 'Master'; // change if your tab is named differently
-const ID_COLUMN  = 'A';      // column that holds the unique card ID
-const GOT_COLUMN = 9;        // column I = 9 (A=1, B=2 ... I=9)
+const SHEET_NAME = 'Sheet1';
+const ID_COLUMN  = 'A';
+const GOT_COLUMN = 9;
 
 export default async function handler(req, res) {
-  const { id, got } = req.body;
+  try {
+    console.log('--- update called ---');
+    console.log('body:', JSON.stringify(req.body));
 
-  const auth = new google.auth.JWT(
-    process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-    null,
-    process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-    ['https://www.googleapis.com/auth/spreadsheets']
-  );
+    const { id, got } = req.body;
 
-  const sheets = google.sheets({ version: 'v4', auth });
+    console.log('id:', id, '| type:', typeof id);
+    console.log('got:', got, '| type:', typeof got);
+    console.log('email:', process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ? 'SET' : 'MISSING');
+    console.log('key:', process.env.GOOGLE_PRIVATE_KEY ? 'SET' : 'MISSING');
+    console.log('sheetId:', process.env.GOOGLE_SHEET_ID ? 'SET' : 'MISSING');
 
-  // Read column A to find which row this card is on
-  const readRes = await sheets.spreadsheets.values.get({
-    spreadsheetId: process.env.GOOGLE_SHEET_ID,
-    range: `${SHEET_NAME}!${ID_COLUMN}:${ID_COLUMN}`,
-  });
+    const auth = new google.auth.JWT(
+      process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      null,
+      process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      ['https://www.googleapis.com/auth/spreadsheets']
+    );
 
-  const rows = readRes.data.values || [];
-  const rowIndex = rows.findIndex(r => r[0] === String(id));
+    console.log('auth created');
 
-  if (rowIndex === -1) {
-    console.error(`Card ID not found in sheet: "${id}"`);
-    return res.status(404).json({ success: false, error: `Card "${id}" not found in sheet` });
+    const sheets = google.sheets({ version: 'v4', auth });
+
+    const readRes = await sheets.spreadsheets.values.get({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID,
+      range: `${SHEET_NAME}!${ID_COLUMN}:${ID_COLUMN}`,
+    });
+
+    console.log('read complete, rows found:', readRes.data.values?.length);
+
+    const rows = readRes.data.values || [];
+    const rowIndex = rows.findIndex(r => r[0] === String(id));
+
+    console.log('rowIndex:', rowIndex);
+
+    if (rowIndex === -1) {
+      console.error('Card not found. First 5 IDs in sheet:', rows.slice(0, 5).map(r => r[0]));
+      return res.status(404).json({ success: false, error: `Card "${id}" not found` });
+    }
+
+    const sheetRow = rowIndex + 1;
+    const colLetter = columnToLetter(GOT_COLUMN);
+
+    console.log(`writing ${got} to ${SHEET_NAME}!${colLetter}${sheetRow}`);
+
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID,
+      range: `${SHEET_NAME}!${colLetter}${sheetRow}`,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: { values: [[got === true || got === 'true' ? true : false]] },
+    });
+
+    console.log('write complete');
+    res.json({ success: true, updatedRow: sheetRow, column: colLetter });
+
+  } catch (err) {
+    console.error('CAUGHT ERROR:', err.message);
+    console.error('STACK:', err.stack);
+    res.status(500).json({ success: false, error: err.message });
   }
-
-  const sheetRow = rowIndex + 1; // Sheets rows are 1-indexed
-  const colLetter = columnToLetter(GOT_COLUMN);
-
-  await sheets.spreadsheets.values.update({
-    spreadsheetId: process.env.GOOGLE_SHEET_ID,
-    range: `${SHEET_NAME}!${colLetter}${sheetRow}`,
-    valueInputOption: 'USER_ENTERED', // KEY: lets Sheets treat TRUE/FALSE as booleans (ticks the checkbox)
-    requestBody: { values: [[got === true || got === 'true' ? true : false]] },
-  });
-
-  res.json({ success: true, updatedRow: sheetRow, column: colLetter });
 }
 
 function columnToLetter(col) {
