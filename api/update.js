@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     const sheets = google.sheets({ version: 'v4', auth });
 
     const readRes = await sheets.spreadsheets.values.get({
-      spreadsheetId: process.env.GOOGLE_SHEET_ID,
+      spreadsheetId: process.env.SHEET_ID,
       range: `${SHEET_NAME}!${ID_COLUMN}:${ID_COLUMN}`,
     });
 
@@ -42,7 +42,7 @@ export default async function handler(req, res) {
     const colLetter = columnToLetter(GOT_COLUMN);
 
     await sheets.spreadsheets.values.update({
-      spreadsheetId: process.env.GOOGLE_SHEET_ID,
+      spreadsheetId: process.env.SHEET_ID,
       range: `${SHEET_NAME}!${colLetter}${sheetRow}`,
       valueInputOption: 'USER_ENTERED',
       requestBody: { values: [[got === true || got === 'true' ? true : false]] },
