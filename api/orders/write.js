@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     // Clear the sheet (keeping header) then rewrite all orders
     await sheets.spreadsheets.values.clear({
       spreadsheetId: process.env.SHEET_ID,
-      range: `${SHEET_NAME}!A2:A`,
+      range: `${Orders}!A2:A`,
     });
 
     if (orders.length > 0) {
