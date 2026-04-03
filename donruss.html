@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Donruss Collection</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,300;0,400;0,600;1,300&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --blue:          #003399;
+        --blue-deep:     #001a5e;
+        --royal:         #1a3faa;
+        --white:         #f0f4ff;
+        --white-dim:     #8a9ac4;
+        --white-faint:   #2a3660;
+        --toffee:        #d4a017;
+        --toffee-light:  #f0bf3a;
+        --toffee-dim:    #7a5c0a;
+        --got-color:     #2ecc71;
+        --missing-color: #e74c3c;
+        --bg:            #010a1f;
+        --surface:       #071535;
+        --surface-2:     #0c1f4a;
+        --border:        #152452;
+        --border-bright: rgba(26,63,170,0.6);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+        font-family: 'Barlow', sans-serif;
+        background: var(--bg);
+        color: var(--white);
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background:
+            radial-gradient(ellipse 100% 60% at 50% 0%, rgba(26,63,170,0.25) 0%, transparent 65%),
+            radial-gradient(ellipse 60% 40% at 80% 100%, rgba(0,51,153,0.15) 0%, transparent 60%),
+            repeating-linear-gradient(90deg, transparent 0px, transparent 80px, rgba(255,255,255,0.012) 80px, rgba(255,255,255,0.012) 81px),
+            repeating-linear-gradient(0deg, transparent 0px, transparent 80px, rgba(255,255,255,0.008) 80px, rgba(255,255,255,0.008) 81px);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    /* ── HEADER ── */
+    header {
+        position: relative;
+        z-index: 2;
+        background: linear-gradient(180deg, #000d2e 0%, var(--blue-deep) 60%, transparent 100%);
+        padding: 0 0 30px;
+        overflow: hidden;
+    }
+
+    header::before {
+        content: '';
+        position: absolute;
+        top: 0; left: -10%; right: -10%;
+        height: 6px;
+        background: repeating-linear-gradient(90deg, var(--blue) 0px, var(--blue) 40px, var(--toffee) 40px, var(--toffee) 50px);
+    }
+
+    .header-inner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 28px;
+        padding: 36px 24px 10px;
+        position: relative;
+    }
+
+    .crest {
+        width: 72px; height: 72px;
+        flex-shrink: 0;
+        filter: drop-shadow(0 0 16px rgba(26,63,170,0.8));
+        animation: crestIn 0.6s ease both;
+    }
+
+    @keyframes crestIn {
+        from { opacity: 0; transform: scale(0.7) rotate(-10deg); }
+        to   { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+
+    .header-text { text-align: center; }
+
+    .header-eyebrow {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 11px; font-weight: 600;
+        letter-spacing: 0.45em;
+        color: var(--toffee);
+        text-transform: uppercase;
+        margin-bottom: 6px;
+        animation: fadeUp 0.5s 0.1s ease both;
+    }
+
+    h1 {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: clamp(32px, 7vw, 58px);
+        color: var(--white);
+        letter-spacing: 0.06em;
+        line-height: 1;
+        text-shadow: 0 2px 20px rgba(0,51,153,0.8);
+        animation: fadeUp 0.5s 0.15s ease both;
+    }
+
+    h1 span { color: var(--toffee-light); }
+
+    .header-sub {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 13px; letter-spacing: 0.25em;
+        color: var(--white-dim); margin-top: 4px;
+        animation: fadeUp 0.5s 0.2s ease both;
+    }
+
+    .back-link {
+        position: absolute;
+        left: 20px; top: 42px;
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 12px; font-weight: 600;
+        letter-spacing: 0.18em; text-transform: uppercase;
+        color: var(--white-dim);
+        text-decoration: none;
+        border: 1px solid var(--border);
+        padding: 7px 14px;
+        border-radius: 3px;
+        transition: all 0.2s;
+        display: flex; align-items: center; gap: 6px;
+    }
+
+    .back-link:hover { color: var(--toffee-light); border-color: var(--toffee-dim); }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+        display: flex;
+        justify-content: center;
+        position: relative; z-index: 2;
+        background: rgba(0,13,46,0.85);
+        border-top: 1px solid var(--border-bright);
+        border-bottom: 1px solid var(--border-bright);
+        backdrop-filter: blur(8px);
+    }
+
+    .stat {
+        padding: 14px 32px;
+        text-align: center;
+        border-right: 1px solid var(--border);
+        flex: 1; max-width: 160px;
+    }
+
+    .stat:first-child { border-left: 1px solid var(--border); }
+
+    .stat-value {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 28px; display: block; line-height: 1;
+    }
+
+    .stat-label {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 10px; letter-spacing: 0.2em;
+        color: var(--white-dim); text-transform: uppercase;
+        margin-top: 3px; display: block;
+    }
+
+    /* ── PROGRESS BAR ── */
+    .overall-progress {
+        position: relative; z-index: 2;
+        padding: 12px 24px;
+        background: rgba(0,26,94,0.7);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .overall-progress-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 7px;
+    }
+
+    .overall-progress-label {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 12px; font-weight: 600;
+        letter-spacing: 0.18em; text-transform: uppercase;
+        color: var(--white-dim);
+    }
+
+    .overall-progress-count {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 18px; color: var(--toffee-light);
+    }
+
+    .progress-track {
+        height: 6px; background: var(--border);
+        border-radius: 3px; overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--blue), var(--toffee));
+        border-radius: 3px;
+        transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        width: 0%;
+    }
+
+    .progress-pct {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 11px; color: var(--white-dim);
+        margin-top: 4px; text-align: right;
+    }
+
+    /* ── NAV ── */
+    nav {
+        display: flex;
+        justify-content: center;
+        position: relative; z-index: 2;
+        background: var(--surface);
+        border-bottom: 2px solid var(--border-bright);
+        flex-wrap: wrap;
+    }
+
+    .nav-btn {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 13px; font-weight: 600;
+        letter-spacing: 0.2em; text-transform: uppercase;
+        padding: 14px 28px;
+        background: transparent; color: var(--white-dim);
+        border: none;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+        cursor: pointer; transition: all 0.2s;
+    }
+
+    .nav-btn:hover { color: var(--white); background: rgba(26,63,170,0.15); }
+    .nav-btn.active { color: var(--toffee-light); border-bottom-color: var(--toffee); background: rgba(212,160,23,0.07); }
+
+    /* ── FILTERS ── */
+    .filters {
+        display: flex;
+        justify-content: center;
+        gap: 12px; padding: 14px 20px;
+        position: relative; z-index: 2;
+        background: rgba(1,10,31,0.6);
+        border-bottom: 1px solid var(--border);
+        flex-wrap: wrap;
+    }
+
+    .filters select,
+    .filters input {
+        font-family: 'Barlow', sans-serif;
+        font-size: 14px; padding: 9px 14px;
+        background: var(--surface-2); color: var(--white);
+        border: 1px solid var(--border); border-radius: 3px;
+        outline: none; transition: border-color 0.2s;
+        min-width: 200px;
+    }
+
+    .filters select:focus, .filters input:focus { border-color: var(--royal); }
+    .filters select option { background: var(--surface); }
+
+    /* ── CARD GRID ── */
+    .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 14px;
+        padding: 20px 20px 50px;
+        position: relative; z-index: 1;
+    }
+
+    /* ── SKELETON ── */
+    .skeleton-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px; overflow: hidden; height: 180px;
+    }
+
+    .skeleton-shimmer {
+        width: 100%; height: 100%;
+        background: linear-gradient(90deg, var(--surface) 0%, var(--surface-2) 40%, var(--surface) 80%);
+        background-size: 200% 100%;
+        animation: shimmer 1.4s infinite;
+    }
+
+    @keyframes shimmer {
+        0%   { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    /* ── CARD ── */
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px; overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+        animation: cardIn 0.35s ease both;
+        position: relative;
+    }
+
+    @keyframes cardIn {
+        from { opacity: 0; transform: translateY(14px) scale(0.97); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 36px rgba(0,0,0,0.6), 0 0 0 1px rgba(26,63,170,0.5);
+        border-color: var(--royal);
+    }
+
+    .card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 3px;
+    }
+
+    .card.is-got::before    { background: linear-gradient(90deg, var(--blue), var(--got-color)); }
+    .card.is-missing::before { background: linear-gradient(90deg, var(--blue), var(--missing-color)); }
+
+    .card.flash { animation: flashCard 0.7s ease forwards; }
+
+    @keyframes flashCard {
+        0%   { box-shadow: 0 0 0 2px var(--toffee-light); }
+        50%  { box-shadow: 0 0 24px 6px rgba(212,160,23,0.45); }
+        100% { box-shadow: none; }
+    }
+
+    .card-top {
+        padding: 14px 14px 10px;
+        border-bottom: 1px solid var(--border);
+        background: linear-gradient(135deg, var(--surface-2), var(--surface));
+    }
+
+    .card-number {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 10px; font-weight: 600;
+        letter-spacing: 0.2em; color: var(--toffee-dim);
+        margin-bottom: 5px; text-transform: uppercase;
+    }
+
+    .card-name {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 17px; letter-spacing: 0.05em;
+        color: var(--white); line-height: 1.2; margin-bottom: 4px;
+    }
+
+    .card-team {
+        font-size: 12px; color: var(--white-dim); font-style: italic;
+    }
+
+    .card-body { padding: 10px 14px 14px; }
+
+    /* ── TOGGLE ── */
+    .got-toggle {
+        display: flex; align-items: center;
+        gap: 10px; cursor: pointer; user-select: none;
+    }
+
+    .toggle-track {
+        width: 40px; height: 22px; border-radius: 11px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid var(--border);
+        position: relative;
+        transition: background 0.25s, border-color 0.25s;
+        flex-shrink: 0;
+    }
+
+    .toggle-thumb {
+        width: 16px; height: 16px; border-radius: 50%;
+        background: var(--white-dim);
+        position: absolute; top: 2px; left: 2px;
+        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.25s;
+    }
+
+    .is-got .toggle-track { background: rgba(46,204,113,0.15); border-color: var(--got-color); }
+    .is-got .toggle-thumb { transform: translateX(18px); background: var(--got-color); }
+
+    .toggle-label {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 12px; font-weight: 600;
+        letter-spacing: 0.15em; color: var(--white-dim);
+        transition: color 0.2s; text-transform: uppercase;
+    }
+
+    .is-got .toggle-label { color: var(--got-color); }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+        grid-column: 1 / -1;
+        text-align: center; padding: 80px 20px;
+        color: var(--white-dim);
+        animation: fadeUp 0.4s ease both;
+    }
+
+    .empty-state .empty-icon { font-size: 52px; margin-bottom: 14px; opacity: 0.2; display: block; }
+    .empty-state p { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.3em; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--royal); }
+</style>
+</head>
+<body>
+
+<header>
+    <a class="back-link" href="index.html">← Collection</a>
+    <div class="header-inner">
+        <svg class="crest" viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50 5 L90 18 L90 60 Q90 90 50 105 Q10 90 10 60 L10 18 Z" fill="#003399" stroke="#1a3faa" stroke-width="1.5"/>
+            <path d="M50 12 L84 23 L84 60 Q84 86 50 99 Q16 86 16 60 L16 23 Z" fill="none" stroke="rgba(212,160,23,0.5)" stroke-width="1"/>
+            <ellipse cx="25" cy="65" rx="10" ry="18" fill="rgba(212,160,23,0.12)" stroke="rgba(212,160,23,0.3)" stroke-width="0.8"/>
+            <ellipse cx="75" cy="65" rx="10" ry="18" fill="rgba(212,160,23,0.12)" stroke="rgba(212,160,23,0.3)" stroke-width="0.8"/>
+            <rect x="43" y="28" width="14" height="22" fill="#1a3faa"/>
+            <rect x="40" y="42" width="20" height="12" fill="#1a3faa"/>
+            <rect x="46" y="20" width="3" height="10" fill="#d4a017"/>
+            <rect x="51" y="20" width="3" height="10" fill="#d4a017"/>
+            <text x="50" y="80" font-family="Arial" font-size="7" font-weight="bold" fill="#d4a017" text-anchor="middle" letter-spacing="2">NSNO</text>
+        </svg>
+        <div class="header-text">
+            <div class="header-eyebrow">Card Collection</div>
+            <h1>Donruss <span>Rated Rookies</span></h1>
+            <div class="header-sub">Full Set · Collecting All</div>
+        </div>
+    </div>
+</header>
+
+<!-- Stats -->
+<div class="stats-bar">
+    <div class="stat">
+        <span class="stat-value" id="statTotal" style="color:var(--white)">—</span>
+        <span class="stat-label">Total</span>
+    </div>
+    <div class="stat">
+        <span class="stat-value" id="statGot" style="color:var(--got-color)">—</span>
+        <span class="stat-label">Obtained</span>
+    </div>
+    <div class="stat">
+        <span class="stat-value" id="statMissing" style="color:var(--missing-color)">—</span>
+        <span class="stat-label">Missing</span>
+    </div>
+    <div class="stat">
+        <span class="stat-value" id="statPct" style="color:var(--toffee-light)">—</span>
+        <span class="stat-label">Complete</span>
+    </div>
+</div>
+
+<!-- Overall progress -->
+<div class="overall-progress">
+    <div class="overall-progress-header">
+        <span class="overall-progress-label">Collection Progress</span>
+        <span class="overall-progress-count" id="progressCount"></span>
+    </div>
+    <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-pct" id="progressPct"></div>
+</div>
+
+<!-- Nav -->
+<nav>
+    <button class="nav-btn active" onclick="switchView('all', this)">All Cards</button>
+    <button class="nav-btn" onclick="switchView('got', this)">Obtained</button>
+    <button class="nav-btn" onclick="switchView('missing', this)">Missing</button>
+</nav>
+
+<!-- Filters -->
+<div class="filters">
+    <input type="text" id="searchBox" placeholder="Search by player or team…" oninput="applyFilters()">
+</div>
+
+<!-- Card Grid -->
+<div id="cardGrid" class="card-grid"></div>
+
+<script>
+let cards = [];
+let filteredCards = [];
+let currentView = "all";
+
+/* ── ANIMATED COUNTER ── */
+function animateCounter(el, to, suffix = "") {
+    const from = parseInt(el.textContent) || 0;
+    if (el.textContent === "—") { el.textContent = to + suffix; return; }
+    const duration = 450;
+    const start = performance.now();
+    function step(now) {
+        const p = Math.min((now - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(from + (to - from) * ease) + suffix;
+        if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+}
+
+/* ── STATS & PROGRESS ── */
+function updateStats() {
+    const total   = cards.length;
+    const got     = cards.filter(c => c.got).length;
+    const missing = total - got;
+    const pct     = total > 0 ? Math.round((got / total) * 100) : 0;
+
+    animateCounter(document.getElementById("statTotal"),   total);
+    animateCounter(document.getElementById("statGot"),     got);
+    animateCounter(document.getElementById("statMissing"), missing);
+    animateCounter(document.getElementById("statPct"),     pct, "%");
+
+    document.getElementById("progressCount").textContent = `${got} / ${total}`;
+    document.getElementById("progressPct").textContent   = `${pct}% of full set obtained`;
+
+    const fill = document.getElementById("progressFill");
+    fill.style.width = "0%";
+    requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.width = pct + "%"; }));
+}
+
+/* ── VIEW SWITCHING ── */
+function switchView(view, btn) {
+    currentView = view;
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    applyFilters();
+}
+
+/* ── FILTERS ── */
+function applyFilters() {
+    const search = document.getElementById("searchBox").value.toLowerCase();
+
+    filteredCards = cards.filter(card => {
+        const matchesSearch =
+            card.player.toLowerCase().includes(search) ||
+            card.team.toLowerCase().includes(search) ||
+            String(card.cardNo).includes(search);
+
+        let matchesView = true;
+        if (currentView === "got")     matchesView = card.got;
+        if (currentView === "missing") matchesView = !card.got;
+
+        return matchesSearch && matchesView;
+    });
+
+    renderCardGrid();
+}
+
+/* ── SKELETON ── */
+function showSkeletons(count = 12) {
+    const grid = document.getElementById("cardGrid");
+    grid.innerHTML = "";
+    for (let i = 0; i < count; i++) {
+        const s = document.createElement("div");
+        s.className = "skeleton-card";
+        s.innerHTML = `<div class="skeleton-shimmer"></div>`;
+        grid.appendChild(s);
+    }
+}
+
+/* ── RENDER ── */
+function renderCardGrid() {
+    const grid = document.getElementById("cardGrid");
+    grid.innerHTML = "";
+
+    if (filteredCards.length === 0) {
+        grid.innerHTML = `
+            <div class="empty-state">
+                <span class="empty-icon">⚽</span>
+                <p>No cards found</p>
+            </div>`;
+        return;
+    }
+
+    filteredCards.forEach((card, i) => {
+        const div = document.createElement("div");
+        div.className = "card " + (card.got ? "is-got" : "is-missing");
+        div.style.animationDelay = `${Math.min(i * 25, 350)}ms`;
+        div.dataset.id = card.id;
+
+        div.innerHTML = `
+            <div class="card-top">
+                <div class="card-number">Card #${card.cardNo}</div>
+                <div class="card-name">${card.player}</div>
+                <div class="card-team">${card.team}</div>
+            </div>
+            <div class="card-body">
+                <label class="got-toggle" onclick="toggleGot('${card.id}')">
+                    <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                    <span class="toggle-label">${card.got ? "OBTAINED" : "MISSING"}</span>
+                </label>
+            </div>`;
+
+        grid.appendChild(div);
+    });
+}
+
+/* ── TOGGLE GOT ── */
+function toggleGot(cardId) {
+    const card = cards.find(c => c.id === cardId);
+    if (!card) return;
+    card.got = !card.got;
+    applyFilters();
+    updateStats();
+
+    requestAnimationFrame(() => {
+        const el = document.querySelector(`.card[data-id="${cardId}"]`);
+        if (el) { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
+    });
+
+    updateDonrussInSheets(cardId, card.got, card.rowIndex);
+}
+
+async function updateDonrussInSheets(cardId, gotValue, rowIndex) {
+    try {
+        await fetch('/api/donruss-update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: cardId, got: gotValue, rowIndex })
+        });
+    } catch (err) {
+        console.error("Failed to update Donruss sheet:", err);
+    }
+}
+
+/* ── LOAD FROM GOOGLE SHEETS ── */
+async function loadDonrussCards() {
+    try {
+        const res  = await fetch('/api/donruss');
+        const data = await res.json();
+
+        if (!data.success) { console.error("Failed to load Donruss data"); return; }
+
+        // Columns: A=Card ID, B=Year, C=Card No., D=Player, E=Team, F=Card, G=Got
+        cards = data.rows.slice(1).map((row, i) => ({
+            id:       String(row[0] || ""),
+            year:     row[1] || "",
+            cardNo:   row[2] || "",
+            player:   row[3] || "",
+            team:     row[4] || "",
+            card:     row[5] || "",
+            got:      (row[6] || "").toString().toLowerCase() === "true",
+            rowIndex: i + 2  // 1-indexed, +1 for header row
+        }));
+
+        applyFilters();
+        updateStats();
+
+    } catch (err) {
+        console.error("Error loading Donruss:", err);
+    }
+}
+
+/* ── INIT ── */
+(async function init() {
+    showSkeletons(12);
+    await loadDonrussCards();
+})();
+</script>
+</body>
+</html>
