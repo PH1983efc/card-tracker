@@ -139,6 +139,531 @@
     .empty-state .empty-icon{font-size:48px;margin-bottom:12px;opacity:0.2;display:block;}
     .empty-state p{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.25em;}
 
+    /* EXPORT TOOLBAR */
+    .export-toolbar {
+        display: flex; justify-content: flex-end; gap: 10px;
+        padding: 10px 20px; position: relative; z-index: 2;
+        background: rgba(1,10,31,0.4);
+        border-bottom: 1px solid var(--border);
+        flex-wrap: wrap;
+    }
+    .export-btn {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 12px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+        padding: 8px 16px; border-radius: 3px; cursor: pointer;
+        border: 1px solid var(--toffee-dim);
+        background: rgba(212,160,23,0.08); color: var(--toffee-light);
+        transition: all 0.2s;
+    }
+    .export-btn:hover { background: rgba(212,160,23,0.18); border-color: var(--toffee); }
+
+    /* PRINT */
+    .print-header { display: none; }
+    #printArea { display: none; }
+
+    @media print {
+        body::before, header, .stats-bar, .overall-progress,
+        nav, .filters, .export-toolbar, .content { display: none !important; }
+        .print-header { display: block !important; text-align: center; padding: 16px 0 12px; border-bottom: 2px solid #003399; margin-bottom: 16px; }
+        .print-header h2 { font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: #003399; letter-spacing: 0.08em; }
+        .print-header p  { font-size: 12px; color: #666; margin-top: 4px; }
+        #printArea { display: block !important; padding: 0 10px; }
+        .print-year-group { margin-bottom: 20px; page-break-inside: avoid; }
+        .print-year-title { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: #003399; border-bottom: 2px solid #003399; padding-bottom: 3px; margin-bottom: 10px; letter-spacing: 0.06em; }
+        .print-type-group { margin-bottom: 12px; page-break-inside: avoid; }
+        .print-type-title { font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.15em; color: #555; margin-bottom: 6px; padding: 3px 6px; background: #f0f0f0; border-left: 3px solid #003399; }
+        .print-card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+        .print-card { border: 1px solid #ccc; border-radius: 3px; padding: 5px 7px; background: #fff; break-inside: avoid; }
+        .print-card-name { font-weight: bold; font-size: 11px; color: #000; }
+        .print-card-meta { font-size: 10px; color: #555; margin-top: 2px; }
+    }
+    ::-webkit-scrollbar{width:6px;}
+    ::-webkit-scrollbar-track{background:var(--bg);}
+    ::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:3px;}
+    ::-webkit-scrollbar-thumb:hover{background:var(--royal);}
+</style>
+</head>
+<body>
+
+<header>
+    <a class="back-link" href="https://card-tracker-six.vercel.app/">← Collection</a>
+    <div class="header-inner">
+        <svg class="crest" viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50 5 L90 18 L90 60 Q90 90 50 105 Q10 90 10 60 L10 18 Z" fill="#003399" stroke="#1a3faa" stroke-width="1.5"/>
+            <path d="M50 12 L84 23 L84 60 Q84 86 50 99 Q16 86 16 60 L16 23 Z" fill="none" stroke="rgba(212,160,23,0.5)" stroke-width="1"/>
+            <ellipse cx="25" cy="65" rx="10" ry="18" fill="rgba(212,160,23,0.12)" stroke="rgba(212,160,23,0.3)" stroke-width="0.8"/>
+            <ellipse cx="75" cy="65" rx="10" ry="18" fill="rgba(212,160,23,0.12)" stroke="rgba(212,160,23,0.3)" stroke-width="0.8"/>
+            <rect x="43" y="28" width="14" height="22" fill="#1a3faa"/>
+            <rect x="40" y="42" width="20" height="12" fill="#1a3faa"/>
+            <rect x="46" y="20" width="3" height="10" fill="#d4a017"/>
+            <rect x="51" y="20" width="3" height="10" fill="#d4a017"/>
+            <text x="50" y="80" font-family="Arial" font-size="7" font-weight="bold" fill="#d4a017" text-anchor="middle" letter-spacing="2">NSNO</text>
+        </svg>
+        <div class="header-text">
+            <div class="header-eyebrow">Card Collection</div>
+            <h1>Donruss <span>Collection</span></h1>
+            <div class="header-sub">Collecting All · Grouped by Year &amp; Type</div>
+        </div>
+    </div>
+</header>
+
+<div class="stats-bar">
+    <div class="stat">
+        <span class="stat-value" id="statTotal" style="color:var(--white)">—</span>
+        <span class="stat-label">Total</span>
+    </div>
+    <div class="stat">
+        <span class="stat-value" id="statGot" style="color:var(--got-color)">—</span>
+        <span class="stat-label">Obtained</span>
+    </div>
+    <div class="stat">
+        <span class="stat-value" id="statMissing" style="color:var(--missing-color)">—</span>
+        <span class="stat-label">Missing</span>
+    </div>
+    <div class="stat">
+        <span class="stat-value" id="statPct" style="color:var(--toffee-light)">—</span>
+        <span class="stat-label">Complete</span>
+    </div>
+</div>
+
+<div class="overall-progress">
+    <div class="overall-progress-header">
+        <span class="overall-progress-label">Collection Progress</span>
+        <span class="overall-progress-count" id="progressCount"></span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-pct" id="progressPct"></div>
+</div>
+
+<nav>
+    <button class="nav-btn active" onclick="switchView('all',this)">All</button>
+    <button class="nav-btn" onclick="switchView('missing',this)">Missing</button>
+    <button class="nav-btn" onclick="switchView('got',this)">Obtained</button>
+</nav>
+
+<div class="filters">
+    <input type="text" id="searchBox" placeholder="Search by player or team…" oninput="renderGroups()">
+</div>
+
+<!-- Export toolbar -->
+<div class="export-toolbar">
+    <button class="export-btn" onclick="exportPDF('all')">⬇ All Missing (PDF)</button>
+    <button class="export-btn" onclick="exportPDF('visible')">⬇ Current View Missing (PDF)</button>
+</div>
+
+<!-- Print header -->
+<div class="print-header" id="printHeader">
+    <h2>Donruss · Needs List</h2>
+    <p id="printSubtitle"></p>
+</div>
+<div id="printArea"></div>
+
+<div class="content" id="content"></div>
+
+<script>
+let cards = [];
+let currentView = "all";
+
+function animateCounter(el, to, suffix="") {
+    const from = parseInt(el.textContent)||0;
+    if (el.textContent==="—"){el.textContent=to+suffix;return;}
+    const duration=450, start=performance.now();
+    function step(now){
+        const p=Math.min((now-start)/duration,1);
+        const ease=1-Math.pow(1-p,3);
+        el.textContent=Math.round(from+(to-from)*ease)+suffix;
+        if(p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+}
+
+function updateStats() {
+    const total=cards.length, got=cards.filter(c=>c.got).length;
+    const missing=total-got, pct=total>0?Math.round((got/total)*100):0;
+    animateCounter(document.getElementById("statTotal"),total);
+    animateCounter(document.getElementById("statGot"),got);
+    animateCounter(document.getElementById("statMissing"),missing);
+    animateCounter(document.getElementById("statPct"),pct,"%");
+    document.getElementById("progressCount").textContent=`${got} / ${total}`;
+    document.getElementById("progressPct").textContent=`${pct}% of full collection obtained`;
+    const fill=document.getElementById("progressFill");
+    fill.style.width="0%";
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{fill.style.width=pct+"%";}));
+}
+
+function switchView(view, btn) {
+    currentView=view;
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    renderGroups();
+}
+
+function getFiltered() {
+    const search=document.getElementById("searchBox").value.toLowerCase();
+    return cards.filter(c=>{
+        const matchesSearch=!search||
+            c.player.toLowerCase().includes(search)||
+            c.team.toLowerCase().includes(search)||
+            String(c.cardNo).includes(search);
+        const matchesView=currentView==="all"?true:currentView==="got"?c.got:!c.got;
+        return matchesSearch&&matchesView;
+    });
+}
+
+function renderGroups() {
+    const content=document.getElementById("content");
+    const filtered=getFiltered();
+
+    if(filtered.length===0){
+        content.innerHTML=`<div class="empty-state"><span class="empty-icon">⚽</span><p>No cards found</p></div>`;
+        return;
+    }
+
+    // Group year → cardType
+    const yearMap=new Map();
+    filtered.forEach(card=>{
+        if(!yearMap.has(card.year)) yearMap.set(card.year,new Map());
+        const tm=yearMap.get(card.year);
+        if(!tm.has(card.cardType)) tm.set(card.cardType,[]);
+        tm.get(card.cardType).push(card);
+    });
+
+    const sortedYears=Array.from(yearMap.keys()).sort((a,b)=>b.localeCompare(a));
+
+    content.innerHTML=sortedYears.map(year=>{
+        const typeMap=yearMap.get(year);
+        const yearCards=Array.from(typeMap.values()).flat();
+        const yearGot=yearCards.filter(c=>c.got).length;
+        const yearPct=Math.round((yearGot/yearCards.length)*100);
+
+        const typeSections=Array.from(typeMap.entries())
+            .sort(([a],[b])=>a.localeCompare(b))
+            .map(([type,typeCards])=>{
+                const tGot=typeCards.filter(c=>c.got).length;
+                const tTotal=typeCards.length;
+                const tPct=Math.round((tGot/tTotal)*100);
+                const key=`${year}-${type}`.replace(/[^a-z0-9]/gi,'-');
+
+                const cardItems=typeCards
+                    .sort((a,b)=>String(a.cardNo).localeCompare(String(b.cardNo),undefined,{numeric:true}))
+                    .map((card,i)=>`
+                        <div class="card ${card.got?'is-got':'is-missing'}" data-id="${card.id}" style="animation-delay:${Math.min(i*20,300)}ms">
+                            <div class="card-number">#${card.cardNo}</div>
+                            <div class="card-name">${card.player}</div>
+                            <div class="card-team">${card.team}</div>
+                            <label class="got-toggle" onclick="toggleGot('${card.id}')">
+                                <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                                <span class="toggle-label">${card.got?'OBTAINED':'MISSING'}</span>
+                            </label>
+                        </div>`).join("");
+
+                return `
+                    <div class="type-group">
+                        <div class="type-header" onclick="toggleSection('${key}')" id="header-${key}">
+                            <div class="type-header-left">
+                                <span class="type-chevron">▶</span>
+                                <span class="type-name">${type}</span>
+                            </div>
+                            <div class="type-meta">
+                                <div class="type-progress-inline">
+                                    <div class="type-progress-inline-fill" style="width:${tPct}%"></div>
+                                </div>
+                                <span class="type-count">${tGot} / ${tTotal}</span>
+                            </div>
+                        </div>
+                        <div class="type-body" id="body-${key}">
+                            <div class="card-grid">${cardItems}</div>
+                        </div>
+                    </div>`;
+            }).join("");
+
+        return `
+            <div class="year-group">
+                <div class="year-header">
+                    ${year}
+                    <span class="year-stats">${yearGot} / ${yearCards.length} · ${yearPct}%</span>
+                </div>
+                ${typeSections}
+            </div>`;
+    }).join("");
+}
+
+function toggleSection(key) {
+    document.getElementById(`header-${key}`).classList.toggle("open");
+    document.getElementById(`body-${key}`).classList.toggle("open");
+}
+
+function toggleGot(cardId) {
+    const card=cards.find(c=>c.id===cardId);
+    if(!card) return;
+    card.got=!card.got;
+
+    const el=document.querySelector(`.card[data-id="${cardId}"]`);
+    if(el){
+        el.classList.toggle("is-got",card.got);
+        el.classList.toggle("is-missing",!card.got);
+        el.querySelector(".toggle-label").textContent=card.got?"OBTAINED":"MISSING";
+        el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+    }
+
+    updateStats();
+    fetch('/api/donruss-update',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({rowIndex:card.rowIndex,got:card.got})
+    }).catch(err=>console.error("Update failed:",err));
+}
+
+function showSkeletons() {
+    document.getElementById("content").innerHTML=[1,2].map(()=>`
+        <div class="skeleton-section">
+            <div class="skeleton-title"></div>
+            <div class="skeleton-grid">${Array(6).fill('<div class="skeleton-card"></div>').join("")}</div>
+        </div>`).join("");
+}
+
+async function loadDonrussCards() {
+    try {
+        const res=await fetch('/api/donruss');
+        const data=await res.json();
+        if(!data.success){console.error("Failed to load");return;}
+
+        cards=data.rows.slice(1).map((row,i)=>({
+            id:       String(row[0]||i),
+            year:     String(row[1]||"Unknown"),
+            cardNo:   row[2]||"",
+            player:   row[3]||"",
+            team:     row[4]||"",
+            cardType: row[5]||"Other",
+            got:      (row[6]||"").toString().toLowerCase()==="true",
+            rowIndex: i+2
+        }));
+
+        updateStats();
+        renderGroups();
+    } catch(err){
+        console.error("Error:",err);
+    }
+}
+
+function goBack(e) {
+    e.preventDefault();
+    // Try browser history first, fall back to root
+    if (document.referrer && document.referrer !== window.location.href) {
+        history.back();
+    } else {
+        window.location.href = '/';
+    }
+}
+
+function exportPDF(mode) {
+    // Get cards to export — always missing only
+    let exportCards;
+    if (mode === 'all') {
+        exportCards = cards.filter(c => !c.got);
+    } else {
+        // Current view filtered cards, missing only
+        exportCards = getFiltered().filter(c => !c.got);
+    }
+
+    if (exportCards.length === 0) {
+        alert("No missing cards to export!");
+        return;
+    }
+
+    // Group by year → cardType
+    const yearMap = new Map();
+    exportCards.forEach(c => {
+        if (!yearMap.has(c.year)) yearMap.set(c.year, new Map());
+        const tm = yearMap.get(c.year);
+        if (!tm.has(c.cardType)) tm.set(c.cardType, []);
+        tm.get(c.cardType).push(c);
+    });
+
+    const sortedYears = Array.from(yearMap.keys()).sort((a, b) => b.localeCompare(a));
+
+    const printArea = document.getElementById("printArea");
+    printArea.innerHTML = sortedYears.map(year => {
+        const typeMap = yearMap.get(year);
+        const typeSections = Array.from(typeMap.entries())
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([type, typeCards]) => {
+                const cardItems = typeCards
+                    .sort((a, b) => String(a.cardNo).localeCompare(String(b.cardNo), undefined, { numeric: true }))
+                    .map(c => `
+                        <div class="print-card">
+                            <div class="print-card-name">${c.player}</div>
+                            <div class="print-card-meta">#${c.cardNo} · ${c.team}</div>
+                        </div>`).join("");
+                return `
+                    <div class="print-type-group">
+                        <div class="print-type-title">${type} · ${typeCards.length} needed</div>
+                        <div class="print-card-grid">${cardItems}</div>
+                    </div>`;
+            }).join("");
+
+        return `
+            <div class="print-year-group">
+                <div class="print-year-title">${year}</div>
+                ${typeSections}
+            </div>`;
+    }).join("");
+
+    const label = mode === 'all' ? 'All Missing Cards' : 'Current View — Missing Cards';
+    document.getElementById("printSubtitle").textContent =
+        `${label} · ${exportCards.length} cards · ${new Date().toLocaleDateString('en-GB')}`;
+
+    window.print();
+    printArea.innerHTML = "";
+}
+
+(async function init(){
+    showSkeletons();
+    await loadDonrussCards();
+})();
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Donruss Collection</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,300;0,400;0,600;1,300&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --blue:#003399;--blue-deep:#001a5e;--royal:#1a3faa;
+        --white:#f0f4ff;--white-dim:#8a9ac4;--white-faint:#2a3660;
+        --toffee:#d4a017;--toffee-light:#f0bf3a;--toffee-dim:#7a5c0a;
+        --got-color:#2ecc71;--missing-color:#e74c3c;
+        --bg:#010a1f;--surface:#071535;--surface-2:#0c1f4a;
+        --border:#152452;--border-bright:rgba(26,63,170,0.6);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--white);min-height:100vh;overflow-x:hidden;}
+    body::before{content:'';position:fixed;inset:0;background:
+        radial-gradient(ellipse 100% 60% at 50% 0%,rgba(26,63,170,0.25) 0%,transparent 65%),
+        radial-gradient(ellipse 60% 40% at 80% 100%,rgba(0,51,153,0.15) 0%,transparent 60%),
+        repeating-linear-gradient(90deg,transparent 0px,transparent 80px,rgba(255,255,255,0.012) 80px,rgba(255,255,255,0.012) 81px),
+        repeating-linear-gradient(0deg,transparent 0px,transparent 80px,rgba(255,255,255,0.008) 80px,rgba(255,255,255,0.008) 81px);
+        pointer-events:none;z-index:0;}
+
+    /* HEADER */
+    header{position:relative;z-index:2;background:linear-gradient(180deg,#000d2e 0%,var(--blue-deep) 60%,transparent 100%);padding:0 0 30px;overflow:hidden;}
+    header::before{content:'';position:absolute;top:0;left:-10%;right:-10%;height:6px;background:repeating-linear-gradient(90deg,var(--blue) 0px,var(--blue) 40px,var(--toffee) 40px,var(--toffee) 50px);}
+    .header-inner{display:flex;align-items:center;justify-content:center;gap:28px;padding:36px 24px 10px;position:relative;}
+
+    .back-link{
+        position:absolute;left:20px;top:42px;
+        font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;
+        letter-spacing:0.18em;text-transform:uppercase;
+        color:var(--white-dim);text-decoration:none;
+        border:1px solid var(--border);padding:7px 14px;border-radius:3px;
+        transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;
+        background:rgba(7,21,53,0.9);
+    }
+    .back-link:hover{color:var(--toffee-light);border-color:var(--toffee-dim);background:rgba(212,160,23,0.08);}
+
+    .crest{width:72px;height:72px;flex-shrink:0;filter:drop-shadow(0 0 16px rgba(26,63,170,0.8));animation:crestIn 0.6s ease both;}
+    @keyframes crestIn{from{opacity:0;transform:scale(0.7) rotate(-10deg);}to{opacity:1;transform:scale(1) rotate(0deg);}}
+
+    .header-text{text-align:center;}
+    .header-eyebrow{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.45em;color:var(--toffee);text-transform:uppercase;margin-bottom:6px;animation:fadeUp 0.5s 0.1s ease both;}
+    h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,7vw,58px);color:var(--white);letter-spacing:0.06em;line-height:1;text-shadow:0 2px 20px rgba(0,51,153,0.8);animation:fadeUp 0.5s 0.15s ease both;}
+    h1 span{color:var(--toffee-light);}
+    .header-sub{font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:0.25em;color:var(--white-dim);margin-top:4px;animation:fadeUp 0.5s 0.2s ease both;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+    /* STATS */
+    .stats-bar{display:flex;justify-content:center;position:relative;z-index:2;background:rgba(0,13,46,0.85);border-top:1px solid var(--border-bright);border-bottom:1px solid var(--border-bright);backdrop-filter:blur(8px);}
+    .stat{padding:14px 32px;text-align:center;border-right:1px solid var(--border);flex:1;max-width:160px;}
+    .stat:first-child{border-left:1px solid var(--border);}
+    .stat-value{font-family:'Bebas Neue',sans-serif;font-size:28px;display:block;line-height:1;}
+    .stat-label{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:0.2em;color:var(--white-dim);text-transform:uppercase;margin-top:3px;display:block;}
+
+    /* PROGRESS */
+    .overall-progress{position:relative;z-index:2;padding:12px 24px;background:rgba(0,26,94,0.7);border-bottom:1px solid var(--border);}
+    .overall-progress-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;}
+    .overall-progress-label{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--white-dim);}
+    .overall-progress-count{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--toffee-light);}
+    .progress-track{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+    .progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--toffee));border-radius:3px;transition:width 0.8s cubic-bezier(0.22,1,0.36,1);width:0%;}
+    .progress-pct{font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--white-dim);margin-top:4px;text-align:right;}
+
+    /* NAV */
+    nav{display:flex;justify-content:center;position:relative;z-index:2;background:var(--surface);border-bottom:2px solid var(--border-bright);flex-wrap:wrap;}
+    .nav-btn{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;padding:14px 28px;background:transparent;color:var(--white-dim);border:none;border-bottom:3px solid transparent;margin-bottom:-2px;cursor:pointer;transition:all 0.2s;text-decoration:none;display:inline-block;}
+    .nav-btn:hover{color:var(--white);background:rgba(26,63,170,0.15);}
+    .nav-btn.active{color:var(--toffee-light);border-bottom-color:var(--toffee);background:rgba(212,160,23,0.07);}
+
+    /* FILTERS */
+    .filters{display:flex;justify-content:center;gap:12px;padding:14px 20px;position:relative;z-index:2;background:rgba(1,10,31,0.6);border-bottom:1px solid var(--border);flex-wrap:wrap;}
+    .filters input{font-family:'Barlow',sans-serif;font-size:14px;padding:9px 14px;background:var(--surface-2);color:var(--white);border:1px solid var(--border);border-radius:3px;outline:none;transition:border-color 0.2s;min-width:260px;}
+    .filters input:focus{border-color:var(--royal);}
+
+    /* CONTENT */
+    .content{padding:20px 20px 50px;position:relative;z-index:1;}
+
+    /* SKELETON */
+    .skeleton-section{margin-bottom:20px;}
+    .skeleton-title,.skeleton-card{background:linear-gradient(90deg,var(--surface) 0%,var(--surface-2) 40%,var(--surface) 80%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:4px;}
+    .skeleton-title{height:48px;margin-bottom:12px;}
+    .skeleton-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
+    .skeleton-card{height:130px;}
+    @keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+    /* YEAR GROUP */
+    .year-group{margin-bottom:28px;}
+    .year-header{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.08em;color:var(--toffee-light);padding:10px 0 8px;border-bottom:2px solid var(--border-bright);margin-bottom:14px;display:flex;align-items:center;gap:12px;}
+    .year-header .year-stats{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.1em;color:var(--white-dim);margin-left:auto;}
+
+    /* TYPE GROUP */
+    .type-group{margin-bottom:10px;}
+    .type-header{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:var(--surface);border:1px solid var(--border);border-radius:4px;cursor:pointer;transition:all 0.2s;user-select:none;}
+    .type-header:hover{border-color:var(--royal);background:var(--surface-2);}
+    .type-header.open{border-radius:4px 4px 0 0;border-bottom-color:var(--border-bright);}
+    .type-header-left{display:flex;align-items:center;gap:10px;}
+    .type-chevron{font-size:10px;color:var(--white-dim);transition:transform 0.25s;display:inline-block;}
+    .type-header.open .type-chevron{transform:rotate(90deg);}
+    .type-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--white);}
+    .type-meta{display:flex;align-items:center;gap:10px;}
+    .type-progress-inline{width:80px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+    .type-progress-inline-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--toffee));border-radius:2px;transition:width 0.6s ease;}
+    .type-count{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--toffee-light);white-space:nowrap;}
+    .type-body{display:none;border:1px solid var(--border);border-top:none;border-radius:0 0 4px 4px;overflow:hidden;}
+    .type-body.open{display:block;animation:slideDown 0.2s ease;}
+    @keyframes slideDown{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+
+    /* CARD GRID */
+    .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:1px;background:var(--border);}
+
+    /* CARD */
+    .card{background:var(--surface);padding:12px 14px 12px 17px;transition:background 0.15s;position:relative;animation:cardIn 0.3s ease both;}
+    @keyframes cardIn{from{opacity:0;}to{opacity:1;}}
+    .card:hover{background:var(--surface-2);}
+    .card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:3px;}
+    .card.is-got::before{background:var(--got-color);}
+    .card.is-missing::before{background:var(--missing-color);}
+    .card.flash{animation:flashCard 0.7s ease forwards;}
+    @keyframes flashCard{0%{box-shadow:inset 0 0 0 2px var(--toffee-light);}50%{box-shadow:inset 0 0 12px 2px rgba(212,160,23,0.3);}100%{box-shadow:none;}}
+    .card-number{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.2em;color:var(--toffee-dim);margin-bottom:4px;text-transform:uppercase;}
+    .card-name{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:0.04em;color:var(--white);line-height:1.2;margin-bottom:3px;}
+    .card-team{font-size:11px;color:var(--white-dim);font-style:italic;margin-bottom:10px;}
+
+    /* TOGGLE */
+    .got-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;}
+    .toggle-track{width:36px;height:20px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid var(--border);position:relative;transition:background 0.25s,border-color 0.25s;flex-shrink:0;}
+    .toggle-thumb{width:14px;height:14px;border-radius:50%;background:var(--white-dim);position:absolute;top:2px;left:2px;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),background 0.25s;}
+    .is-got .toggle-track{background:rgba(46,204,113,0.15);border-color:var(--got-color);}
+    .is-got .toggle-thumb{transform:translateX(16px);background:var(--got-color);}
+    .toggle-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.15em;color:var(--white-dim);transition:color 0.2s;text-transform:uppercase;}
+    .is-got .toggle-label{color:var(--got-color);}
+
+    /* EMPTY */
+    .empty-state{text-align:center;padding:60px 20px;color:var(--white-dim);}
+    .empty-state .empty-icon{font-size:48px;margin-bottom:12px;opacity:0.2;display:block;}
+    .empty-state p{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.25em;}
+
     ::-webkit-scrollbar{width:6px;}
     ::-webkit-scrollbar-track{background:var(--bg);}
     ::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:3px;}
