@@ -19,7 +19,7 @@ export default async function handler(req, res) {
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.SHEET_ID,
-      range: `${SHEET_NAME}!A:G`,
+      range: `${SHEET_NAME}!A:H`, // A to H — includes Image URL in column H
     });
 
     res.json({ success: true, rows: response.data.values || [] });
