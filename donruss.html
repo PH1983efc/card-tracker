@@ -723,13 +723,18 @@ async function searchCardImage(query, card) {
         const resultsEl = document.getElementById("imgResults");
         resultsEl.innerHTML = data.images.map((img, i) => `
             <img class="img-result-thumb ${imgSelectedUrl === img.url ? 'selected' : ''}"
-                 src="${img.thumb}" data-full="${img.url}"
-                 onclick="selectImage('${img.url}', this)"
+                 src="${img.thumb}"
+                 data-full="${img.url}"
                  loading="lazy" alt="Result ${i+1}">`
         ).join("");
 
+        resultsEl.querySelectorAll('.img-result-thumb').forEach(el => {
+            el.addEventListener('click', () => selectImage(el.dataset.full, el));
+        });
+
         if (!card.imageUrl && data.images.length > 0) {
-            selectImage(data.images[0].url, resultsEl.querySelector('.img-result-thumb'));
+            const first = resultsEl.querySelector('.img-result-thumb');
+            if (first) selectImage(first.dataset.full, first);
         }
 
     } catch (err) {
