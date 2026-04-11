@@ -6,1022 +6,251 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,300;0,400;0,600;1,300&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
-
 <style>
-    :root {
-        --blue:        #003399;
-        --blue-mid:    #0a2d8f;
-        --blue-deep:   #001a5e;
-        --blue-darker: #000e36;
-        --royal:       #1a3faa;
-        --white:       #f0f4ff;
-        --white-dim:   #8a9ac4;
-        --white-faint: #2a3660;
-        --toffee:      #d4a017;
-        --toffee-light:#f0bf3a;
-        --toffee-dim:  #7a5c0a;
-        --got-color:   #2ecc71;
-        --missing-color: #e74c3c;
-        --collecting-color: #d4a017;
-        --bg:          #010a1f;
-        --surface:     #071535;
-        --surface-2:   #0c1f4a;
-        --border:      #152452;
-        --border-bright: rgba(26,63,170,0.6);
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-        font-family: 'Barlow', sans-serif;
-        background: var(--bg);
-        color: var(--white);
-        min-height: 100vh;
-        overflow-x: hidden;
-    }
-
-    body::before {
-        content: '';
-        position: fixed;
-        inset: 0;
-        background:
-            radial-gradient(ellipse 100% 60% at 50% 0%, rgba(26,63,170,0.25) 0%, transparent 65%),
-            radial-gradient(ellipse 60% 40% at 80% 100%, rgba(0,51,153,0.15) 0%, transparent 60%),
-            repeating-linear-gradient(90deg, transparent 0px, transparent 80px, rgba(255,255,255,0.012) 80px, rgba(255,255,255,0.012) 81px),
-            repeating-linear-gradient(0deg, transparent 0px, transparent 80px, rgba(255,255,255,0.008) 80px, rgba(255,255,255,0.008) 81px);
-        pointer-events: none;
-        z-index: 0;
-    }
-
-    /* ── HEADER ── */
-    header {
-        position: relative;
-        z-index: 2;
-        background: linear-gradient(180deg, #000d2e 0%, var(--blue-deep) 60%, transparent 100%);
-        padding: 0 0 30px;
-        overflow: hidden;
-    }
-
-    header::before {
-        content: '';
-        position: absolute;
-        top: 0; left: -10%; right: -10%;
-        height: 6px;
-        background: repeating-linear-gradient(90deg, var(--blue) 0px, var(--blue) 40px, var(--toffee) 40px, var(--toffee) 50px);
-    }
-
-    .header-inner {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 28px;
-        padding: 36px 24px 10px;
-        position: relative;
-    }
-
-    .crest {
-        width: 72px;
-        height: 72px;
-        flex-shrink: 0;
-        filter: drop-shadow(0 0 16px rgba(26,63,170,0.8));
-        animation: crestIn 0.6s ease both;
-    }
-
-    @keyframes crestIn {
-        from { opacity: 0; transform: scale(0.7) rotate(-10deg); }
-        to   { opacity: 1; transform: scale(1) rotate(0deg); }
-    }
-
-    .header-text { text-align: center; }
-
-    .header-eyebrow {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.45em;
-        color: var(--toffee);
-        text-transform: uppercase;
-        margin-bottom: 6px;
-        animation: fadeUp 0.5s 0.1s ease both;
-    }
-
-    h1 {
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: clamp(32px, 7vw, 58px);
-        color: var(--white);
-        letter-spacing: 0.06em;
-        line-height: 1;
-        text-shadow: 0 2px 20px rgba(0,51,153,0.8);
-        animation: fadeUp 0.5s 0.15s ease both;
-    }
-
-    h1 span { color: var(--toffee-light); }
-
-    .header-sub {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 13px;
-        letter-spacing: 0.25em;
-        color: var(--white-dim);
-        margin-top: 4px;
-        animation: fadeUp 0.5s 0.2s ease both;
-    }
-
-    @keyframes fadeUp {
-        from { opacity: 0; transform: translateY(10px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ── STATS BAR ── */
-    .stats-bar {
-        display: flex;
-        justify-content: center;
-        position: relative;
-        z-index: 2;
-        background: rgba(0,13,46,0.85);
-        border-top: 1px solid var(--border-bright);
-        border-bottom: 1px solid var(--border-bright);
-        backdrop-filter: blur(8px);
-    }
-
-    .stat {
-        padding: 14px 32px;
-        text-align: center;
-        border-right: 1px solid var(--border);
-        flex: 1;
-        max-width: 160px;
-    }
-
-    .stat:first-child { border-left: 1px solid var(--border); }
-
-    .stat-value {
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: 28px;
-        display: block;
-        line-height: 1;
-    }
-
-    .stat-label {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 10px;
-        letter-spacing: 0.2em;
-        color: var(--white-dim);
-        text-transform: uppercase;
-        margin-top: 3px;
-        display: block;
-    }
-
-    /* ── SET PROGRESS ── */
-    .set-progress {
-        display: none;
-        position: relative;
-        z-index: 2;
-        padding: 14px 24px;
-        background: rgba(0,26,94,0.7);
-        border-bottom: 1px solid var(--border);
-    }
-
-    .set-progress.visible {
-        display: block;
-        animation: slideDown 0.25s ease both;
-    }
-
-    @keyframes slideDown {
-        from { opacity: 0; transform: translateY(-8px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .set-progress-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        margin-bottom: 8px;
-    }
-
-    .set-progress-name {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
-        color: var(--white-dim);
-    }
-
-    .set-progress-count {
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: 18px;
-        color: var(--toffee-light);
-    }
-
-    .set-progress-track {
-        height: 6px;
-        background: var(--border);
-        border-radius: 3px;
-        overflow: hidden;
-    }
-
-    .set-progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, var(--blue), var(--toffee));
-        border-radius: 3px;
-        transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-        width: 0%;
-    }
-
-    .set-progress-pct {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 11px;
-        color: var(--white-dim);
-        margin-top: 5px;
-        text-align: right;
-    }
-
-    /* ── NAV ── */
-    nav {
-        display: flex;
-        justify-content: center;
-        position: relative;
-        z-index: 2;
-        background: var(--surface);
-        border-bottom: 2px solid var(--border-bright);
-        flex-wrap: wrap;
-    }
-
-    .nav-btn {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        letter-spacing: 0.2em;
-        text-transform: uppercase;
-        padding: 14px 28px;
-        background: transparent;
-        color: var(--white-dim);
-        border: none;
-        border-bottom: 3px solid transparent;
-        margin-bottom: -2px;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .nav-btn:hover { color: var(--white); background: rgba(26,63,170,0.15); }
-
-    .nav-btn.active {
-        color: var(--toffee-light);
-        border-bottom-color: var(--toffee);
-        background: rgba(212,160,23,0.07);
-    }
-
-    /* ── FILTERS ── */
-    .filters {
-        display: flex;
-        justify-content: center;
-        gap: 12px;
-        padding: 14px 20px;
-        position: relative;
-        z-index: 2;
-        background: rgba(1,10,31,0.6);
-        border-bottom: 1px solid var(--border);
-        flex-wrap: wrap;
-    }
-
-    .filters select,
-    .filters input {
-        font-family: 'Barlow', sans-serif;
-        font-size: 14px;
-        padding: 9px 14px;
-        background: var(--surface-2);
-        color: var(--white);
-        border: 1px solid var(--border);
-        border-radius: 3px;
-        outline: none;
-        transition: border-color 0.2s;
-        min-width: 200px;
-    }
-
-    .filters select:focus,
-    .filters input:focus { border-color: var(--royal); }
-    .filters select option { background: var(--surface); }
-
-    /* ── CARD GRID ── */
-    .card-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-        gap: 14px;
-        padding: 20px 20px 50px;
-        position: relative;
-        z-index: 1;
-    }
-
-    /* ── SKELETON ── */
-    .skeleton-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        overflow: hidden;
-        height: 210px;
-    }
-
-    .skeleton-shimmer {
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, var(--surface) 0%, var(--surface-2) 40%, var(--surface) 80%);
-        background-size: 200% 100%;
-        animation: shimmer 1.4s infinite;
-    }
-
-    @keyframes shimmer {
-        0%   { background-position: 200% 0; }
-        100% { background-position: -200% 0; }
-    }
-
-    /* ── CARD ── */
-    .card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        overflow: hidden;
-        transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-        animation: cardIn 0.35s ease both;
-        position: relative;
-    }
-
-    @keyframes cardIn {
-        from { opacity: 0; transform: translateY(14px) scale(0.97); }
-        to   { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    .card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 36px rgba(0,0,0,0.6), 0 0 0 1px rgba(26,63,170,0.5);
-        border-color: var(--royal);
-    }
-
-    .card::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 3px;
-    }
-
-    .card.is-got::before {
-        background: linear-gradient(90deg, var(--blue), var(--got-color));
-    }
-
-    .card.is-missing::before {
-        background: linear-gradient(90deg, var(--blue), var(--missing-color));
-    }
-
-    .card.flash {
-        animation: flashCard 0.7s ease forwards;
-    }
-
-    @keyframes flashCard {
-        0%   { box-shadow: 0 0 0 2px var(--toffee-light); }
-        50%  { box-shadow: 0 0 24px 6px rgba(212,160,23,0.45); }
-        100% { box-shadow: none; }
-    }
-
-    .card-top {
-        padding: 14px 14px 10px;
-        border-bottom: 1px solid var(--border);
-        background: linear-gradient(135deg, var(--surface-2), var(--surface));
-    }
-
-    .card-number {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 10px;
-        font-weight: 600;
-        letter-spacing: 0.2em;
-        color: var(--toffee-dim);
-        margin-bottom: 5px;
-        text-transform: uppercase;
-    }
-
-    .card-name {
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: 17px;
-        letter-spacing: 0.05em;
-        color: var(--white);
-        line-height: 1.2;
-        margin-bottom: 4px;
-    }
-
-    .card-set {
-        font-size: 12px;
-        color: var(--white-dim);
-        font-style: italic;
-    }
-
-    .card-body { padding: 10px 14px 14px; }
-
-    .card-variant {
-        font-size: 12px;
-        color: var(--white-dim);
-        margin-bottom: 5px;
-        min-height: 15px;
-    }
-
-    .card-description {
-        font-size: 13px;
-        color: var(--white-dim);
-        line-height: 1.4;
-        margin-bottom: 12px;
-        min-height: 18px;
-    }
-
-    /* ── TOGGLE ── */
-    .got-toggle {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        cursor: pointer;
-        user-select: none;
-    }
-
-    .toggle-track {
-        width: 40px;
-        height: 22px;
-        border-radius: 11px;
-        background: rgba(255,255,255,0.06);
-        border: 1px solid var(--border);
-        position: relative;
-        transition: background 0.25s, border-color 0.25s;
-        flex-shrink: 0;
-    }
-
-    .toggle-thumb {
-        width: 16px;
-        height: 16px;
-        border-radius: 50%;
-        background: var(--white-dim);
-        position: absolute;
-        top: 2px;
-        left: 2px;
-        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.25s;
-    }
-
-    .is-got .toggle-track { background: rgba(46,204,113,0.15); border-color: var(--got-color); }
-    .is-got .toggle-thumb { transform: translateX(18px); background: var(--got-color); }
-
-    .toggle-label {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 12px;
-        font-weight: 600;
-        letter-spacing: 0.15em;
-        color: var(--white-dim);
-        transition: color 0.2s;
-        text-transform: uppercase;
-    }
-
-    .is-got .toggle-label { color: var(--got-color); }
-
-    /* ── COLLECTING BADGE ── */
-    .collecting-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        margin-top: 9px;
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 10px;
-        font-weight: 600;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
-        color: var(--toffee-light);
-        border: 1px solid rgba(212,160,23,0.35);
-        background: rgba(212,160,23,0.07);
-        padding: 3px 8px;
-        border-radius: 2px;
-    }
-
-    /* ── EMPTY STATE ── */
-    .empty-state {
-        grid-column: 1 / -1;
-        text-align: center;
-        padding: 80px 20px;
-        color: var(--white-dim);
-        animation: fadeUp 0.4s ease both;
-    }
-
-    .empty-state .empty-icon { font-size: 52px; margin-bottom: 14px; opacity: 0.2; display: block; }
-
-    .empty-state p {
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: 18px;
-        letter-spacing: 0.3em;
-    }
-
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--royal); }
-
-    #excelUploadSection { display: none !important; }
-
-    /* ── TOOLBAR ── */
-    .toolbar {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        padding: 10px 20px;
-        position: relative;
-        z-index: 2;
-        background: rgba(1,10,31,0.4);
-        border-bottom: 1px solid var(--border);
-        flex-wrap: wrap;
-    }
-
-    .toolbar-btn {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 12px;
-        font-weight: 600;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        padding: 8px 16px;
-        border-radius: 3px;
-        cursor: pointer;
-        border: 1px solid var(--border);
-        background: var(--surface-2);
-        color: var(--white-dim);
-        transition: all 0.2s;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .toolbar-btn:hover { color: var(--white); border-color: var(--royal); background: rgba(26,63,170,0.2); }
-
-    .toolbar-btn.gold { border-color: var(--toffee-dim); color: var(--toffee-light); }
-    .toolbar-btn.gold:hover { background: rgba(212,160,23,0.12); border-color: var(--toffee); }
-
-    /* ── BACKEND INFO PANEL ── */
-    .backend-panel {
-        display: none;
-        position: fixed;
-        inset: 0;
-        z-index: 100;
-        background: rgba(0,0,0,0.75);
-        backdrop-filter: blur(4px);
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-    }
-
-    .backend-panel.open { display: flex; }
-
-    .backend-box {
-        background: var(--surface);
-        border: 1px solid var(--border-bright);
-        border-radius: 6px;
-        max-width: 600px;
-        width: 100%;
-        max-height: 85vh;
-        overflow-y: auto;
-        padding: 28px;
-        position: relative;
-    }
-
-    .backend-box h2 {
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: 24px;
-        letter-spacing: 0.08em;
-        color: var(--toffee-light);
-        margin-bottom: 6px;
-    }
-
-    .backend-box p { font-size: 14px; color: var(--white-dim); line-height: 1.6; margin-bottom: 14px; }
-
-    .backend-box code {
-        display: block;
-        background: var(--bg);
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        padding: 12px 14px;
-        font-size: 12px;
-        color: var(--toffee-light);
-        white-space: pre;
-        overflow-x: auto;
-        margin-bottom: 16px;
-        line-height: 1.6;
-    }
-
-    .backend-box h3 {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        letter-spacing: 0.2em;
-        text-transform: uppercase;
-        color: var(--white-dim);
-        margin-bottom: 8px;
-        margin-top: 20px;
-        border-top: 1px solid var(--border);
-        padding-top: 16px;
-    }
-
-    .close-btn {
-        position: absolute;
-        top: 16px; right: 16px;
-        background: transparent;
-        border: 1px solid var(--border);
-        color: var(--white-dim);
-        font-size: 18px;
-        width: 32px; height: 32px;
-        border-radius: 4px;
-        cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-        transition: all 0.2s;
-    }
-
-    .close-btn:hover { border-color: var(--missing-color); color: var(--missing-color); }
-
-    /* ── PRINT PDF STYLES ── */
-    @media print {
-        body::before, header, .stats-bar, .set-progress, nav, .filters, .toolbar, .backend-panel, .needs-panel { display: none !important; }
-        .print-header { display: block !important; }
-        /* Only show needs print area if it has content, otherwise show card grid */
-        #needsPrintArea:not(:empty) ~ #cardGrid { display: none !important; }
-        #needsPrintArea:not(:empty) { display: block !important; }
-        .card-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0; }
-        .card { break-inside: avoid; animation: none !important; border: 1px solid #ccc; background: #fff; color: #000; }
-        .card::before { display: none; }
-        .card-top { background: #f0f0f0 !important; border-bottom: 1px solid #ccc; }
-        .card-number, .card-set, .card-variant, .card-description { color: #555 !important; }
-        .card-name { color: #000 !important; }
-        .got-toggle { display: none; }
-        .collecting-badge { color: #a07010 !important; border-color: #a07010 !important; background: #fff8e0 !important; }
-        .print-status {
-            display: inline-block !important;
-            font-size: 11px;
-            font-weight: bold;
-            padding: 2px 6px;
-            border-radius: 3px;
-            margin-top: 8px;
-        }
-        .print-status.missing { background: #fee; color: #c00; border: 1px solid #c00; }
-        .print-status.got     { background: #efe; color: #060; border: 1px solid #060; }
-        .needs-print-section { page-break-inside: avoid; margin-bottom: 24px; }
-        .needs-print-section-title {
-            font-size: 16px;
-            color: #003399;
-            font-weight: bold;
-            letter-spacing: 0.05em;
-            border-bottom: 2px solid #003399;
-            padding-bottom: 4px;
-            margin-bottom: 10px;
-        }
-        .needs-print-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        .needs-print-card { border: 1px solid #ccc; border-radius: 3px; padding: 6px 8px; background: #fff; break-inside: avoid; }
-        .needs-print-name { font-weight: bold; font-size: 12px; color: #000; }
-        .needs-print-meta { font-size: 10px; color: #555; margin-top: 2px; }
-        .needs-print-badge { display: inline-block; font-size: 9px; font-weight: bold; color: #a07010; border: 1px solid #a07010; background: #fff8e0; padding: 1px 5px; border-radius: 2px; margin-top: 4px; }
-    }
-
-    .print-header {
-        display: none;
-        text-align: center;
-        padding: 20px 0 16px;
-        border-bottom: 2px solid #003399;
-        margin-bottom: 16px;
-    }
-
-    /* ── NEEDS LIST PANEL ── */
-    .needs-panel {
-        display: none;
-        position: fixed;
-        inset: 0;
-        z-index: 100;
-        background: rgba(0,0,0,0.75);
-        backdrop-filter: blur(4px);
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-    }
-
-    .needs-panel.open { display: flex; }
-
-    .needs-box {
-        background: var(--surface);
-        border: 1px solid var(--border-bright);
-        border-radius: 6px;
-        max-width: 560px;
-        width: 100%;
-        max-height: 85vh;
-        overflow-y: auto;
-        padding: 28px;
-        position: relative;
-    }
-
-    .needs-box h2 {
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: 24px;
-        letter-spacing: 0.08em;
-        color: var(--toffee-light);
-        margin-bottom: 4px;
-    }
-
-    .needs-box .needs-subtitle {
-        font-size: 13px;
-        color: var(--white-dim);
-        margin-bottom: 20px;
-    }
-
-    .needs-section-label {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.25em;
-        text-transform: uppercase;
-        color: var(--white-dim);
-        margin-bottom: 10px;
-        padding-bottom: 6px;
-        border-bottom: 1px solid var(--border);
-    }
-
-    .needs-set-list {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        margin-bottom: 20px;
-        max-height: 240px;
-        overflow-y: auto;
-        padding-right: 4px;
-    }
-
-    .needs-set-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 10px;
-        background: var(--surface-2);
-        border: 1px solid var(--border);
-        border-radius: 3px;
-        cursor: pointer;
-        transition: all 0.15s;
-        user-select: none;
-    }
-
-    .needs-set-item:hover { border-color: var(--royal); }
-
-    .needs-set-item.selected {
-        border-color: var(--toffee);
-        background: rgba(212,160,23,0.1);
-    }
-
-    .needs-set-item input[type="checkbox"] {
-        accent-color: var(--toffee);
-        width: 14px;
-        height: 14px;
-        flex-shrink: 0;
-        cursor: pointer;
-    }
-
-    .needs-set-name {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--white);
-        line-height: 1.2;
-    }
-
-    .needs-set-count {
-        font-size: 11px;
-        color: var(--white-dim);
-        margin-top: 1px;
-    }
-
-    .needs-select-all {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
-        color: var(--toffee-light);
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        padding: 0;
-        margin-bottom: 10px;
-        display: block;
-    }
-
-    .needs-select-all:hover { color: var(--toffee); }
-
-    .needs-current-filter {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 12px;
-        background: var(--surface-2);
-        border: 1px solid var(--border);
-        border-radius: 3px;
-        margin-bottom: 20px;
-        cursor: pointer;
-        transition: all 0.15s;
-    }
-
-    .needs-current-filter:hover { border-color: var(--royal); }
-    .needs-current-filter.selected { border-color: var(--toffee); background: rgba(212,160,23,0.1); }
-
-    .needs-current-filter input[type="checkbox"] {
-        accent-color: var(--toffee);
-        width: 14px; height: 14px;
-        flex-shrink: 0;
-        cursor: pointer;
-    }
-
-    .needs-current-label {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--white);
-    }
-
-    .needs-actions {
-        display: flex;
-        gap: 10px;
-        justify-content: flex-end;
-        margin-top: 20px;
-        padding-top: 16px;
-        border-top: 1px solid var(--border);
-    }
-
-    .needs-cancel {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 12px;
-        font-weight: 600;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
-        padding: 10px 18px;
-        border-radius: 3px;
-        cursor: pointer;
-        border: 1px solid var(--border);
-        background: transparent;
-        color: var(--white-dim);
-        transition: all 0.2s;
-    }
-
-    .needs-cancel:hover { color: var(--white); border-color: var(--white-dim); }
-
-    .needs-download {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 12px;
-        font-weight: 600;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
-        padding: 10px 20px;
-        border-radius: 3px;
-        cursor: pointer;
-        border: 1px solid var(--toffee);
-        background: rgba(212,160,23,0.12);
-        color: var(--toffee-light);
-        transition: all 0.2s;
-    }
-
-    .needs-download:hover { background: rgba(212,160,23,0.22); }
-    .needs-download:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    /* ── PRINT: NEEDS LIST ── */
-    @media print {
-        .needs-print-section { page-break-inside: avoid; margin-bottom: 24px; }
-        .needs-print-section-title {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 16px;
-            color: #003399;
-            letter-spacing: 0.08em;
-            border-bottom: 2px solid #003399;
-            padding-bottom: 4px;
-            margin-bottom: 10px;
-        }
-        .needs-print-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
-        }
-        .needs-print-card {
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            padding: 6px 8px;
-            background: #fff;
-            break-inside: avoid;
-        }
-        .needs-print-name { font-weight: bold; font-size: 12px; color: #000; }
-        .needs-print-meta { font-size: 10px; color: #555; margin-top: 2px; }
-        .needs-print-badge {
-            display: inline-block;
-            font-size: 9px;
-            font-weight: bold;
-            color: #a07010;
-            border: 1px solid #a07010;
-            background: #fff8e0;
-            padding: 1px 5px;
-            border-radius: 2px;
-            margin-top: 4px;
-        }
-    }
-
-    /* ── ORDERS VIEW ── */
-    #ordersView { display: none; position: relative; z-index: 1; padding: 20px 20px 50px; }
-    #ordersView.active { display: block; }
-    #collectionView { display: block; }
-    #collectionView.hidden { display: none; }
-
-    .orders-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
-    .orders-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.08em; color: var(--toffee-light); }
-    .orders-title span { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.2em; color: var(--white-dim); margin-left: 10px; vertical-align: middle; }
-    .add-order-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; padding: 10px 20px; border-radius: 3px; cursor: pointer; border: 1px solid var(--toffee); background: rgba(212,160,23,0.1); color: var(--toffee-light); transition: all 0.2s; }
-    .add-order-btn:hover { background: rgba(212,160,23,0.2); }
-    .orders-empty { text-align: center; padding: 60px 20px; color: var(--white-dim); }
-    .orders-empty .empty-icon { font-size: 48px; opacity: 0.2; display: block; margin-bottom: 12px; }
-    .orders-empty p { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.25em; }
-    .orders-list { display: flex; flex-direction: column; gap: 14px; }
-
-    .order-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; animation: cardIn 0.3s ease both; position: relative; }
-    .order-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--blue), var(--toffee)); }
-    .order-card.all-received::before { background: linear-gradient(90deg, var(--blue), var(--got-color)); }
-
-    .order-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 14px 16px 10px; border-bottom: 1px solid var(--border); background: linear-gradient(135deg, var(--surface-2), var(--surface)); flex-wrap: wrap; gap: 8px; }
-    .order-seller { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.05em; color: var(--white); }
-    .order-meta { display: flex; gap: 16px; flex-wrap: wrap; }
-    .order-meta-item { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: var(--white-dim); }
-    .order-meta-item span { color: var(--toffee-light); margin-left: 4px; }
-    .order-status { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; padding: 3px 10px; border-radius: 2px; border: 1px solid; white-space: nowrap; }
-    .order-status.awaiting { color: var(--toffee-light); border-color: rgba(212,160,23,0.4); background: rgba(212,160,23,0.08); }
-    .order-status.received { color: var(--got-color); border-color: rgba(46,204,113,0.4); background: rgba(46,204,113,0.08); }
-
-    .order-cards-list { padding: 12px 16px 14px; display: flex; flex-wrap: wrap; gap: 8px; }
-    .order-card-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 3px; border: 1px solid var(--border); background: var(--surface-2); font-size: 13px; color: var(--white-dim); cursor: pointer; transition: all 0.15s; user-select: none; }
-    .order-card-chip:hover { border-color: var(--royal); color: var(--white); }
-    .order-card-chip.received { border-color: rgba(46,204,113,0.35); background: rgba(46,204,113,0.07); color: var(--got-color); text-decoration: line-through; text-decoration-color: rgba(46,204,113,0.5); }
-
-    /* ── ORDER MODAL ── */
-    .order-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px; }
-    .order-modal.open { display: flex; }
-    .order-modal-box { background: var(--surface); border: 1px solid var(--border-bright); border-radius: 6px; max-width: 580px; width: 100%; max-height: 88vh; overflow-y: auto; padding: 28px; position: relative; }
-    .order-modal-box h2 { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 0.08em; color: var(--toffee-light); margin-bottom: 20px; }
-    .order-field { margin-bottom: 16px; }
-    .order-field label { display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--white-dim); margin-bottom: 6px; }
-    .order-field input { width: 100%; font-family: 'Barlow', sans-serif; font-size: 14px; padding: 10px 12px; background: var(--surface-2); color: var(--white); border: 1px solid var(--border); border-radius: 3px; outline: none; transition: border-color 0.2s; }
-    .order-field input:focus { border-color: var(--royal); }
-    .card-picker-search { width: 100%; font-family: 'Barlow', sans-serif; font-size: 14px; padding: 10px 12px; background: var(--surface-2); color: var(--white); border: 1px solid var(--border); border-radius: 3px 3px 0 0; outline: none; border-bottom: none; transition: border-color 0.2s; }
-    .card-picker-search:focus { border-color: var(--royal); }
-    .card-picker-list { max-height: 180px; overflow-y: auto; border: 1px solid var(--border); border-radius: 0 0 3px 3px; background: var(--bg); }
-    .card-picker-item { padding: 8px 12px; font-size: 13px; color: var(--white-dim); cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.1s; display: flex; justify-content: space-between; align-items: center; }
-    .card-picker-item:last-child { border-bottom: none; }
-    .card-picker-item:hover { background: var(--surface-2); color: var(--white); }
-    .card-picker-item.selected { background: rgba(212,160,23,0.1); color: var(--toffee-light); }
-    .card-picker-item .picker-set { font-size: 11px; color: var(--white-faint); font-style: italic; }
-    .selected-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; min-height: 32px; }
-    .selected-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 3px; border: 1px solid var(--toffee-dim); background: rgba(212,160,23,0.08); color: var(--toffee-light); font-size: 12px; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; }
-    .selected-chip button { background: none; border: none; color: var(--toffee-dim); cursor: pointer; font-size: 13px; padding: 0; line-height: 1; transition: color 0.15s; }
-    .selected-chip button:hover { color: var(--missing-color); }
-    .order-modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); }
-    .modal-cancel { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; padding: 10px 18px; border-radius: 3px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--white-dim); transition: all 0.2s; }
-    .modal-cancel:hover { color: var(--white); border-color: var(--white-dim); }
-    .modal-save { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; padding: 10px 22px; border-radius: 3px; cursor: pointer; border: 1px solid var(--toffee); background: rgba(212,160,23,0.12); color: var(--toffee-light); transition: all 0.2s; }
-    .modal-save:hover { background: rgba(212,160,23,0.22); }
-
-    /* ── CARD IMAGE ── */
-    .card-image {
-        width: 100%; aspect-ratio: 3/4;
-        object-fit: cover; object-position: center;
-        display: block; cursor: pointer;
-        transition: opacity 0.2s;
-        background: var(--surface-2);
-    }
-    .card-image:hover { opacity: 0.85; }
-    .card-image-placeholder {
-        width: 100%; aspect-ratio: 3/4;
-        display: flex; align-items: center; justify-content: center;
-        flex-direction: column; gap: 8px;
-        background: var(--surface-2);
-        cursor: pointer; transition: background 0.2s;
-        border-bottom: 1px solid var(--border);
-    }
-    .card-image-placeholder:hover { background: rgba(212,160,23,0.06); }
-    .card-image-placeholder span { font-size: 28px; opacity: 0.2; }
-    .card-image-placeholder p { font-family: 'Barlow Condensed', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--white-faint); }
-
-    /* ── IMAGE MODAL ── */
-    .img-modal { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.88); backdrop-filter: blur(6px); align-items: center; justify-content: center; padding: 20px; }
-    .img-modal.open { display: flex; }
-    .img-modal-box { background: var(--surface); border: 1px solid var(--border-bright); border-radius: 6px; max-width: 520px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 20px; position: relative; }
-    .img-modal-box h3 { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.06em; color: var(--toffee-light); margin-bottom: 4px; }
-    .img-modal-box .img-modal-sub { font-size: 12px; color: var(--white-dim); margin-bottom: 16px; }
-    .img-main-preview { width: 100%; max-height: 320px; object-fit: contain; border-radius: 4px; background: var(--surface-2); margin-bottom: 14px; display: block; }
-    .img-results { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 16px; }
-    .img-result-thumb { width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 3px; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
-    .img-result-thumb:hover { border-color: var(--toffee); }
-    .img-result-thumb.selected { border-color: var(--got-color); }
-    .img-searching { text-align: center; padding: 20px; color: var(--white-dim); font-family: 'Barlow Condensed', sans-serif; font-size: 13px; letter-spacing: 0.15em; }
-    .img-modal-actions { display: flex; gap: 10px; justify-content: flex-end; padding-top: 14px; border-top: 1px solid var(--border); }
-    .img-save-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; padding: 10px 20px; border-radius: 3px; cursor: pointer; border: 1px solid var(--toffee); background: rgba(212,160,23,0.12); color: var(--toffee-light); transition: all 0.2s; }
-    .img-save-btn:hover { background: rgba(212,160,23,0.22); }
-    .img-save-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .img-cancel-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; padding: 10px 18px; border-radius: 3px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--white-dim); transition: all 0.2s; }
-    .img-cancel-btn:hover { color: var(--white); }
-
+:root {
+    --blue:#003399;--blue-deep:#001a5e;--royal:#1a3faa;
+    --white:#f0f4ff;--white-dim:#8a9ac4;--white-faint:#2a3660;
+    --toffee:#d4a017;--toffee-light:#f0bf3a;--toffee-dim:#7a5c0a;
+    --got-color:#2ecc71;--missing-color:#e74c3c;
+    --bg:#010a1f;--surface:#071535;--surface-2:#0c1f4a;
+    --border:#152452;--border-bright:rgba(26,63,170,0.6);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--white);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:
+    radial-gradient(ellipse 100% 60% at 50% 0%,rgba(26,63,170,0.25) 0%,transparent 65%),
+    radial-gradient(ellipse 60% 40% at 80% 100%,rgba(0,51,153,0.15) 0%,transparent 60%),
+    repeating-linear-gradient(90deg,transparent 0px,transparent 80px,rgba(255,255,255,0.012) 80px,rgba(255,255,255,0.012) 81px),
+    repeating-linear-gradient(0deg,transparent 0px,transparent 80px,rgba(255,255,255,0.008) 80px,rgba(255,255,255,0.008) 81px);
+    pointer-events:none;z-index:0;}
+
+/* HEADER */
+header{position:relative;z-index:2;background:linear-gradient(180deg,#000d2e 0%,var(--blue-deep) 60%,transparent 100%);padding:0 0 30px;overflow:hidden;}
+header::before{content:'';position:absolute;top:0;left:-10%;right:-10%;height:6px;background:repeating-linear-gradient(90deg,var(--blue) 0px,var(--blue) 40px,var(--toffee) 40px,var(--toffee) 50px);}
+.header-inner{display:flex;align-items:center;justify-content:center;gap:28px;padding:36px 24px 10px;position:relative;}
+.crest{width:72px;height:72px;flex-shrink:0;filter:drop-shadow(0 0 16px rgba(26,63,170,0.8));animation:crestIn 0.6s ease both;}
+@keyframes crestIn{from{opacity:0;transform:scale(0.7) rotate(-10deg);}to{opacity:1;transform:scale(1) rotate(0deg);}}
+.header-text{text-align:center;}
+.header-eyebrow{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.45em;color:var(--toffee);text-transform:uppercase;margin-bottom:6px;animation:fadeUp 0.5s 0.1s ease both;}
+h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,7vw,58px);color:var(--white);letter-spacing:0.06em;line-height:1;text-shadow:0 2px 20px rgba(0,51,153,0.8);animation:fadeUp 0.5s 0.15s ease both;}
+h1 span{color:var(--toffee-light);}
+.header-sub{font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:0.25em;color:var(--white-dim);margin-top:4px;animation:fadeUp 0.5s 0.2s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+/* STATS */
+.stats-bar{display:flex;justify-content:center;position:relative;z-index:2;background:rgba(0,13,46,0.85);border-top:1px solid var(--border-bright);border-bottom:1px solid var(--border-bright);backdrop-filter:blur(8px);}
+.stat{padding:14px 32px;text-align:center;border-right:1px solid var(--border);flex:1;max-width:160px;}
+.stat:first-child{border-left:1px solid var(--border);}
+.stat-value{font-family:'Bebas Neue',sans-serif;font-size:28px;display:block;line-height:1;}
+.stat-label{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:0.2em;color:var(--white-dim);text-transform:uppercase;margin-top:3px;display:block;}
+
+/* SET PROGRESS */
+.set-progress{display:none;position:relative;z-index:2;padding:14px 24px;background:rgba(0,26,94,0.7);border-bottom:1px solid var(--border);}
+.set-progress.visible{display:block;animation:slideDown 0.25s ease both;}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+.set-progress-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+.set-progress-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--white-dim);}
+.set-progress-count{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--toffee-light);}
+.set-progress-track{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.set-progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--toffee));border-radius:3px;transition:width 0.7s cubic-bezier(0.22,1,0.36,1);width:0%;}
+.set-progress-pct{font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--white-dim);margin-top:5px;text-align:right;}
+
+/* NAV */
+nav{display:flex;justify-content:center;position:relative;z-index:2;background:var(--surface);border-bottom:2px solid var(--border-bright);flex-wrap:wrap;}
+.nav-btn{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;padding:14px 28px;background:transparent;color:var(--white-dim);border:none;border-bottom:3px solid transparent;margin-bottom:-2px;cursor:pointer;transition:all 0.2s;text-decoration:none;display:inline-block;}
+.nav-btn:hover{color:var(--white);background:rgba(26,63,170,0.15);}
+.nav-btn.active{color:var(--toffee-light);border-bottom-color:var(--toffee);background:rgba(212,160,23,0.07);}
+
+/* FILTERS */
+.filters{display:flex;justify-content:center;gap:12px;padding:14px 20px;position:relative;z-index:2;background:rgba(1,10,31,0.6);border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.filters select,.filters input{font-family:'Barlow',sans-serif;font-size:14px;padding:9px 14px;background:var(--surface-2);color:var(--white);border:1px solid var(--border);border-radius:3px;outline:none;transition:border-color 0.2s;min-width:200px;}
+.filters select:focus,.filters input:focus{border-color:var(--royal);}
+.filters select option{background:var(--surface);}
+
+/* TOOLBAR */
+.toolbar{display:flex;justify-content:flex-end;gap:10px;padding:10px 20px;position:relative;z-index:2;background:rgba(1,10,31,0.4);border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.toolbar-btn{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;padding:8px 16px;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:var(--surface-2);color:var(--white-dim);transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;text-decoration:none;}
+.toolbar-btn:hover{color:var(--white);border-color:var(--royal);background:rgba(26,63,170,0.2);}
+.toolbar-btn.gold{border-color:var(--toffee-dim);color:var(--toffee-light);}
+.toolbar-btn.gold:hover{background:rgba(212,160,23,0.12);border-color:var(--toffee);}
+
+/* CARD GRID */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;padding:20px 20px 50px;position:relative;z-index:1;}
+
+/* SKELETON */
+.skeleton-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden;height:210px;}
+.skeleton-shimmer{width:100%;height:100%;background:linear-gradient(90deg,var(--surface) 0%,var(--surface-2) 40%,var(--surface) 80%);background-size:200% 100%;animation:shimmer 1.4s infinite;}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s,border-color 0.2s;animation:cardIn 0.35s ease both;position:relative;}
+@keyframes cardIn{from{opacity:0;transform:translateY(14px) scale(0.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+.card:hover{transform:translateY(-4px);box-shadow:0 12px 36px rgba(0,0,0,0.6),0 0 0 1px rgba(26,63,170,0.5);border-color:var(--royal);}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.card.is-got::before{background:linear-gradient(90deg,var(--blue),var(--got-color));}
+.card.is-missing::before{background:linear-gradient(90deg,var(--blue),var(--missing-color));}
+.card.flash{animation:flashCard 0.7s ease forwards;}
+@keyframes flashCard{0%{box-shadow:0 0 0 2px var(--toffee-light);}50%{box-shadow:0 0 24px 6px rgba(212,160,23,0.45);}100%{box-shadow:none;}}
+.card-image{width:100%;height:140px;object-fit:cover;display:block;cursor:pointer;transition:opacity 0.2s;}
+.card-image:hover{opacity:0.85;}
+.card-image-placeholder{width:100%;height:36px;display:flex;align-items:center;justify-content:center;background:var(--surface-2);cursor:pointer;transition:background 0.2s;border-bottom:1px solid var(--border);}
+.card-image-placeholder:hover{background:rgba(212,160,23,0.06);}
+.card-image-placeholder p{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--white-faint);}
+.card-top{padding:14px 14px 10px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--surface-2),var(--surface));}
+.card-number{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.2em;color:var(--toffee-dim);margin-bottom:5px;text-transform:uppercase;}
+.card-name{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:0.05em;color:var(--white);line-height:1.2;margin-bottom:4px;}
+.card-set{font-size:12px;color:var(--white-dim);font-style:italic;}
+.card-body{padding:10px 14px 14px;}
+.card-variant{font-size:12px;color:var(--white-dim);margin-bottom:5px;min-height:15px;}
+.card-description{font-size:13px;color:var(--white-dim);line-height:1.4;margin-bottom:12px;min-height:18px;}
+
+/* TOGGLE */
+.got-toggle{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;}
+.toggle-track{width:40px;height:22px;border-radius:11px;background:rgba(255,255,255,0.06);border:1px solid var(--border);position:relative;transition:background 0.25s,border-color 0.25s;flex-shrink:0;}
+.toggle-thumb{width:16px;height:16px;border-radius:50%;background:var(--white-dim);position:absolute;top:2px;left:2px;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),background 0.25s;}
+.is-got .toggle-track{background:rgba(46,204,113,0.15);border-color:var(--got-color);}
+.is-got .toggle-thumb{transform:translateX(18px);background:var(--got-color);}
+.toggle-label{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.15em;color:var(--white-dim);transition:color 0.2s;text-transform:uppercase;}
+.is-got .toggle-label{color:var(--got-color);}
+
+/* COLLECTING BADGE */
+.collecting-badge{display:inline-flex;align-items:center;gap:5px;margin-top:9px;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--toffee-light);border:1px solid rgba(212,160,23,0.35);background:rgba(212,160,23,0.07);padding:3px 8px;border-radius:2px;}
+
+/* EMPTY STATE */
+.empty-state{grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--white-dim);animation:fadeUp 0.4s ease both;}
+.empty-state .empty-icon{font-size:52px;margin-bottom:14px;opacity:0.2;display:block;}
+.empty-state p{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.3em;}
+
+/* ORDERS */
+#ordersView{display:none;position:relative;z-index:1;padding:20px 20px 50px;}
+#ordersView.active{display:block;}
+#collectionView.hidden{display:none;}
+.orders-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+.orders-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.08em;color:var(--toffee-light);}
+.orders-title span{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.2em;color:var(--white-dim);margin-left:10px;vertical-align:middle;}
+.add-order-btn{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;padding:10px 20px;border-radius:3px;cursor:pointer;border:1px solid var(--toffee);background:rgba(212,160,23,0.1);color:var(--toffee-light);transition:all 0.2s;}
+.add-order-btn:hover{background:rgba(212,160,23,0.2);}
+.orders-list{display:flex;flex-direction:column;gap:14px;}
+.orders-empty{text-align:center;padding:60px 20px;color:var(--white-dim);}
+.orders-empty .empty-icon{font-size:48px;opacity:0.2;display:block;margin-bottom:12px;}
+.orders-empty p{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.25em;}
+.order-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden;animation:cardIn 0.3s ease both;position:relative;}
+.order-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--toffee));}
+.order-card.all-received::before{background:linear-gradient(90deg,var(--blue),var(--got-color));}
+.order-header{display:flex;justify-content:space-between;align-items:flex-start;padding:14px 16px 10px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--surface-2),var(--surface));flex-wrap:wrap;gap:8px;}
+.order-seller{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.05em;color:var(--white);}
+.order-meta{display:flex;gap:16px;flex-wrap:wrap;}
+.order-meta-item{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.1em;color:var(--white-dim);}
+.order-meta-item span{color:var(--toffee-light);margin-left:4px;}
+.order-status{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;padding:3px 10px;border-radius:2px;border:1px solid;white-space:nowrap;}
+.order-status.awaiting{color:var(--toffee-light);border-color:rgba(212,160,23,0.4);background:rgba(212,160,23,0.08);}
+.order-status.received{color:var(--got-color);border-color:rgba(46,204,113,0.4);background:rgba(46,204,113,0.08);}
+.order-cards-list{padding:12px 16px 14px;display:flex;flex-wrap:wrap;gap:8px;}
+.order-card-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:3px;border:1px solid var(--border);background:var(--surface-2);font-size:13px;color:var(--white-dim);cursor:pointer;transition:all 0.15s;user-select:none;}
+.order-card-chip:hover{border-color:var(--royal);color:var(--white);}
+.order-card-chip.received{border-color:rgba(46,204,113,0.35);background:rgba(46,204,113,0.07);color:var(--got-color);text-decoration:line-through;text-decoration-color:rgba(46,204,113,0.5);}
+
+/* PANELS (needs, backend, order modal, img modal) */
+.panel-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;}
+.panel-overlay.open{display:flex;}
+.panel-box{background:var(--surface);border:1px solid var(--border-bright);border-radius:6px;max-width:600px;width:100%;max-height:88vh;overflow-y:auto;padding:28px;position:relative;}
+.panel-box h2{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:0.08em;color:var(--toffee-light);margin-bottom:16px;}
+.panel-box p{font-size:14px;color:var(--white-dim);line-height:1.6;margin-bottom:14px;}
+.panel-box code{display:block;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:12px 14px;font-size:12px;color:var(--toffee-light);white-space:pre;overflow-x:auto;margin-bottom:16px;line-height:1.6;}
+.panel-box h3{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--white-dim);margin-bottom:8px;margin-top:20px;border-top:1px solid var(--border);padding-top:16px;}
+.close-btn{position:absolute;top:16px;right:16px;background:transparent;border:1px solid var(--border);color:var(--white-dim);font-size:18px;width:32px;height:32px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.close-btn:hover{border-color:var(--missing-color);color:var(--missing-color);}
+.panel-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);}
+.btn-cancel{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;padding:10px 18px;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--white-dim);transition:all 0.2s;}
+.btn-cancel:hover{color:var(--white);border-color:var(--white-dim);}
+.btn-primary{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;padding:10px 22px;border-radius:3px;cursor:pointer;border:1px solid var(--toffee);background:rgba(212,160,23,0.12);color:var(--toffee-light);transition:all 0.2s;}
+.btn-primary:hover{background:rgba(212,160,23,0.22);}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed;}
+
+/* NEEDS PANEL */
+.needs-section-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--white-dim);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.needs-set-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;max-height:240px;overflow-y:auto;}
+.needs-set-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface-2);border:1px solid var(--border);border-radius:3px;cursor:pointer;transition:all 0.15s;user-select:none;}
+.needs-set-item:hover{border-color:var(--royal);}
+.needs-set-item.selected{border-color:var(--toffee);background:rgba(212,160,23,0.1);}
+.needs-set-item input[type="checkbox"]{accent-color:var(--toffee);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+.needs-set-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;color:var(--white);line-height:1.2;}
+.needs-set-count{font-size:11px;color:var(--white-dim);margin-top:1px;}
+.needs-select-all{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--toffee-light);background:transparent;border:none;cursor:pointer;padding:0;margin-bottom:10px;display:block;}
+.needs-current-filter{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:3px;margin-bottom:20px;cursor:pointer;transition:all 0.15s;}
+.needs-current-filter:hover{border-color:var(--royal);}
+.needs-current-filter.selected{border-color:var(--toffee);background:rgba(212,160,23,0.1);}
+.needs-current-filter input[type="checkbox"]{accent-color:var(--toffee);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
+.needs-current-label{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;color:var(--white);}
+
+/* ORDER MODAL FIELDS */
+.order-field{margin-bottom:16px;}
+.order-field label{display:block;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:var(--white-dim);margin-bottom:6px;}
+.order-field input{width:100%;font-family:'Barlow',sans-serif;font-size:14px;padding:10px 12px;background:var(--surface-2);color:var(--white);border:1px solid var(--border);border-radius:3px;outline:none;transition:border-color 0.2s;}
+.order-field input:focus{border-color:var(--royal);}
+.card-picker-search{width:100%;font-family:'Barlow',sans-serif;font-size:14px;padding:10px 12px;background:var(--surface-2);color:var(--white);border:1px solid var(--border);border-radius:3px 3px 0 0;outline:none;border-bottom:none;transition:border-color 0.2s;}
+.card-picker-search:focus{border-color:var(--royal);}
+.card-picker-list{max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:0 0 3px 3px;background:var(--bg);}
+.card-picker-item{padding:8px 12px;font-size:13px;color:var(--white-dim);cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.1s;display:flex;justify-content:space-between;align-items:center;}
+.card-picker-item:last-child{border-bottom:none;}
+.card-picker-item:hover{background:var(--surface-2);color:var(--white);}
+.card-picker-item.selected{background:rgba(212,160,23,0.1);color:var(--toffee-light);}
+.card-picker-item .picker-set{font-size:11px;color:var(--white-faint);font-style:italic;}
+.selected-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;min-height:32px;}
+.selected-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:3px;border:1px solid var(--toffee-dim);background:rgba(212,160,23,0.08);color:var(--toffee-light);font-size:12px;font-family:'Barlow Condensed',sans-serif;font-weight:600;}
+.selected-chip button{background:none;border:none;color:var(--toffee-dim);cursor:pointer;font-size:13px;padding:0;line-height:1;transition:color 0.15s;}
+.selected-chip button:hover{color:var(--missing-color);}
+
+/* IMAGE MODAL */
+.img-main-preview{width:100%;max-height:300px;object-fit:contain;border-radius:4px;background:var(--surface-2);margin-bottom:14px;display:block;}
+.img-results{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:16px;}
+.img-result-thumb{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:3px;cursor:pointer;border:2px solid transparent;transition:all 0.15s;}
+.img-result-thumb:hover{border-color:var(--toffee);}
+.img-result-thumb.selected{border-color:var(--got-color);}
+.img-searching{text-align:center;padding:20px;color:var(--white-dim);font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:0.15em;}
+.img-modal-sub{font-size:12px;color:var(--white-dim);margin-bottom:16px;}
+
+/* PRINT */
+.print-header{display:none;}
+.print-status{display:none;}
+#needsPrintArea{display:none;}
+@media print{
+    body::before,header,.stats-bar,.set-progress,nav,.filters,.toolbar,#ordersView,.panel-overlay{display:none !important;}
+    .print-header{display:block !important;text-align:center;padding:16px 0 12px;border-bottom:2px solid #003399;margin-bottom:16px;}
+    .print-header h2{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#003399;letter-spacing:0.08em;}
+    .print-header p{font-size:12px;color:#666;margin-top:4px;}
+    #needsPrintArea:not(:empty){display:block !important;}
+    #needsPrintArea:not(:empty) ~ .card-grid{display:none !important;}
+    .card-grid{grid-template-columns:repeat(3,1fr);gap:8px;padding:0;}
+    .card{break-inside:avoid;animation:none !important;border:1px solid #ccc;background:#fff;color:#000;}
+    .card::before{display:none;}
+    .card-top{background:#f0f0f0 !important;border-bottom:1px solid #ccc;}
+    .card-number,.card-set,.card-variant,.card-description{color:#555 !important;}
+    .card-name{color:#000 !important;}
+    .got-toggle,.card-image,.card-image-placeholder{display:none;}
+    .collecting-badge{color:#a07010 !important;border-color:#a07010 !important;background:#fff8e0 !important;}
+    .print-status{display:inline-block !important;font-size:11px;font-weight:bold;padding:2px 6px;border-radius:3px;margin-top:8px;}
+    .print-status.missing{background:#fee;color:#c00;border:1px solid #c00;}
+    .print-status.got{background:#efe;color:#060;border:1px solid #060;}
+    .needs-print-section{page-break-inside:avoid;margin-bottom:24px;}
+    .needs-print-section-title{font-size:16px;color:#003399;font-weight:bold;border-bottom:2px solid #003399;padding-bottom:4px;margin-bottom:10px;}
+    .needs-print-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+    .needs-print-card{border:1px solid #ccc;border-radius:3px;padding:6px 8px;background:#fff;break-inside:avoid;}
+    .needs-print-name{font-weight:bold;font-size:12px;color:#000;}
+    .needs-print-meta{font-size:10px;color:#555;margin-top:2px;}
+    .needs-print-badge{display:inline-block;font-size:9px;font-weight:bold;color:#a07010;border:1px solid #a07010;background:#fff8e0;padding:1px 5px;border-radius:2px;margin-top:4px;}
+}
+
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--royal);}
+#excelUploadSection{display:none !important;}
 </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <header>
     <div class="header-inner">
         <svg class="crest" viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1043,192 +272,167 @@
     </div>
 </header>
 
+<!-- STATS -->
 <div class="stats-bar">
-    <div class="stat">
-        <span class="stat-value" id="statTotal" style="color:var(--white)">—</span>
-        <span class="stat-label">Total</span>
-    </div>
-    <div class="stat">
-        <span class="stat-value" id="statGot" style="color:var(--got-color)">—</span>
-        <span class="stat-label">Obtained</span>
-    </div>
-    <div class="stat">
-        <span class="stat-value" id="statMissing" style="color:var(--missing-color)">—</span>
-        <span class="stat-label">Missing</span>
-    </div>
-    <div class="stat">
-        <span class="stat-value" id="statCollecting" style="color:var(--toffee-light)">—</span>
-        <span class="stat-label">Collecting</span>
-    </div>
+    <div class="stat"><span class="stat-value" id="statTotal" style="color:var(--white)">0</span><span class="stat-label">Total</span></div>
+    <div class="stat"><span class="stat-value" id="statGot" style="color:var(--got-color)">0</span><span class="stat-label">Obtained</span></div>
+    <div class="stat"><span class="stat-value" id="statMissing" style="color:var(--missing-color)">0</span><span class="stat-label">Missing</span></div>
+    <div class="stat"><span class="stat-value" id="statCollecting" style="color:var(--toffee-light)">0</span><span class="stat-label">Collecting</span></div>
 </div>
 
+<!-- SET PROGRESS -->
 <div class="set-progress" id="setProgress">
     <div class="set-progress-header">
         <span class="set-progress-name" id="setProgressName"></span>
         <span class="set-progress-count" id="setProgressCount"></span>
     </div>
-    <div class="set-progress-track">
-        <div class="set-progress-fill" id="setProgressFill"></div>
-    </div>
+    <div class="set-progress-track"><div class="set-progress-fill" id="setProgressFill"></div></div>
     <div class="set-progress-pct" id="setProgressPct"></div>
 </div>
 
+<!-- NAV -->
 <nav>
-    <button class="nav-btn active" onclick="switchView('all', this)">All Cards</button>
-    <button class="nav-btn" onclick="switchView('got', this)">Obtained</button>
-    <button class="nav-btn" onclick="switchView('missing', this)">Missing</button>
-    <button class="nav-btn" onclick="switchView('collecting', this)">Collecting</button>
-    <button class="nav-btn" onclick="switchToOrders(this)" id="ordersNavBtn">📦 Orders</button>
-    <a href="donruss.html" class="nav-btn" style="text-decoration:none">🃏 Donruss</a>
+    <button class="nav-btn active" onclick="switchView('all',this)">All Cards</button>
+    <button class="nav-btn" onclick="switchView('got',this)">Obtained</button>
+    <button class="nav-btn" onclick="switchView('missing',this)">Missing</button>
+    <button class="nav-btn" onclick="switchView('collecting',this)">Collecting</button>
+    <button class="nav-btn" onclick="switchToOrders(this)">Orders</button>
+    <a href="donruss.html" class="nav-btn">Donruss</a>
 </nav>
 
+<!-- COLLECTION VIEW -->
 <div id="collectionView">
-<div class="filters">
-    <select id="setFilter" onchange="applyFilters()">
-        <option value="">All Sets</option>
-    </select>
-    <input type="text" id="searchBox" placeholder="Search cards…" oninput="applyFilters()">
+    <div class="filters">
+        <select id="setFilter" onchange="applyFilters()"><option value="">All Sets</option></select>
+        <input type="text" id="searchBox" placeholder="Search cards..." oninput="applyFilters()">
+    </div>
+    <div class="toolbar">
+        <button class="toolbar-btn" onclick="showPanel('backendPanel')">How to Save Changes</button>
+        <button class="toolbar-btn gold" onclick="exportMissingPDF()">Export Missing (PDF)</button>
+        <button class="toolbar-btn gold" onclick="exportVisiblePDF()">Export Visible (PDF)</button>
+        <button class="toolbar-btn gold" onclick="openNeedsPanel()">Needs List (PDF)</button>
+    </div>
+    <div class="print-header"><h2>Everton FC · Card Collection</h2><p id="printSubtitle"></p></div>
+    <div id="cardGrid" class="card-grid"></div>
 </div>
-<!-- Toolbar -->
-<div class="toolbar">
-    <button class="toolbar-btn" onclick="showBackendInfo()">⚙ How to Save Changes</button>
-    <button class="toolbar-btn gold" onclick="exportMissingPDF()">⬇ Export Missing (PDF)</button>
-    <button class="toolbar-btn gold" onclick="exportVisiblePDF()">⬇ Export Visible (PDF)</button>
-    <button class="toolbar-btn gold" onclick="openNeedsPanel()">☰ Needs List (PDF)</button>
-</div>
-<!-- Print header -->
-<div class="print-header" id="printHeader">
-    <h2>Everton FC · Card Collection</h2>
-    <p id="printSubtitle"></p>
-</div>
-<div id="cardGrid" class="card-grid"></div>
-</div><!-- end collectionView -->
 
-<!-- Orders View -->
+<!-- ORDERS VIEW -->
 <div id="ordersView">
     <div class="orders-toolbar">
         <div class="orders-title">Pending Orders <span id="ordersCount"></span></div>
-        <button class="add-order-btn" onclick="openOrderModal()">+ New Order</button>
+        <button class="add-order-btn" onclick="showPanel('orderModal')">+ New Order</button>
     </div>
     <div id="ordersList" class="orders-list"></div>
 </div>
 
-<!-- Order Modal -->
-<div class="order-modal" id="orderModal">
-    <div class="order-modal-box">
-        <button class="close-btn" onclick="closeOrderModal()">✕</button>
+<!-- NEEDS PANEL -->
+<div class="panel-overlay" id="needsPanel">
+    <div class="panel-box" style="max-width:560px">
+        <button class="close-btn" onclick="hidePanel('needsPanel')">x</button>
+        <h2>Needs List</h2>
+        <p style="margin-bottom:16px;font-size:13px;">Select sets to include - collecting cards only, grouped by set.</p>
+        <div class="needs-section-label">Quick Select</div>
+        <div class="needs-current-filter" id="needsCurrentFilter" onclick="toggleNeedsCurrentFilter()">
+            <input type="checkbox" id="needsCurrentFilterCheck" onclick="event.stopPropagation();toggleNeedsCurrentFilter()">
+            <div><div class="needs-current-label" id="needsCurrentFilterLabel">Currently visible</div></div>
+        </div>
+        <div class="needs-section-label">Or pick sets</div>
+        <button class="needs-select-all" onclick="toggleSelectAllSets()">Select / Deselect All</button>
+        <div class="needs-set-list" id="needsSetList"></div>
+        <div class="panel-actions">
+            <button class="btn-cancel" onclick="hidePanel('needsPanel')">Cancel</button>
+            <button class="btn-primary" id="needsDownloadBtn" onclick="downloadNeedsList()" disabled>Download PDF</button>
+        </div>
+    </div>
+</div>
+
+<!-- BACKEND PANEL -->
+<div class="panel-overlay" id="backendPanel">
+    <div class="panel-box">
+        <button class="close-btn" onclick="hidePanel('backendPanel')">x</button>
+        <h2>How Saving Works</h2>
+        <p>When you toggle a card the page calls your backend. You need two API routes:</p>
+        <h3>GET /api/read</h3>
+        <code>{ "success": true, "rows": [["id","year","set",...], ...] }</code>
+        <h3>POST /api/update</h3>
+        <code>{ "id": "card-id", "got": true }</code>
+        <h3>Quick start (Node.js)</h3>
+        <code>npm install googleapis
+# Create api/read.js and api/update.js</code>
+        <h3>Your setup (Vercel + Google Sheets)</h3>
+        <p>You already have this working. Make sure GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_PRIVATE_KEY and SHEET_ID are set in your Vercel environment variables.</p>
+    </div>
+</div>
+
+<!-- ORDER MODAL -->
+<div class="panel-overlay" id="orderModal">
+    <div class="panel-box" style="max-width:580px">
+        <button class="close-btn" onclick="hidePanel('orderModal')">x</button>
         <h2>New Order</h2>
-        <div class="order-field">
-            <label>Seller / Source</label>
-            <input type="text" id="orderSeller" placeholder="e.g. eBay, Footy Cards, etc.">
-        </div>
-        <div class="order-field">
-            <label>Date Ordered</label>
-            <input type="date" id="orderDate">
-        </div>
-        <div class="order-field">
-            <label>Price Paid (£)</label>
-            <input type="number" id="orderPrice" placeholder="0.00" step="0.01" min="0">
-        </div>
+        <div class="order-field"><label>Seller / Source</label><input type="text" id="orderSeller" placeholder="e.g. eBay, Footy Cards"></div>
+        <div class="order-field"><label>Date Ordered</label><input type="date" id="orderDate"></div>
+        <div class="order-field"><label>Price Paid (GBP)</label><input type="number" id="orderPrice" placeholder="0.00" step="0.01" min="0"></div>
         <div class="order-field">
             <label>Cards in Order</label>
-            <input type="text" class="card-picker-search" id="cardPickerSearch" placeholder="Search cards to add…" oninput="filterCardPicker()">
+            <input type="text" class="card-picker-search" id="cardPickerSearch" placeholder="Search cards to add..." oninput="filterCardPicker()">
             <div class="card-picker-list" id="cardPickerList"></div>
             <div class="selected-chips" id="selectedChips"></div>
         </div>
-        <div class="order-modal-actions">
-            <button class="modal-cancel" onclick="closeOrderModal()">Cancel</button>
-            <button class="modal-save" onclick="saveOrder()">Save Order</button>
+        <div class="panel-actions">
+            <button class="btn-cancel" onclick="hidePanel('orderModal')">Cancel</button>
+            <button class="btn-primary" onclick="saveOrder()">Save Order</button>
         </div>
     </div>
 </div>
 
-<!-- Needs List Panel -->
-<div class="needs-panel" id="needsPanel">
-    <div class="needs-box">
-        <button class="close-btn" onclick="closeNeedsPanel()">✕</button>
-        <h2>Needs List</h2>
-        <p class="needs-subtitle">Select sets to include — only collecting cards shown, grouped by set.</p>
-
-        <!-- Current filter shortcut -->
-        <div class="needs-section-label">Quick Select</div>
-        <div class="needs-current-filter" id="needsCurrentFilter" onclick="toggleNeedsCurrentFilter()">
-            <input type="checkbox" id="needsCurrentFilterCheck" onclick="event.stopPropagation(); toggleNeedsCurrentFilter()">
-            <div>
-                <div class="needs-current-label" id="needsCurrentFilterLabel">Currently visible cards</div>
-            </div>
-        </div>
-
-        <!-- Set list -->
-        <div class="needs-section-label">Or pick sets individually</div>
-        <button class="needs-select-all" onclick="toggleSelectAllSets()">Select / Deselect All</button>
-        <div class="needs-set-list" id="needsSetList"></div>
-
-        <div class="needs-actions">
-            <button class="needs-cancel" onclick="closeNeedsPanel()">Cancel</button>
-            <button class="needs-download" id="needsDownloadBtn" onclick="downloadNeedsList()">⬇ Download PDF</button>
+<!-- IMAGE MODAL -->
+<div class="panel-overlay" id="imgModal">
+    <div class="panel-box" style="max-width:520px">
+        <button class="close-btn" onclick="hidePanel('imgModal')">x</button>
+        <h2 id="imgModalTitle"></h2>
+        <div class="img-modal-sub" id="imgModalSub"></div>
+        <img class="img-main-preview" id="imgMainPreview" src="" alt="" style="display:none">
+        <div id="imgSearchStatus" class="img-searching"></div>
+        <div class="img-results" id="imgResults"></div>
+        <div class="panel-actions">
+            <button class="btn-cancel" onclick="hidePanel('imgModal')">Cancel</button>
+            <button class="btn-primary" id="imgSaveBtn" onclick="saveCardImage()" disabled>Save Image</button>
         </div>
     </div>
 </div>
 
-<!-- Print header (visible only when printing) -->
-<div class="print-header" id="printHeader">
-    <h2>Everton FC · Card Collection</h2>
-    <p id="printSubtitle"></p>
-</div>
+<!-- PRINT AREA -->
+<div id="needsPrintArea"></div>
 
-<!-- Backend info panel -->
-<div class="backend-panel" id="backendPanel">
-    <div class="backend-box">
-        <button class="close-btn" onclick="closeBackendInfo()">✕</button>
-        <h2>How Saving Works</h2>
-        <p>When you toggle a card's status, the page immediately sends a request to your backend server. You need a small server running alongside this page that handles two API routes:</p>
-
-        <h3>GET /api/read — Load all cards</h3>
-        <p>Should return JSON in this shape:</p>
-        <code>{ "success": true, "rows": [["id","year","set",...], ...] }</code>
-
-        <h3>POST /api/update — Save a toggle change</h3>
-        <p>Receives this JSON body and should write the new value to your Google Sheet:</p>
-        <code>{ "id": "card-id-here", "got": true }</code>
-
-        <h3>Quick start (Node.js / Express)</h3>
-        <p>If you have Node.js installed, this is the simplest way to get a backend running:</p>
-        <code>npm install express googleapis
-node server.js</code>
-        <p>Your server.js needs to use the Google Sheets API with a service account. Search for <strong>"Google Sheets API Node.js quickstart"</strong> on the Google developers docs — it walks you through creating a service account and getting your credentials JSON file.</p>
-
-        <h3>Quick start (Python / Flask)</h3>
-        <code>pip install flask gspread oauth2client
-python server.py</code>
-        <p>Then use the <strong>gspread</strong> library to read/write your sheet. Search "gspread service account" for setup instructions.</p>
-
-        <h3>Not technical?</h3>
-        <p>The simplest option is to use <strong>Glitch.com</strong> or <strong>Replit.com</strong> — both let you run a small Node.js server for free without any local setup. You can paste a server template and connect your Google credentials there.</p>
-    </div>
-</div>
-
+<!-- EXCEL (hidden) -->
 <div id="excelUploadSection">
-    <input type="file" id="excelFile" accept=".xlsx" />
-    <button onclick="loadExcelFile()">Upload Excel</button>
+    <input type="file" id="excelFile" accept=".xlsx">
+    <button onclick="loadExcelFile()">Upload</button>
 </div>
 
 <script>
+/* ── STATE ── */
 let cards = [];
 let filteredCards = [];
 let currentView = "all";
+let orders = [];
+let selectedCardIds = [];
+let needsUseCurrentFilter = false;
+let imgModalCardId = null;
+let imgSelectedUrl = null;
 
-/* ── ANIMATED COUNTER ── */
+/* ── PANELS ── */
+function showPanel(id) { document.getElementById(id).classList.add('open'); }
+function hidePanel(id) { document.getElementById(id).classList.remove('open'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.panel-overlay.open').forEach(p => p.classList.remove('open')); });
+
+/* ── COUNTER ── */
 function animateCounter(el, to) {
     const from = parseInt(el.textContent) || 0;
-    if (from === to || el.textContent === "—") {
-        el.textContent = to;
-        return;
-    }
-    const duration = 450;
-    const start = performance.now();
+    if (from === to) return;
+    const dur = 450, start = performance.now();
     function step(now) {
-        const p = Math.min((now - start) / duration, 1);
+        const p = Math.min((now - start) / dur, 1);
         const ease = 1 - Math.pow(1 - p, 3);
         el.textContent = Math.round(from + (to - from) * ease);
         if (p < 1) requestAnimationFrame(step);
@@ -1238,146 +442,142 @@ function animateCounter(el, to) {
 
 /* ── STATS ── */
 function updateStats() {
-    animateCounter(document.getElementById("statTotal"),      cards.length);
-    animateCounter(document.getElementById("statGot"),        cards.filter(c => c.got).length);
-    animateCounter(document.getElementById("statMissing"),    cards.filter(c => !c.got).length);
-    animateCounter(document.getElementById("statCollecting"), cards.filter(c => c.collecting).length);
+    animateCounter(document.getElementById('statTotal'), cards.length);
+    animateCounter(document.getElementById('statGot'), cards.filter(c => c.got).length);
+    animateCounter(document.getElementById('statMissing'), cards.filter(c => !c.got).length);
+    animateCounter(document.getElementById('statCollecting'), cards.filter(c => c.collecting).length);
 }
 
 /* ── SET PROGRESS ── */
 function updateSetProgress() {
-    const setFilter  = document.getElementById("setFilter").value;
-    const progressEl = document.getElementById("setProgress");
-
-    if (!setFilter) {
-        progressEl.classList.remove("visible");
-        return;
-    }
-
-    const [filterSet, filterYear] = setFilter.split("|||");
-    const collectingInSet = cards.filter(c => c.set === filterSet && c.year === filterYear && c.collecting);
-    const gotCount = collectingInSet.filter(c => c.got).length;
-    const total    = collectingInSet.length;
-    const pct      = total > 0 ? Math.round((gotCount / total) * 100) : 0;
-
-    document.getElementById("setProgressName").textContent  = `${filterSet} ${filterYear} · Collecting`;
-    document.getElementById("setProgressCount").textContent = total > 0 ? `${gotCount} / ${total}` : "None";
-    document.getElementById("setProgressPct").textContent   = total > 0 ? `${pct}% of collecting list obtained` : `No cards marked as collecting in this set`;
-
-    const fill = document.getElementById("setProgressFill");
-    fill.style.width = "0%";
-    requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.width = pct + "%"; }));
-
-    progressEl.classList.remove("visible");
-    requestAnimationFrame(() => progressEl.classList.add("visible"));
+    const sf = document.getElementById('setFilter').value;
+    const el = document.getElementById('setProgress');
+    if (!sf) { el.classList.remove('visible'); return; }
+    const [fs, fy] = sf.split('|||');
+    const sc = cards.filter(c => c.set === fs && c.year === fy && c.collecting);
+    const got = sc.filter(c => c.got).length;
+    const tot = sc.length;
+    const pct = tot > 0 ? Math.round((got / tot) * 100) : 0;
+    document.getElementById('setProgressName').textContent = `${fs} ${fy} - Collecting`;
+    document.getElementById('setProgressCount').textContent = tot > 0 ? `${got} / ${tot}` : 'None';
+    document.getElementById('setProgressPct').textContent = tot > 0 ? `${pct}% obtained` : 'No collecting cards in this set';
+    const fill = document.getElementById('setProgressFill');
+    fill.style.width = '0%';
+    requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.width = pct + '%'; }));
+    el.classList.remove('visible');
+    requestAnimationFrame(() => el.classList.add('visible'));
 }
 
+/* ── VIEW SWITCHING ── */
+function switchView(view, btn) {
+    currentView = view;
+    document.getElementById('ordersView').classList.remove('active');
+    document.getElementById('collectionView').classList.remove('hidden');
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    applyFilters();
+}
+
+function switchToOrders(btn) {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    document.getElementById('collectionView').classList.add('hidden');
+    document.getElementById('ordersView').classList.add('active');
+    renderOrders();
+}
 
 /* ── FILTERS ── */
 function applyFilters() {
-    const setFilter = document.getElementById("setFilter").value;
-    const search    = document.getElementById("searchBox").value.toLowerCase();
-
+    const sf = document.getElementById('setFilter').value;
+    const search = document.getElementById('searchBox').value.toLowerCase();
     filteredCards = cards.filter(card => {
         let matchesSet = true;
-        if (setFilter) {
-            const [fs, fy] = setFilter.split("|||");
+        if (sf) {
+            const [fs, fy] = sf.split('|||');
             matchesSet = card.set === fs && card.year === fy;
         }
-
         const matchesSearch =
             card.id.toLowerCase().includes(search) ||
             card.name.toLowerCase().includes(search) ||
-            card.description.toLowerCase().includes(search);
-
-        let matchesView = true;
-        if (currentView === "missing")         matchesView = !card.got;
-        else if (currentView === "got")        matchesView = card.got;
-        else if (currentView === "collecting") matchesView = card.collecting === true;
-
+            (card.description || '').toLowerCase().includes(search);
+        const matchesView =
+            currentView === 'missing' ? !card.got :
+            currentView === 'got' ? card.got :
+            currentView === 'collecting' ? card.collecting === true : true;
         return matchesSet && matchesSearch && matchesView;
     });
-
     renderCardGrid();
     updateStats();
     updateSetProgress();
 }
 
-/* ── POPULATE SET DROPDOWN ── */
+/* ── DROPDOWN ── */
 function populateSetDropdown() {
-    const dropdown = document.getElementById("setFilter");
-    const comboMap = new Map();
+    const dd = document.getElementById('setFilter');
+    const map = new Map();
     cards.forEach(c => {
-        const key = `${c.set}|||${c.year}`;
-        if (!comboMap.has(key)) comboMap.set(key, { set: c.set, year: c.year });
+        const k = `${c.set}|||${c.year}`;
+        if (!map.has(k)) map.set(k, { set: c.set, year: c.year });
     });
-    const combos = Array.from(comboMap.values()).sort((a, b) => {
+    const combos = Array.from(map.values()).sort((a, b) => {
         const yc = b.year.localeCompare(a.year);
         return yc !== 0 ? yc : a.set.localeCompare(b.set);
     });
-    dropdown.innerHTML = `<option value="">All Sets</option>`;
+    dd.innerHTML = '<option value="">All Sets</option>';
     combos.forEach(({ set, year }) => {
-        dropdown.innerHTML += `<option value="${set}|||${year}">${set} ${year}</option>`;
+        dd.innerHTML += `<option value="${set}|||${year}">${set} ${year}</option>`;
     });
 }
 
 /* ── SKELETON ── */
-function showSkeletons(count = 12) {
-    const grid = document.getElementById("cardGrid");
-    grid.innerHTML = "";
-    for (let i = 0; i < count; i++) {
-        const s = document.createElement("div");
-        s.className = "skeleton-card";
-        s.innerHTML = `<div class="skeleton-shimmer"></div>`;
-        grid.appendChild(s);
+function showSkeletons(n = 12) {
+    const g = document.getElementById('cardGrid');
+    g.innerHTML = '';
+    for (let i = 0; i < n; i++) {
+        const s = document.createElement('div');
+        s.className = 'skeleton-card';
+        s.innerHTML = '<div class="skeleton-shimmer"></div>';
+        g.appendChild(s);
     }
 }
 
 /* ── RENDER CARDS ── */
 function renderCardGrid() {
-    const grid = document.getElementById("cardGrid");
-    grid.innerHTML = "";
-
+    const grid = document.getElementById('cardGrid');
+    grid.innerHTML = '';
     if (filteredCards.length === 0) {
-        grid.innerHTML = `
-            <div class="empty-state">
-                <span class="empty-icon">⚽</span>
-                <p>No cards found</p>
-            </div>`;
+        grid.innerHTML = '<div class="empty-state"><span class="empty-icon">soccer ball</span><p>No cards found</p></div>';
         return;
     }
-
     filteredCards.forEach((card, i) => {
-        const div = document.createElement("div");
-        div.className = "card" + (card.got ? " is-got" : " is-missing");
-        div.style.animationDelay = `${Math.min(i * 25, 350)}ms`;
+        const div = document.createElement('div');
+        div.className = 'card' + (card.got ? ' is-got' : ' is-missing');
+        div.style.animationDelay = Math.min(i * 25, 350) + 'ms';
         div.dataset.id = card.id;
-
-        const badge = card.collecting
-            ? `<div class="collecting-badge">★ Collecting</div>` : "";
-
-        const imgSection = card.imageUrl
-            ? `<img class="card-image" src="${card.imageUrl}" alt="${card.name}" onclick="openImgModal('${card.id}')" loading="lazy">`
-            : `<div class="card-image-placeholder" onclick="openImgModal('${card.id}')"><p>+ Find Image</p></div>`;
-
+        const badge = card.collecting ? '<div class="collecting-badge">Collecting</div>' : '';
+        const imgHtml = card.imageUrl
+            ? `<img class="card-image" src="${card.imageUrl}" alt="${card.name}" loading="lazy">`
+            : '<div class="card-image-placeholder"><p>+ Find Image</p></div>';
         div.innerHTML = `
-            ${imgSection}
+            ${imgHtml}
             <div class="card-top">
-                <div class="card-number">#${card.number} · ${card.year}</div>
+                <div class="card-number">#${card.number} - ${card.year}</div>
                 <div class="card-name">${card.name}</div>
                 <div class="card-set">${card.set}</div>
             </div>
             <div class="card-body">
-                <div class="card-variant">${card.variant || ""}</div>
-                <div class="card-description">${card.description || ""}</div>
-                <label class="got-toggle" onclick="toggleGot('${card.id}')">
+                <div class="card-variant">${card.variant || ''}</div>
+                <div class="card-description">${card.description || ''}</div>
+                <label class="got-toggle">
                     <div class="toggle-track"><div class="toggle-thumb"></div></div>
-                    <span class="toggle-label">${card.got ? "OBTAINED" : "MISSING"}</span>
+                    <span class="toggle-label">${card.got ? 'OBTAINED' : 'MISSING'}</span>
                 </label>
                 ${badge}
                 <span class="print-status ${card.got ? 'got' : 'missing'}">${card.got ? 'OBTAINED' : 'MISSING'}</span>
             </div>`;
-
+        div.querySelector('.got-toggle').addEventListener('click', () => toggleGot(card.id));
+        const imgEl = div.querySelector('.card-image, .card-image-placeholder');
+        if (imgEl) imgEl.addEventListener('click', () => openImgModal(card.id));
         grid.appendChild(div);
     });
 }
@@ -1388,639 +588,296 @@ function toggleGot(cardId) {
     if (!card) return;
     card.got = !card.got;
     applyFilters();
-
     requestAnimationFrame(() => {
         const el = document.querySelector(`.card[data-id="${cardId}"]`);
-        if (el) {
-            el.classList.remove("flash");
-            void el.offsetWidth;
-            el.classList.add("flash");
-        }
+        if (el) { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
     });
-
-    updateCardToGoogleSheets(cardId, card.got);
+    fetch('/api/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: cardId, got: card.got })
+    }).catch(err => console.error('Update failed:', err));
 }
 
-async function updateCardToGoogleSheets(cardId, gotValue) {
-    try {
-        await fetch('/api/update', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: cardId, got: gotValue })
-        });
-    } catch (err) {
-        console.error("Failed to update Google Sheets:", err);
-    }
-}
-
-/* ── EXCEL (preserved) ── */
-async function loadExcelFile() {
-    const fi = document.getElementById("excelFile");
-    if (!fi.files.length) return;
-    const reader = new FileReader();
-    reader.onload = e => parseWorkbook(XLSX.read(new Uint8Array(e.target.result), { type: "array" }));
-    reader.readAsArrayBuffer(fi.files[0]);
-}
-
-function parseWorkbook(workbook) {
-    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
-    cards = rows.slice(1).map(row => ({
-        id: row[0]||"", year: row[1]||"", set: row[2]||"", number: row[3]||"",
-        name: row[4]||"", description: row[5]||"", variant: row[6]||"",
-        collecting: (row[7]||"").toString().toLowerCase() === "true",
-        got: (row[8]||"").toString().toLowerCase() === "true"
+/* ── LOAD CARDS ── */
+async function loadCardsFromGoogleSheets() {
+    const res = await fetch('/api/read');
+    const data = await res.json();
+    if (!data.success) throw new Error('API returned success:false');
+    cards = data.rows.slice(1).map((row, i) => ({
+        id:          String(row[0] || ''),
+        year:        row[1] || '',
+        set:         row[2] || '',
+        number:      row[3] || '',
+        name:        row[4] || '',
+        description: row[5] || '',
+        variant:     row[6] || '',
+        collecting:  (row[7] || '').toString().toLowerCase() === 'true',
+        got:         (row[8] || '').toString().toLowerCase() === 'true',
+        imageUrl:    row[9] || '',
+        rowIndex:    i + 2
     }));
     populateSetDropdown();
     applyFilters();
 }
 
-/* ── GOOGLE SHEETS ── */
-async function loadCardsFromGoogleSheets() {
-    try {
-        const res  = await fetch('/api/read');
-        const data = await res.json();
-        if (!data.success) { console.error("Failed to load"); return; }
-
-        cards = data.rows.slice(1).map((row, i) => ({
-            id: row[0]||"", year: row[1]||"", set: row[2]||"", number: row[3]||"",
-            name: row[4]||"", description: row[5]||"", variant: row[6]||"",
-            collecting: (row[7]||"").toString().toLowerCase() === "true",
-            got: (row[8]||"").toString().toLowerCase() === "true",
-            imageUrl: row[9]||"",
-            rowIndex: i + 2
+/* ── EXCEL (preserved) ── */
+async function loadExcelFile() {
+    const fi = document.getElementById('excelFile');
+    if (!fi.files.length) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 });
+        cards = rows.slice(1).map((row, i) => ({
+            id: row[0]||'', year: row[1]||'', set: row[2]||'', number: row[3]||'',
+            name: row[4]||'', description: row[5]||'', variant: row[6]||'',
+            collecting: (row[7]||'').toString().toLowerCase() === 'true',
+            got: (row[8]||'').toString().toLowerCase() === 'true',
+            imageUrl: row[9]||'', rowIndex: i + 2
         }));
-
-        populateSetDropdown();
-        applyFilters();
-    } catch (err) {
-        console.error("Error loading Google Sheets:", err);
-    }
+        populateSetDropdown(); applyFilters();
+    };
+    reader.readAsArrayBuffer(fi.files[0]);
 }
 
-/* ── BACKEND INFO PANEL ── */
-function showBackendInfo() { document.getElementById("backendPanel").classList.add("open"); }
-function closeBackendInfo() { document.getElementById("backendPanel").classList.remove("open"); }
+/* ── PDF EXPORTS ── */
+function exportMissingPDF() {
+    const saved = filteredCards;
+    filteredCards = cards.filter(c => !c.got);
+    renderCardGrid();
+    document.getElementById('printSubtitle').textContent = `Missing Cards - ${filteredCards.length} cards - ${new Date().toLocaleDateString('en-GB')}`;
+    window.print();
+    filteredCards = saved; renderCardGrid();
+}
 
-/* ── NEEDS LIST PANEL ── */
-let needsUseCurrentFilter = false;
+function exportVisiblePDF() {
+    const sv = document.getElementById('setFilter').value;
+    document.getElementById('printSubtitle').textContent = `${currentView} - ${sv ? sv.replace('|||',' ') : 'All Sets'} - ${filteredCards.length} cards - ${new Date().toLocaleDateString('en-GB')}`;
+    window.print();
+}
 
+/* ── NEEDS LIST ── */
 function openNeedsPanel() {
     needsUseCurrentFilter = false;
     buildNeedsSetList();
-    updateNeedsCurrentFilterLabel();
-    document.getElementById("needsCurrentFilter").classList.remove("selected");
-    document.getElementById("needsCurrentFilterCheck").checked = false;
-    document.getElementById("needsPanel").classList.add("open");
+    const sv = document.getElementById('setFilter').value;
+    document.getElementById('needsCurrentFilterLabel').textContent = `Current: ${currentView} - ${sv ? sv.replace('|||',' ') : 'All Sets'}`;
+    document.getElementById('needsCurrentFilter').classList.remove('selected');
+    document.getElementById('needsCurrentFilterCheck').checked = false;
+    showPanel('needsPanel');
     updateNeedsDownloadBtn();
-}
-
-function closeNeedsPanel() {
-    document.getElementById("needsPanel").classList.remove("open");
-}
-
-function updateNeedsCurrentFilterLabel() {
-    const setVal    = document.getElementById("setFilter").value;
-    const search    = document.getElementById("searchBox").value;
-    const setLabel  = setVal ? setVal.replace("|||", " ") : "All Sets";
-    const viewLabel = currentView.charAt(0).toUpperCase() + currentView.slice(1);
-    const searchBit = search ? ` · "${search}"` : "";
-    document.getElementById("needsCurrentFilterLabel").textContent =
-        `Current view: ${viewLabel} · ${setLabel}${searchBit}`;
 }
 
 function toggleNeedsCurrentFilter() {
     needsUseCurrentFilter = !needsUseCurrentFilter;
-    document.getElementById("needsCurrentFilterCheck").checked = needsUseCurrentFilter;
-    document.getElementById("needsCurrentFilter").classList.toggle("selected", needsUseCurrentFilter);
-    if (needsUseCurrentFilter) {
-        document.querySelectorAll('.needs-set-item').forEach(el => {
-            el.classList.remove("selected");
-            el.querySelector("input").checked = false;
-        });
-    }
+    document.getElementById('needsCurrentFilterCheck').checked = needsUseCurrentFilter;
+    document.getElementById('needsCurrentFilter').classList.toggle('selected', needsUseCurrentFilter);
+    if (needsUseCurrentFilter) document.querySelectorAll('.needs-set-item').forEach(el => { el.classList.remove('selected'); el.querySelector('input').checked = false; });
     updateNeedsDownloadBtn();
 }
 
 function buildNeedsSetList() {
-    const container = document.getElementById("needsSetList");
-    container.innerHTML = "";
-
-    const comboMap = new Map();
-    cards.forEach(c => {
-        if (!c.collecting) return;
-        const key = `${c.set}|||${c.year}`;
-        if (!comboMap.has(key)) comboMap.set(key, { set: c.set, year: c.year, total: 0, got: 0 });
-        comboMap.get(key).total++;
-        if (c.got) comboMap.get(key).got++;
+    const c = document.getElementById('needsSetList');
+    c.innerHTML = '';
+    const map = new Map();
+    cards.forEach(card => {
+        if (!card.collecting) return;
+        const k = `${card.set}|||${card.year}`;
+        if (!map.has(k)) map.set(k, { set: card.set, year: card.year, total: 0, got: 0 });
+        map.get(k).total++;
+        if (card.got) map.get(k).got++;
     });
-
-    const combos = Array.from(comboMap.entries()).sort(([,a],[,b]) => {
-        const yc = b.year.localeCompare(a.year);
-        return yc !== 0 ? yc : a.set.localeCompare(b.set);
-    });
-
-    if (combos.length === 0) {
-        container.innerHTML = `<div style="color:var(--white-dim);font-size:13px;grid-column:1/-1">No collecting cards found.</div>`;
-        return;
-    }
-
-    combos.forEach(([key, { set, year, total, got }]) => {
-        const missing = total - got;
-        const div = document.createElement("div");
-        div.className = "needs-set-item";
+    Array.from(map.entries()).sort(([,a],[,b]) => { const yc = b.year.localeCompare(a.year); return yc !== 0 ? yc : a.set.localeCompare(b.set); })
+    .forEach(([key, { set, year, total, got }]) => {
+        const div = document.createElement('div');
+        div.className = 'needs-set-item';
         div.dataset.key = key;
-        div.innerHTML = `
-            <input type="checkbox" onclick="event.stopPropagation(); toggleNeedsSet('${key}', this)">
-            <div>
-                <div class="needs-set-name">${set} ${year}</div>
-                <div class="needs-set-count">${missing} needed · ${total} collecting</div>
-            </div>`;
-        div.addEventListener("click", () => {
-            const cb = div.querySelector("input");
-            cb.checked = !cb.checked;
-            toggleNeedsSet(key, cb);
-        });
-        container.appendChild(div);
+        div.innerHTML = `<input type="checkbox" onclick="event.stopPropagation();toggleNeedsSet('${key}',this)"><div><div class="needs-set-name">${set} ${year}</div><div class="needs-set-count">${total - got} needed of ${total}</div></div>`;
+        div.addEventListener('click', () => { const cb = div.querySelector('input'); cb.checked = !cb.checked; toggleNeedsSet(key, cb); });
+        c.appendChild(div);
     });
 }
 
-function toggleNeedsSet(key, checkbox) {
+function toggleNeedsSet(key, cb) {
     const item = document.querySelector(`.needs-set-item[data-key="${key}"]`);
-    item.classList.toggle("selected", checkbox.checked);
-    if (checkbox.checked) {
-        needsUseCurrentFilter = false;
-        document.getElementById("needsCurrentFilterCheck").checked = false;
-        document.getElementById("needsCurrentFilter").classList.remove("selected");
-    }
+    item.classList.toggle('selected', cb.checked);
+    if (cb.checked) { needsUseCurrentFilter = false; document.getElementById('needsCurrentFilterCheck').checked = false; document.getElementById('needsCurrentFilter').classList.remove('selected'); }
     updateNeedsDownloadBtn();
 }
 
 function toggleSelectAllSets() {
     const items = document.querySelectorAll('.needs-set-item');
-    const allChecked = Array.from(items).every(el => el.classList.contains("selected"));
-    items.forEach(el => {
-        const cb = el.querySelector("input");
-        cb.checked = !allChecked;
-        el.classList.toggle("selected", !allChecked);
-    });
-    if (!allChecked) {
-        needsUseCurrentFilter = false;
-        document.getElementById("needsCurrentFilterCheck").checked = false;
-        document.getElementById("needsCurrentFilter").classList.remove("selected");
-    }
+    const all = Array.from(items).every(el => el.classList.contains('selected'));
+    items.forEach(el => { el.querySelector('input').checked = !all; el.classList.toggle('selected', !all); });
     updateNeedsDownloadBtn();
 }
 
 function updateNeedsDownloadBtn() {
-    const hasSelection = needsUseCurrentFilter ||
-        document.querySelectorAll('.needs-set-item.selected').length > 0;
-    document.getElementById("needsDownloadBtn").disabled = !hasSelection;
+    const has = needsUseCurrentFilter || document.querySelectorAll('.needs-set-item.selected').length > 0;
+    document.getElementById('needsDownloadBtn').disabled = !has;
 }
 
 function downloadNeedsList() {
-    let selectedCards = [];
-
-    if (needsUseCurrentFilter) {
-        selectedCards = filteredCards.filter(c => c.collecting);
-    } else {
-        const selectedKeys = new Set(
-            Array.from(document.querySelectorAll('.needs-set-item.selected')).map(el => el.dataset.key)
-        );
-        selectedCards = cards.filter(c => selectedKeys.has(`${c.set}|||${c.year}`) && c.collecting);
-    }
-
-    if (selectedCards.length === 0) return;
-
-    // Group by set+year
+    let sc = needsUseCurrentFilter ? filteredCards.filter(c => c.collecting) :
+        (() => { const keys = new Set(Array.from(document.querySelectorAll('.needs-set-item.selected')).map(el => el.dataset.key)); return cards.filter(c => keys.has(`${c.set}|||${c.year}`) && c.collecting); })();
+    if (!sc.length) return;
     const groups = new Map();
-    selectedCards.forEach(c => {
-        const key = `${c.set} ${c.year}`;
-        if (!groups.has(key)) groups.set(key, []);
-        groups.get(key).push(c);
-    });
-
-    // Build print DOM
-    const printArea = document.getElementById("needsPrintArea");
-    printArea.innerHTML = "";
-
-    groups.forEach((groupCards, groupName) => {
-        const section = document.createElement("div");
-        section.className = "needs-print-section";
-
-        const title = document.createElement("div");
-        title.className = "needs-print-section-title";
-        title.textContent = groupName;
-        section.appendChild(title);
-
-        const grid = document.createElement("div");
-        grid.className = "needs-print-grid";
-
-        groupCards.forEach(c => {
-            const card = document.createElement("div");
-            card.className = "needs-print-card";
-            card.innerHTML = `
-                <div class="needs-print-name">${c.name}</div>
-                <div class="needs-print-meta">#${c.number}${c.variant ? " · " + c.variant : ""}</div>
-                ${!c.got ? '<div class="needs-print-badge">STILL NEEDED</div>' : ""}
-            `;
-            grid.appendChild(card);
-        });
-
-        section.appendChild(grid);
-        printArea.appendChild(section);
-    });
-
-    const total  = selectedCards.length;
-    const needed = selectedCards.filter(c => !c.got).length;
-    document.getElementById("printSubtitle").textContent =
-        `Needs List · ${groups.size} set${groups.size !== 1 ? "s" : ""} · ${needed} needed of ${total} collecting · ${new Date().toLocaleDateString('en-GB')}`;
-
-    closeNeedsPanel();
+    sc.forEach(c => { const k = `${c.set} ${c.year}`; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(c); });
+    const pa = document.getElementById('needsPrintArea');
+    pa.innerHTML = Array.from(groups.entries()).map(([name, gCards]) => `
+        <div class="needs-print-section">
+            <div class="needs-print-section-title">${name}</div>
+            <div class="needs-print-grid">${gCards.map(c => `<div class="needs-print-card"><div class="needs-print-name">${c.name}</div><div class="needs-print-meta">#${c.number}${c.variant ? ' - '+c.variant : ''}</div>${!c.got ? '<div class="needs-print-badge">STILL NEEDED</div>' : ''}</div>`).join('')}</div>
+        </div>`).join('');
+    const needed = sc.filter(c => !c.got).length;
+    document.getElementById('printSubtitle').textContent = `Needs List - ${groups.size} sets - ${needed} needed of ${sc.length} - ${new Date().toLocaleDateString('en-GB')}`;
+    hidePanel('needsPanel');
     window.print();
-    printArea.innerHTML = "";
-}
-
-document.addEventListener("keydown", e => { if (e.key === "Escape") { closeBackendInfo(); closeNeedsPanel(); } });
-
-/* ── PDF EXPORT ── */
-function setPrintHeader(subtitle) {
-    document.getElementById("printSubtitle").textContent = subtitle;
-}
-
-function exportMissingPDF() {
-    // Temporarily override filteredCards to all missing cards
-    const saved = filteredCards;
-    filteredCards = cards.filter(c => !c.got);
-    renderCardGrid();
-    // Add print-status spans
-    document.querySelectorAll('.card.is-missing').forEach(el => {
-        const s = document.createElement('span');
-        s.className = 'print-status missing';
-        s.textContent = 'MISSING';
-        el.querySelector('.card-body').appendChild(s);
-    });
-    setPrintHeader(`Missing Cards · ${filteredCards.length} cards · Printed ${new Date().toLocaleDateString('en-GB')}`);
-    window.print();
-    // Restore
-    filteredCards = saved;
-    renderCardGrid();
-}
-
-function exportVisiblePDF() {
-    // Add print-status to currently visible cards
-    document.querySelectorAll('.card').forEach(el => {
-        const s = document.createElement('span');
-        s.className = 'print-status ' + (el.classList.contains('is-got') ? 'got' : 'missing');
-        s.textContent = el.classList.contains('is-got') ? 'OBTAINED' : 'MISSING';
-        el.querySelector('.card-body').appendChild(s);
-    });
-    const setVal = document.getElementById("setFilter").value;
-    const setLabel = setVal ? setVal.replace("|||", " ") : "All Sets";
-    const viewLabel = currentView.charAt(0).toUpperCase() + currentView.slice(1);
-    setPrintHeader(`${viewLabel} · ${setLabel} · ${filteredCards.length} cards · Printed ${new Date().toLocaleDateString('en-GB')}`);
-    window.print();
-    renderCardGrid(); // remove the injected spans by re-rendering
+    pa.innerHTML = '';
 }
 
 /* ── ORDERS ── */
-let orders = [];
-let selectedCardIds = [];
-
-function switchToOrders(btn) {
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById("collectionView").classList.add("hidden");
-    document.getElementById("ordersView").classList.add("active");
-    renderOrders();
-}
-
-function switchView(view, btn) {
-    currentView = view;
-    document.getElementById("ordersView").classList.remove("active");
-    document.getElementById("collectionView").classList.remove("hidden");
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-    applyFilters();
-}
-
 function openOrderModal() {
-    document.getElementById("orderSeller").value = "";
-    document.getElementById("orderDate").value = new Date().toISOString().split("T")[0];
-    document.getElementById("orderPrice").value = "";
+    document.getElementById('orderSeller').value = '';
+    document.getElementById('orderDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('orderPrice').value = '';
     selectedCardIds = [];
     renderSelectedChips();
     filterCardPicker();
-    document.getElementById("orderModal").classList.add("open");
-}
-
-function closeOrderModal() {
-    document.getElementById("orderModal").classList.remove("open");
+    showPanel('orderModal');
 }
 
 function filterCardPicker() {
-    const search = document.getElementById("cardPickerSearch").value.toLowerCase();
-    const list   = document.getElementById("cardPickerList");
-    const results = cards.filter(c =>
-        !c.got &&
-        (c.name.toLowerCase().includes(search) ||
-         c.set.toLowerCase().includes(search) ||
-         String(c.number).includes(search))
-    ).slice(0, 40);
-
+    const search = document.getElementById('cardPickerSearch').value.toLowerCase();
+    const list = document.getElementById('cardPickerList');
+    const results = cards.filter(c => !c.got && (c.name.toLowerCase().includes(search) || c.set.toLowerCase().includes(search) || String(c.number).includes(search))).slice(0, 40);
     list.innerHTML = results.length === 0
-        ? `<div class="card-picker-item" style="cursor:default;color:var(--white-faint)">No cards found</div>`
-        : results.map(c => `
-            <div class="card-picker-item ${selectedCardIds.includes(c.id) ? 'selected' : ''}"
-                 onclick="toggleCardPick('${c.id}')">
-                <span>${c.name} <small>#${c.number}</small></span>
-                <span class="picker-set">${c.set} ${c.year}</span>
-            </div>`).join("");
+        ? '<div class="card-picker-item" style="cursor:default">No cards found</div>'
+        : results.map(c => `<div class="card-picker-item ${selectedCardIds.includes(c.id) ? 'selected' : ''}" onclick="toggleCardPick('${c.id}')"><span>${c.name} #${c.number}</span><span class="picker-set">${c.set} ${c.year}</span></div>`).join('');
 }
 
 function toggleCardPick(cardId) {
-    if (selectedCardIds.includes(cardId)) {
-        selectedCardIds = selectedCardIds.filter(id => id !== cardId);
-    } else {
-        selectedCardIds.push(cardId);
-    }
-    renderSelectedChips();
-    filterCardPicker();
+    selectedCardIds = selectedCardIds.includes(cardId) ? selectedCardIds.filter(id => id !== cardId) : [...selectedCardIds, cardId];
+    renderSelectedChips(); filterCardPicker();
 }
 
 function renderSelectedChips() {
-    const container = document.getElementById("selectedChips");
-    container.innerHTML = selectedCardIds.map(id => {
+    document.getElementById('selectedChips').innerHTML = selectedCardIds.map(id => {
         const c = cards.find(x => x.id === id);
-        if (!c) return "";
-        return `<div class="selected-chip">
-            ${c.name} #${c.number}
-            <button onclick="toggleCardPick('${c.id}')">✕</button>
-        </div>`;
-    }).join("");
+        return c ? `<div class="selected-chip">${c.name} #${c.number}<button onclick="toggleCardPick('${c.id}')">x</button></div>` : '';
+    }).join('');
 }
 
 async function saveOrder() {
-    const seller = document.getElementById("orderSeller").value.trim();
-    const date   = document.getElementById("orderDate").value;
-    const price  = document.getElementById("orderPrice").value;
-
-    if (!seller) { document.getElementById("orderSeller").focus(); return; }
-    if (selectedCardIds.length === 0) { document.getElementById("cardPickerSearch").focus(); return; }
-
-    const order = {
-        id: Date.now().toString(),
-        seller,
-        date,
-        price: price ? parseFloat(price).toFixed(2) : "",
-        cardIds: [...selectedCardIds],
-        received: [] // card ids marked as received
-    };
-
+    const seller = document.getElementById('orderSeller').value.trim();
+    if (!seller || !selectedCardIds.length) return;
+    const order = { id: Date.now().toString(), seller, date: document.getElementById('orderDate').value, price: parseFloat(document.getElementById('orderPrice').value || 0).toFixed(2), cardIds: [...selectedCardIds], received: [] };
     orders.unshift(order);
-    closeOrderModal();
+    hidePanel('orderModal');
     renderOrders();
-    await saveOrdersToSheets();
+    fetch('/api/orders/write', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orders }) }).catch(err => console.error('Orders save failed:', err));
 }
 
 function renderOrders() {
-    const container = document.getElementById("ordersList");
+    const container = document.getElementById('ordersList');
     const pending = orders.filter(o => o.received.length < o.cardIds.length);
-    const completed = orders.filter(o => o.cardIds.length > 0 && o.received.length >= o.cardIds.length);
-    const allOrders = [...pending, ...completed];
-
-    document.getElementById("ordersCount").textContent =
-        pending.length > 0 ? `· ${pending.length} awaiting` : "· all received";
-
-    if (allOrders.length === 0) {
-        container.innerHTML = `
-            <div class="orders-empty">
-                <span class="empty-icon">📦</span>
-                <p>No orders yet</p>
-            </div>`;
-        return;
-    }
-
-    container.innerHTML = allOrders.map(order => {
-        const allReceived = order.received.length >= order.cardIds.length;
-        const chips = order.cardIds.map(cardId => {
-            const c = cards.find(x => x.id === cardId);
-            const name = c ? `${c.name} #${c.number}` : cardId;
-            const isReceived = order.received.includes(cardId);
-            return `<div class="order-card-chip ${isReceived ? 'received' : ''}"
-                        onclick="toggleCardReceived('${order.id}', '${cardId}')">
-                <span class="chip-check">${isReceived ? '✓' : '○'}</span>
-                ${name}
-            </div>`;
-        }).join("");
-
-        return `<div class="order-card ${allReceived ? 'all-received' : ''}" data-order="${order.id}">
+    const done = orders.filter(o => o.cardIds.length > 0 && o.received.length >= o.cardIds.length);
+    document.getElementById('ordersCount').textContent = pending.length > 0 ? `- ${pending.length} awaiting` : '- all received';
+    if (!orders.length) { container.innerHTML = '<div class="orders-empty"><span class="empty-icon">box</span><p>No orders yet</p></div>'; return; }
+    container.innerHTML = [...pending, ...done].map(order => {
+        const allDone = order.received.length >= order.cardIds.length;
+        const chips = order.cardIds.map(cid => {
+            const c = cards.find(x => x.id === cid);
+            const name = c ? `${c.name} #${c.number}` : cid;
+            const isRec = order.received.includes(cid);
+            return `<div class="order-card-chip ${isRec ? 'received' : ''}" onclick="toggleCardReceived('${order.id}','${cid}')"><span>${isRec ? 'v' : 'o'}</span> ${name}</div>`;
+        }).join('');
+        return `<div class="order-card ${allDone ? 'all-received' : ''}">
             <div class="order-header">
-                <div>
-                    <div class="order-seller">${order.seller}</div>
-                    <div class="order-meta">
-                        ${order.date ? `<div class="order-meta-item">Ordered<span>${formatDate(order.date)}</span></div>` : ""}
-                        ${order.price ? `<div class="order-meta-item">Paid<span>£${order.price}</span></div>` : ""}
-                        <div class="order-meta-item">Cards<span>${order.cardIds.length}</span></div>
-                    </div>
-                </div>
-                <div class="order-status ${allReceived ? 'received' : 'awaiting'}">
-                    ${allReceived ? '✓ All Received' : `${order.received.length}/${order.cardIds.length} Received`}
-                </div>
+                <div><div class="order-seller">${order.seller}</div><div class="order-meta">${order.date ? `<div class="order-meta-item">Ordered<span>${new Date(order.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</span></div>` : ''}${order.price && order.price !== '0.00' ? `<div class="order-meta-item">Paid<span>GBP${order.price}</span></div>` : ''}<div class="order-meta-item">Cards<span>${order.cardIds.length}</span></div></div></div>
+                <div class="order-status ${allDone ? 'received' : 'awaiting'}">${allDone ? 'All Received' : `${order.received.length}/${order.cardIds.length} Received`}</div>
             </div>
             <div class="order-cards-list">${chips}</div>
         </div>`;
-    }).join("");
-}
-
-function formatDate(dateStr) {
-    if (!dateStr) return "";
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    }).join('');
 }
 
 async function toggleCardReceived(orderId, cardId) {
     const order = orders.find(o => o.id === orderId);
     if (!order) return;
-
-    if (order.received.includes(cardId)) {
-        order.received = order.received.filter(id => id !== cardId);
-    } else {
-        order.received.push(cardId);
-    }
-
+    order.received = order.received.includes(cardId) ? order.received.filter(id => id !== cardId) : [...order.received, cardId];
     renderOrders();
-    await saveOrdersToSheets();
-}
-
-async function saveOrdersToSheets() {
-    try {
-        await fetch('/api/orders/write', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ orders })
-        });
-    } catch (err) {
-        console.error("Failed to save orders:", err);
-    }
+    fetch('/api/orders/write', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orders }) }).catch(err => console.error('Orders save failed:', err));
 }
 
 async function loadOrdersFromSheets() {
     try {
-        const res  = await fetch('/api/orders/read');
-        if (!res.ok) return; // silently skip if route doesn't exist
+        const res = await fetch('/api/orders/read');
+        if (!res.ok) return;
         const data = await res.json();
         if (data.success && data.orders) orders = data.orders;
     } catch (err) {
-        console.error("Failed to load orders:", err);
+        console.error('Orders load failed:', err);
     }
 }
 
 /* ── IMAGE MODAL ── */
-let imgModalCardId  = null;
-let imgSelectedUrl  = null;
-
 function openImgModal(cardId) {
     const card = cards.find(c => c.id === cardId);
     if (!card) return;
     imgModalCardId = cardId;
     imgSelectedUrl = card.imageUrl || null;
-
-    document.getElementById("imgModalTitle").textContent = card.name;
-    document.getElementById("imgModalSub").textContent   = `${card.set} ${card.year} · #${card.number}`;
-    document.getElementById("imgResults").innerHTML      = "";
-    document.getElementById("imgSaveBtn").disabled       = true;
-
-    const preview = document.getElementById("imgMainPreview");
-    if (card.imageUrl) {
-        preview.src          = card.imageUrl;
-        preview.style.display = "block";
-    } else {
-        preview.style.display = "none";
-    }
-
-    document.getElementById("imgSearchStatus").textContent = "Searching for card image…";
-    document.getElementById("imgSearchStatus").style.display = "block";
-    document.getElementById("imgModal").classList.add("open");
-
-    // Auto-search
-    const query = `${card.name} ${card.set} ${card.year} trading card`;
-    searchCardImage(query, card);
-}
-
-async function searchCardImage(query, card) {
-    try {
-        const res  = await fetch('/api/image-search', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query })
+    document.getElementById('imgModalTitle').textContent = card.name;
+    document.getElementById('imgModalSub').textContent = `${card.set} ${card.year} - #${card.number}`;
+    document.getElementById('imgResults').innerHTML = '';
+    document.getElementById('imgSaveBtn').disabled = true;
+    const preview = document.getElementById('imgMainPreview');
+    if (card.imageUrl) { preview.src = card.imageUrl; preview.style.display = 'block'; document.getElementById('imgSaveBtn').disabled = false; }
+    else { preview.style.display = 'none'; }
+    document.getElementById('imgSearchStatus').textContent = 'Searching...';
+    showPanel('imgModal');
+    fetch('/api/image-search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: `${card.name} ${card.set} ${card.year} trading card` }) })
+    .then(r => r.json()).then(data => {
+        document.getElementById('imgSearchStatus').textContent = '';
+        if (!data.success || !data.images.length) { document.getElementById('imgSearchStatus').textContent = 'No images found.'; return; }
+        const el = document.getElementById('imgResults');
+        el.innerHTML = data.images.map((img, i) => `<img class="img-result-thumb" src="${img.thumb}" data-full="${img.url}" loading="lazy" alt="Result ${i+1}">`).join('');
+        el.querySelectorAll('.img-result-thumb').forEach(thumb => {
+            thumb.addEventListener('click', () => {
+                imgSelectedUrl = thumb.dataset.full;
+                el.querySelectorAll('.img-result-thumb').forEach(t => t.classList.remove('selected'));
+                thumb.classList.add('selected');
+                const p = document.getElementById('imgMainPreview');
+                p.src = thumb.dataset.full; p.style.display = 'block';
+                document.getElementById('imgSaveBtn').disabled = false;
+            });
         });
-        const data = await res.json();
-
-        document.getElementById("imgSearchStatus").style.display = "none";
-
-        if (!data.success || !data.images.length) {
-            document.getElementById("imgSearchStatus").textContent = "No images found — try a different search.";
-            document.getElementById("imgSearchStatus").style.display = "block";
-            return;
-        }
-
-        const resultsEl = document.getElementById("imgResults");
-        resultsEl.innerHTML = data.images.map((img, i) => `
-            <img class="img-result-thumb ${imgSelectedUrl === img.url ? 'selected' : ''}"
-                 src="${img.thumb}"
-                 data-full="${img.url}"
-                 loading="lazy" alt="Card image ${i+1}">`
-        ).join("");
-
-        // Attach click handlers properly to avoid URL quoting issues
-        resultsEl.querySelectorAll('.img-result-thumb').forEach(el => {
-            el.addEventListener('click', () => selectImage(el.dataset.full, el));
-        });
-
-        // Auto-select first if no existing image
-        if (!card.imageUrl && data.images.length > 0) {
-            const first = resultsEl.querySelector('.img-result-thumb');
-            if (first) selectImage(first.dataset.full, first);
-        }
-
-    } catch (err) {
-        document.getElementById("imgSearchStatus").textContent = "Search failed — check your API credentials.";
-    }
-}
-
-function selectImage(url, el) {
-    imgSelectedUrl = url;
-    document.querySelectorAll('.img-result-thumb').forEach(t => t.classList.remove('selected'));
-    el.classList.add('selected');
-    const preview      = document.getElementById("imgMainPreview");
-    preview.src        = url;
-    preview.style.display = "block";
-    document.getElementById("imgSaveBtn").disabled = false;
+        if (!card.imageUrl) { const first = el.querySelector('.img-result-thumb'); if (first) first.click(); }
+    }).catch(() => { document.getElementById('imgSearchStatus').textContent = 'Search failed - check API credentials.'; });
 }
 
 async function saveCardImage() {
     if (!imgSelectedUrl || !imgModalCardId) return;
     const card = cards.find(c => c.id === imgModalCardId);
     if (!card) return;
-
-    document.getElementById("imgSaveBtn").disabled   = true;
-    document.getElementById("imgSaveBtn").textContent = "Saving…";
-
+    const btn = document.getElementById('imgSaveBtn');
+    btn.disabled = true; btn.textContent = 'Saving...';
     try {
-        await fetch('/api/image-save', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ rowIndex: card.rowIndex, imageUrl: imgSelectedUrl, sheet: 'main' })
-        });
+        await fetch('/api/image-save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rowIndex: card.rowIndex, imageUrl: imgSelectedUrl, sheet: 'main' }) });
         card.imageUrl = imgSelectedUrl;
-        closeImgModal();
+        hidePanel('imgModal');
         applyFilters();
-    } catch (err) {
-        console.error("Failed to save image:", err);
-    }
-
-    document.getElementById("imgSaveBtn").textContent = "Save Image";
-}
-
-function closeImgModal() {
-    document.getElementById("imgModal").classList.remove("open");
-    imgModalCardId = null;
+    } catch (err) { console.error('Image save failed:', err); }
+    btn.textContent = 'Save Image';
 }
 
 /* ── INIT ── */
 (async function init() {
     showSkeletons(12);
-    try {
-        await loadCardsFromGoogleSheets();
-    } catch (err) {
-        console.error("Failed to load cards:", err);
-        document.getElementById("cardGrid").innerHTML = `<div class="empty-state"><p>Failed to load cards — check console</p></div>`;
-    }
-    try {
-        await loadOrdersFromSheets();
-    } catch (err) {
-        console.error("Failed to load orders:", err);
-    }
+    try { await loadCardsFromGoogleSheets(); } catch (err) { console.error('Cards load failed:', err); document.getElementById('cardGrid').innerHTML = '<div class="empty-state"><p>Failed to load - check console</p></div>'; }
+    try { await loadOrdersFromSheets(); } catch (err) { console.error('Orders load failed:', err); }
 })();
 </script>
-<!-- Hidden needs list print area -->
-<div id="needsPrintArea" style="display:none"></div>
-
-<!-- Image Modal -->
-<div class="img-modal" id="imgModal">
-    <div class="img-modal-box">
-        <button class="close-btn" onclick="closeImgModal()">✕</button>
-        <h3 id="imgModalTitle"></h3>
-        <div class="img-modal-sub" id="imgModalSub"></div>
-        <img class="img-main-preview" id="imgMainPreview" src="" alt="" style="display:none">
-        <div id="imgSearchStatus" class="img-searching">Searching for card image…</div>
-        <div class="img-results" id="imgResults"></div>
-        <div class="img-modal-actions">
-            <button class="img-cancel-btn" onclick="closeImgModal()">Cancel</button>
-            <button class="img-save-btn" id="imgSaveBtn" onclick="saveCardImage()" disabled>Save Image</button>
-        </div>
-    </div>
-</div>
-
 </body>
 </html>
