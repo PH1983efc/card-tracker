@@ -278,17 +278,13 @@
         <button class="close-btn" onclick="closeImgModal()" style="position:absolute;top:12px;right:12px;background:transparent;border:1px solid var(--border);color:var(--white-dim);font-size:16px;width:28px;height:28px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;">x</button>
         <h3 id="imgModalTitle"></h3>
         <div class="img-modal-sub" id="imgModalSub"></div>
-        <img class="img-main-preview" id="imgMainPreview" src="" alt="" style="display:none">
-        <div id="imgSearchStatus" class="img-searching"></div>
-        <div class="img-results" id="imgResults"></div>
-        <!-- Manual URL paste -->
-        <div class="img-manual">
-            <div class="img-manual-label">Or paste an image URL directly</div>
-            <div class="img-manual-row">
-                <input type="text" id="imgManualUrl" placeholder="https://example.com/card-image.jpg" oninput="previewManualUrl()">
-                <button class="img-manual-btn" onclick="useManualUrl()">Use</button>
-            </div>
+        <img class="img-main-preview" id="imgMainPreview" src="" alt="" style="display:none;margin-bottom:14px;">
+        <div class="img-manual-label">Paste a direct image URL</div>
+        <div class="img-manual-row">
+            <input type="text" id="imgManualUrl" placeholder="https://i.imgur.com/example.jpg" oninput="previewManualUrl()">
+            <button class="img-manual-btn" onclick="useManualUrl()">Preview</button>
         </div>
+        <p style="font-size:11px;color:var(--white-faint);margin-top:8px;">Find images on <strong style="color:var(--white-dim)">imgur.com</strong>, <strong style="color:var(--white-dim)">mavin.io</strong> or <strong style="color:var(--white-dim)">ebay.com</strong> — right-click the image and copy image address.</p>
         <div class="img-modal-actions">
             <button class="img-cancel-btn" onclick="closeImgModal()">Cancel</button>
             <button class="img-save-btn" id="imgSaveBtn" onclick="saveCardImage()" disabled>Save Image</button>
@@ -696,27 +692,14 @@ function openImgModal(cardId) {
     if (!card) return;
     imgModalCardId = cardId;
     imgSelectedUrl = card.imageUrl || null;
-
     document.getElementById("imgModalTitle").textContent = card.player;
-    document.getElementById("imgModalSub").textContent   = `${card.cardType} · ${card.year} · #${card.cardNo} · ${card.team}`;
-    document.getElementById("imgResults").innerHTML      = "";
-    document.getElementById("imgSaveBtn").disabled       = true;
-
-    const preview = document.getElementById("imgMainPreview");
-    if (card.imageUrl) {
-        preview.src = card.imageUrl;
-        preview.style.display = "block";
-    } else {
-        preview.style.display = "none";
-    }
-
-    document.getElementById("imgSearchStatus").textContent  = "Searching for card image...";
-    document.getElementById("imgSearchStatus").style.display = "block";
+    document.getElementById("imgModalSub").textContent = `${card.cardType} - ${card.year} - #${card.cardNo} - ${card.team}`;
+    document.getElementById("imgSaveBtn").disabled = !card.imageUrl;
     document.getElementById("imgManualUrl").value = "";
+    const preview = document.getElementById("imgMainPreview");
+    if (card.imageUrl) { preview.src = card.imageUrl; preview.style.display = "block"; }
+    else { preview.style.display = "none"; }
     document.getElementById("imgModal").classList.add("open");
-
-    const query = `${card.player} ${card.cardType} Donruss ${card.year} trading card`;
-    searchCardImage(query, card);
 }
 
 function previewManualUrl() {
@@ -731,58 +714,8 @@ function useManualUrl() {
     const url = document.getElementById("imgManualUrl").value.trim();
     if (!url) return;
     imgSelectedUrl = url;
-    document.querySelectorAll(".img-result-thumb").forEach(t => t.classList.remove("selected"));
     const preview = document.getElementById("imgMainPreview");
     preview.src = url;
-    preview.style.display = "block";
-    document.getElementById("imgSaveBtn").disabled = false;
-}
-
-async function searchCardImage(query, card) {
-    try {
-        const res  = await fetch('/api/image-search', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query })
-        });
-        const data = await res.json();
-
-        document.getElementById("imgSearchStatus").style.display = "none";
-
-        if (!data.success || !data.images.length) {
-            document.getElementById("imgSearchStatus").textContent  = "No images found.";
-            document.getElementById("imgSearchStatus").style.display = "block";
-            return;
-        }
-
-        const resultsEl = document.getElementById("imgResults");
-        resultsEl.innerHTML = data.images.map((img, i) => `
-            <img class="img-result-thumb ${imgSelectedUrl === img.url ? 'selected' : ''}"
-                 src="${img.thumb}"
-                 data-full="${img.url}"
-                 loading="lazy" alt="Result ${i+1}">`
-        ).join("");
-
-        resultsEl.querySelectorAll('.img-result-thumb').forEach(el => {
-            el.addEventListener('click', () => selectImage(el.dataset.full, el));
-        });
-
-        if (!card.imageUrl && data.images.length > 0) {
-            const first = resultsEl.querySelector('.img-result-thumb');
-            if (first) selectImage(first.dataset.full, first);
-        }
-
-    } catch (err) {
-        document.getElementById("imgSearchStatus").textContent = "Search failed.";
-    }
-}
-
-function selectImage(url, el) {
-    imgSelectedUrl = url;
-    document.querySelectorAll('.img-result-thumb').forEach(t => t.classList.remove('selected'));
-    el.classList.add('selected');
-    const preview = document.getElementById("imgMainPreview");
-    preview.src   = url;
     preview.style.display = "block";
     document.getElementById("imgSaveBtn").disabled = false;
 }
