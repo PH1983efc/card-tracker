@@ -15,15 +15,13 @@ export default async function handler(req, res) {
 
     const sheets = google.sheets({ version: 'v4', auth });
 
-    // Fetch whole sheet - handles any number of columns including Image URL in J
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.SHEET_ID,
-      range: 'Sheet1', // fetches all used columns automatically
+      range: 'Master',
     });
 
     const rows = response.data.values || [];
     console.log(`Loaded ${rows.length} rows, ${rows[0]?.length || 0} columns`);
-
     res.json({ success: true, rows });
 
   } catch (err) {
