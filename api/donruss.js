@@ -4,7 +4,7 @@ import { google } from 'googleapis';
 
 export const config = { api: { bodyParser: false } };
 
-const SHEET_NAME = 'Donruss'; // Must match your tab name exactly
+const SHEET_NAME = 'Donruss';
 
 export default async function handler(req, res) {
   try {
@@ -19,10 +19,12 @@ export default async function handler(req, res) {
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.SHEET_ID,
-      range: `${SHEET_NAME}!A:H`, // A to H — includes Image URL in column H
+      range: SHEET_NAME, // fetches all used columns including Image URL
     });
 
-    res.json({ success: true, rows: response.data.values || [] });
+    const rows = response.data.values || [];
+    console.log(`Donruss: ${rows.length} rows, ${rows[0]?.length || 0} columns`);
+    res.json({ success: true, rows });
 
   } catch (err) {
     console.error('Donruss read error:', err.message);
