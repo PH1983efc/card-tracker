@@ -208,7 +208,13 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
 .img-result-thumb:hover{border-color:var(--toffee);}
 .img-result-thumb.selected{border-color:var(--got-color);}
 .img-searching{text-align:center;padding:20px;color:var(--white-dim);font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:0.15em;}
-.img-modal-sub{font-size:12px;color:var(--white-dim);margin-bottom:16px;}
+.img-manual{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+.img-manual-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--white-dim);margin-bottom:8px;}
+.img-manual-row{display:flex;gap:8px;}
+.img-manual-row input{flex:1;font-family:'Barlow',sans-serif;font-size:13px;padding:8px 12px;background:var(--surface-2);color:var(--white);border:1px solid var(--border);border-radius:3px;outline:none;transition:border-color 0.2s;}
+.img-manual-row input:focus{border-color:var(--royal);}
+.img-manual-btn{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;padding:8px 16px;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:var(--surface-2);color:var(--white-dim);transition:all 0.2s;white-space:nowrap;}
+.img-manual-btn:hover{color:var(--white);border-color:var(--royal);}
 
 /* PRINT */
 .print-header{display:none;}
@@ -394,6 +400,14 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
         <img class="img-main-preview" id="imgMainPreview" src="" alt="" style="display:none">
         <div id="imgSearchStatus" class="img-searching"></div>
         <div class="img-results" id="imgResults"></div>
+        <!-- Manual URL paste -->
+        <div class="img-manual">
+            <div class="img-manual-label">Or paste an image URL directly</div>
+            <div class="img-manual-row">
+                <input type="text" id="imgManualUrl" placeholder="https://example.com/card-image.jpg" oninput="previewManualUrl()">
+                <button class="img-manual-btn" onclick="useManualUrl()">Use</button>
+            </div>
+        </div>
         <div class="panel-actions">
             <button class="btn-cancel" onclick="hidePanel('imgModal')">Cancel</button>
             <button class="btn-primary" id="imgSaveBtn" onclick="saveCardImage()" disabled>Save Image</button>
@@ -836,6 +850,7 @@ function openImgModal(cardId) {
     if (card.imageUrl) { preview.src = card.imageUrl; preview.style.display = 'block'; document.getElementById('imgSaveBtn').disabled = false; }
     else { preview.style.display = 'none'; }
     document.getElementById('imgSearchStatus').textContent = 'Searching...';
+    document.getElementById('imgManualUrl').value = '';
     showPanel('imgModal');
     fetch('/api/image-search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: `${card.name} ${card.set} ${card.year} trading card` }) })
     .then(r => r.json()).then(data => {
@@ -855,6 +870,25 @@ function openImgModal(cardId) {
         });
         if (!card.imageUrl) { const first = el.querySelector('.img-result-thumb'); if (first) first.click(); }
     }).catch(() => { document.getElementById('imgSearchStatus').textContent = 'Search failed - check API credentials.'; });
+}
+
+function previewManualUrl() {
+    const url = document.getElementById('imgManualUrl').value.trim();
+    if (!url) return;
+    const preview = document.getElementById('imgMainPreview');
+    preview.src = url;
+    preview.style.display = 'block';
+}
+
+function useManualUrl() {
+    const url = document.getElementById('imgManualUrl').value.trim();
+    if (!url) return;
+    imgSelectedUrl = url;
+    document.querySelectorAll('.img-result-thumb').forEach(t => t.classList.remove('selected'));
+    const preview = document.getElementById('imgMainPreview');
+    preview.src = url;
+    preview.style.display = 'block';
+    document.getElementById('imgSaveBtn').disabled = false;
 }
 
 async function saveCardImage() {
