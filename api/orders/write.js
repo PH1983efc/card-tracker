@@ -1,4 +1,4 @@
-// Save this file as: api/orders/write.js
+// Save as: api/orders/write.js
 
 import { google } from 'googleapis';
 
@@ -8,7 +8,7 @@ const SHEET_NAME = 'Orders';
 
 export default async function handler(req, res) {
   try {
-    const body   = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const { orders } = body;
 
     const auth = new google.auth.JWT(
@@ -20,19 +20,17 @@ export default async function handler(req, res) {
 
     const sheets = google.sheets({ version: 'v4', auth });
 
-    // Clear the sheet (keeping header) then rewrite all orders
     await sheets.spreadsheets.values.clear({
       spreadsheetId: process.env.SHEET_ID,
-      range: `${Orders}!A2:A`,
+      range: `${SHEET_NAME}!A2:A`,
     });
 
-    if (orders.length > 0) {
-      const rows = orders.map(order => [JSON.stringify(order)]);
+    if (orders && orders.length > 0) {
       await sheets.spreadsheets.values.update({
         spreadsheetId: process.env.SHEET_ID,
         range: `${SHEET_NAME}!A2`,
         valueInputOption: 'RAW',
-        requestBody: { values: rows },
+        requestBody: { values: orders.map(o => [JSON.stringify(o)]) },
       });
     }
 
