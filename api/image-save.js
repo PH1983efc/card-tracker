@@ -1,6 +1,4 @@
 // Save as: api/image-save.js
-// Saves an image URL back to Google Sheets for a card
-// Works for both the main Everton sheet and Donruss sheet
 
 import { google } from 'googleapis';
 
@@ -10,7 +8,6 @@ export default async function handler(req, res) {
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const { rowIndex, imageUrl, sheet } = body;
-    // sheet: 'main' = Everton (col J = 10), 'donruss' = Donruss (col H = 8)
 
     if (!rowIndex || !imageUrl || !sheet) {
       return res.status(400).json({ success: false, error: 'Missing parameters' });
@@ -23,8 +20,11 @@ export default async function handler(req, res) {
       ['https://www.googleapis.com/auth/spreadsheets']
     );
 
-    const sheets    = google.sheets({ version: 'v4', auth });
-    const sheetName = sheet === 'donruss' ? 'Donruss' : 'Sheet1';
+    const sheets = google.sheets({ version: 'v4', auth });
+
+    // Master sheet: image URL in column J (10)
+    // Donruss sheet: image URL in column H (8)
+    const sheetName = sheet === 'donruss' ? 'Donruss' : 'Master';
     const col       = sheet === 'donruss' ? 'H' : 'J';
 
     await sheets.spreadsheets.values.update({
