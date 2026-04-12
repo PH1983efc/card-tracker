@@ -4,8 +4,6 @@ import { google } from 'googleapis';
 
 export const config = { api: { bodyParser: false } };
 
-const SHEET_NAME = 'Donruss';
-
 export default async function handler(req, res) {
   try {
     const auth = new google.auth.JWT(
@@ -19,7 +17,7 @@ export default async function handler(req, res) {
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.SHEET_ID,
-      range: SHEET_NAME, // fetches all used columns including Image URL
+      range: 'Donruss',
     });
 
     const rows = response.data.values || [];
