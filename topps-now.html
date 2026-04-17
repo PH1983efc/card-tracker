@@ -128,7 +128,7 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
 <nav>
     <button class="nav-btn active" onclick="switchView('all',this)">All</button>
     <button class="nav-btn" onclick="switchView('got',this)">Obtained</button>
-    <button class="nav-btn" onclick="switchView('missing',this)">Missing</button>
+    <button class="nav-btn" onclick="switchView('collected',this)">Collected</button>
 </nav>
 
 <div class="filters">
@@ -189,12 +189,27 @@ function switchView(view, btn) {
 
 function getFiltered() {
     const search = document.getElementById('searchBox').value.toLowerCase();
+
     return cards.filter(c => {
-        const ms = !search || c.player.toLowerCase().includes(search) ||
+        const matchesSearch =
+            !search ||
+            c.player.toLowerCase().includes(search) ||
             c.cardSet.toLowerCase().includes(search) ||
             c.description.toLowerCase().includes(search);
-        const mv = currentView === 'got' ? c.got : currentView === 'missing' ? !c.got : true;
-        return ms && mv;
+
+        let matchesView = true;
+
+        if (currentView === 'obtained') {
+            // Only cards you're collecting (regardless of got)
+            matchesView = c.collecting === true;
+        } 
+        else if (currentView === 'collected') {
+            // Anything you own
+            matchesView = c.got === true;
+        }
+        // 'all' = no filtering
+
+        return matchesSearch && matchesView;
     });
 }
 
@@ -338,8 +353,8 @@ async function loadCards() {
                 printRun:    row[5] || '',
                 variant:     row[6] || '',
                 description: row[7] || '',
-                collecting:  true,
-                got:         (row[9]||'').toString().toLowerCase() === 'true',
+                collecting:  String(row[8]).toLowerCase().includes('true'),
+                got:         String(row[9]).toLowerCase().includes('true'),
                 imageUrl:    row[10] || '',
                 rowIndex:    data.rows.indexOf(row) + 1
             }));
