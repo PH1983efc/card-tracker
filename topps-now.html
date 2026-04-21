@@ -73,6 +73,7 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
 .is-got .toggle-thumb{transform:translateX(18px);background:var(--got-color);}
 .toggle-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.15em;color:var(--white-dim);transition:color 0.2s;text-transform:uppercase;}
 .is-got .toggle-label{color:var(--got-color);}
+.collecting-badge{display:inline-flex;margin-top:6px;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--toffee-light);border:1px solid rgba(212,160,23,0.35);background:rgba(212,160,23,0.07);padding:2px 7px;border-radius:2px;}
 .empty-state{grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--white-dim);}
 .empty-state p{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.3em;}
 .img-modal{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.88);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;}
@@ -125,10 +126,12 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
     <div class="stat"><span class="stat-value" id="statMissing" style="color:var(--missing-color)">0</span><span class="stat-label">Missing</span></div>
 </div>
 
+<!-- 4 tabs: All cards / Collecting (want list) / Obtained (got=true) / Missing (got=false) -->
 <nav>
-    <button class="nav-btn active" onclick="switchView('all',this)">All</button>
+    <button class="nav-btn active" onclick="switchView('all',this)">All Cards</button>
+    <button class="nav-btn" onclick="switchView('collecting',this)">Collecting</button>
     <button class="nav-btn" onclick="switchView('got',this)">Obtained</button>
-    <button class="nav-btn" onclick="switchView('collected',this)">Collected</button>
+    <button class="nav-btn" onclick="switchView('missing',this)">Missing</button>
 </nav>
 
 <div class="filters">
@@ -174,10 +177,10 @@ function animateCounter(el, to) {
 }
 
 function updateStats() {
-    const visible = getFiltered();
-    animateCounter(document.getElementById('statTotal'), visible.length);
-    animateCounter(document.getElementById('statGot'), visible.filter(c=>c.got).length);
-    animateCounter(document.getElementById('statMissing'), visible.filter(c=>!c.got).length);
+    const all = cards;
+    animateCounter(document.getElementById('statTotal'),   all.length);
+    animateCounter(document.getElementById('statGot'),     all.filter(c=>c.got).length);
+    animateCounter(document.getElementById('statMissing'), all.filter(c=>!c.got).length);
 }
 
 function switchView(view, btn) {
@@ -189,7 +192,6 @@ function switchView(view, btn) {
 
 function getFiltered() {
     const search = document.getElementById('searchBox').value.toLowerCase();
-
     return cards.filter(c => {
         const matchesSearch =
             !search ||
@@ -197,17 +199,15 @@ function getFiltered() {
             c.cardSet.toLowerCase().includes(search) ||
             c.description.toLowerCase().includes(search);
 
-        let matchesView = true;
-
-        if (currentView === 'obtained') {
-            // Only cards you're collecting (regardless of got)
-            matchesView = c.collecting === true;
-        } 
-        else if (currentView === 'collected') {
-            // Anything you own
-            matchesView = c.got === true;
-        }
-        // 'all' = no filtering
+        // All Cards  = everything in the sheet
+        // Collecting = collecting flag is true (your want list)
+        // Obtained   = got is true
+        // Missing    = got is false
+        const matchesView =
+            currentView === 'collecting' ? c.collecting === true :
+            currentView === 'got'        ? c.got === true :
+            currentView === 'missing'    ? c.got === false :
+            true;
 
         return matchesSearch && matchesView;
     });
@@ -216,7 +216,6 @@ function getFiltered() {
 function renderCards() {
     const grid = document.getElementById('cardGrid');
     const filtered = getFiltered();
-    updateStats();
 
     if (!filtered.length) {
         grid.innerHTML = '<div class="empty-state"><p>No cards found</p></div>';
@@ -235,6 +234,7 @@ function renderCards() {
             : '<div class="card-image-placeholder"><p>+ Image</p></div>';
 
         const meta = [card.printRun ? 'Print Run: '+card.printRun : '', card.variant].filter(Boolean).join(' - ');
+        const badge = card.collecting ? '<div class="collecting-badge">Collecting</div>' : '';
 
         div.innerHTML = `
             ${imgHtml}
@@ -250,6 +250,7 @@ function renderCards() {
                     <div class="toggle-track"><div class="toggle-thumb"></div></div>
                     <span class="toggle-label">${card.got ? 'OBTAINED' : 'MISSING'}</span>
                 </label>
+                ${badge}
             </div>`;
 
         div.querySelector('.got-toggle').addEventListener('click', () => toggleGot(card.id));
@@ -328,42 +329,53 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeImg(); 
 function showSkeletons() {
     const g = document.getElementById('cardGrid');
     g.innerHTML = '';
-    for (let i=0; i<12; i++) { const s=document.createElement('div'); s.className='skeleton-card'; g.appendChild(s); }
+    for (let i=0; i<12; i++) {
+        const s = document.createElement('div');
+        s.className = 'skeleton-card';
+        g.appendChild(s);
+    }
 }
 
 async function loadCards() {
     try {
         const res = await fetch('/api/topps-now');
         const data = await res.json();
-        if (!data.success) { console.error('API error:', data.error); document.getElementById('cardGrid').innerHTML='<div class="empty-state"><p>Failed to load - check console</p></div>'; return; }
+
+        if (!data.success) {
+            console.error('API error:', data.error);
+            document.getElementById('cardGrid').innerHTML = '<div class="empty-state"><p>Failed to load - check console</p></div>';
+            return;
+        }
 
         console.log('Rows returned:', data.rows.length);
-        if (data.rows.length > 1) console.log('Sample row:', data.rows[1]);
+        if (data.rows.length > 1) console.log('Sample row:', JSON.stringify(data.rows[1]));
 
-        // A=Card ID, B=Year, C=Card Set, D=Card No, E=Player, F=Print Run, G=Variant, H=Description, I=Collecting, J=Got, K=Image
-        // Only show cards marked as collecting=true
-        cards = data.rows.slice(1)
-            .filter(row => (row[8]||'').toString().toLowerCase() === 'true')
-            .map((row, i) => ({
-                id:          String(row[0] || i),
-                year:        String(row[1] || ''),
-                cardSet:     row[2] || '',
-                cardNo:      row[3] || '',
-                player:      row[4] || '',
-                printRun:    row[5] || '',
-                variant:     row[6] || '',
-                description: row[7] || '',
-                collecting:  String(row[8]).toLowerCase().includes('true'),
-                got:         String(row[9]).toLowerCase().includes('true'),
-                imageUrl:    row[10] || '',
-                rowIndex:    data.rows.indexOf(row) + 1
-            }));
+        // Columns: A=Card ID, B=Year, C=Card Set, D=Card No, E=Player Name,
+        //          F=Print Run, G=Variant, H=Date & Description, I=Collecting, J=Got, K=Image
+        cards = data.rows.slice(1).map((row, i) => ({
+            id:          String(row[0] || i),
+            year:        String(row[1] || ''),
+            cardSet:     row[2] || '',
+            cardNo:      row[3] || '',
+            player:      row[4] || '',
+            printRun:    row[5] || '',
+            variant:     row[6] || '',
+            description: row[7] || '',
+            collecting:  (row[8] || '').toString().toLowerCase() === 'true',
+            got:         (row[9] || '').toString().toLowerCase() === 'true',
+            imageUrl:    row[10] || '',
+            rowIndex:    i + 2
+        }));
 
-        console.log('Collecting cards:', cards.length);
+        console.log('Total cards:', cards.length);
+        console.log('Collecting:', cards.filter(c=>c.collecting).length);
+        console.log('Got:', cards.filter(c=>c.got).length);
+
+        updateStats();
         renderCards();
     } catch(err) {
         console.error('Load error:', err);
-        document.getElementById('cardGrid').innerHTML='<div class="empty-state"><p>Failed to load - check console</p></div>';
+        document.getElementById('cardGrid').innerHTML = '<div class="empty-state"><p>Failed to load - check console</p></div>';
     }
 }
 
