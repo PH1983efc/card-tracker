@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Extra Collections</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,300;0,400;0,600;1,300&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --blue:#003399;--blue-deep:#001a5e;--royal:#1a3faa;
+    --white:#f0f4ff;--white-dim:#8a9ac4;--white-faint:#2a3660;
+    --toffee:#d4a017;--toffee-light:#f0bf3a;--toffee-dim:#7a5c0a;
+    --got-color:#2ecc71;--missing-color:#e74c3c;
+    --bg:#010a1f;--surface:#071535;--surface-2:#0c1f4a;
+    --border:#152452;--border-bright:rgba(26,63,170,0.6);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--white);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:
+    radial-gradient(ellipse 100% 60% at 50% 0%,rgba(26,63,170,0.25) 0%,transparent 65%),
+    repeating-linear-gradient(90deg,transparent 0px,transparent 80px,rgba(255,255,255,0.012) 80px,rgba(255,255,255,0.012) 81px);
+    pointer-events:none;z-index:0;}
+header{position:relative;z-index:2;background:linear-gradient(180deg,#000d2e 0%,var(--blue-deep) 60%,transparent 100%);padding:0 0 30px;overflow:hidden;}
+header::before{content:'';position:absolute;top:0;left:-10%;right:-10%;height:6px;background:repeating-linear-gradient(90deg,var(--blue) 0px,var(--blue) 40px,var(--toffee) 40px,var(--toffee) 50px);}
+.header-inner{display:flex;align-items:center;justify-content:center;gap:28px;padding:36px 24px 10px;position:relative;}
+.back-link{position:absolute;left:20px;top:42px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--white-dim);text-decoration:none;border:1px solid var(--border);padding:7px 14px;border-radius:3px;transition:all 0.2s;background:rgba(7,21,53,0.9);}
+.back-link:hover{color:var(--toffee-light);border-color:var(--toffee-dim);}
+.crest{width:72px;height:72px;flex-shrink:0;filter:drop-shadow(0 0 16px rgba(26,63,170,0.8));}
+.header-text{text-align:center;}
+.header-eyebrow{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.45em;color:var(--toffee);text-transform:uppercase;margin-bottom:6px;}
+h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,7vw,58px);color:var(--white);letter-spacing:0.06em;line-height:1;text-shadow:0 2px 20px rgba(0,51,153,0.8);}
+h1 span{color:var(--toffee-light);}
+.header-sub{font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:0.25em;color:var(--white-dim);margin-top:4px;}
+.stats-bar{display:flex;justify-content:center;position:relative;z-index:2;background:rgba(0,13,46,0.85);border-top:1px solid var(--border-bright);border-bottom:1px solid var(--border-bright);}
+.stat{padding:14px 32px;text-align:center;border-right:1px solid var(--border);flex:1;max-width:160px;}
+.stat:first-child{border-left:1px solid var(--border);}
+.stat-value{font-family:'Bebas Neue',sans-serif;font-size:28px;display:block;line-height:1;}
+.stat-label{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:0.2em;color:var(--white-dim);text-transform:uppercase;margin-top:3px;display:block;}
+nav{display:flex;justify-content:center;position:relative;z-index:2;background:var(--surface);border-bottom:2px solid var(--border-bright);flex-wrap:wrap;}
+.nav-btn{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;padding:14px 28px;background:transparent;color:var(--white-dim);border:none;border-bottom:3px solid transparent;margin-bottom:-2px;cursor:pointer;transition:all 0.2s;}
+.nav-btn:hover{color:var(--white);background:rgba(26,63,170,0.15);}
+.nav-btn.active{color:var(--toffee-light);border-bottom-color:var(--toffee);background:rgba(212,160,23,0.07);}
+.filters{display:flex;justify-content:center;gap:12px;padding:14px 20px;position:relative;z-index:2;background:rgba(1,10,31,0.6);border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.filters input{font-family:'Barlow',sans-serif;font-size:14px;padding:9px 14px;background:var(--surface-2);color:var(--white);border:1px solid var(--border);border-radius:3px;outline:none;min-width:260px;}
+.filters input:focus{border-color:var(--royal);}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;padding:20px 20px 50px;position:relative;z-index:1;}
+.skeleton-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden;height:180px;background:linear-gradient(90deg,var(--surface) 0%,var(--surface-2) 40%,var(--surface) 80%);background-size:200% 100%;animation:shimmer 1.4s infinite;}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;animation:cardIn 0.35s ease both;position:relative;}
+@keyframes cardIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.card:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,0.5);border-color:var(--royal);}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.card.is-got::before{background:linear-gradient(90deg,var(--blue),var(--got-color));}
+.card.is-missing::before{background:linear-gradient(90deg,var(--blue),var(--missing-color));}
+.card.flash{animation:flash 0.7s ease forwards;}
+@keyframes flash{0%{box-shadow:0 0 0 2px var(--toffee-light);}50%{box-shadow:0 0 20px 4px rgba(212,160,23,0.4);}100%{box-shadow:none;}}
+.card-top{padding:12px 14px 8px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--surface-2),var(--surface));}
+.card-number{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.2em;color:var(--toffee-dim);margin-bottom:4px;text-transform:uppercase;}
+.card-name{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.04em;color:var(--white);line-height:1.2;margin-bottom:3px;}
+.card-set{font-size:11px;color:var(--white-dim);font-style:italic;margin-bottom:2px;}
+.card-variant{font-size:11px;color:var(--white-faint);}
+.card-body{padding:10px 14px 12px;}
+.got-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;}
+.toggle-track{width:38px;height:20px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid var(--border);position:relative;transition:background 0.25s,border-color 0.25s;flex-shrink:0;}
+.toggle-thumb{width:14px;height:14px;border-radius:50%;background:var(--white-dim);position:absolute;top:2px;left:2px;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),background 0.25s;}
+.is-got .toggle-track{background:rgba(46,204,113,0.15);border-color:var(--got-color);}
+.is-got .toggle-thumb{transform:translateX(18px);background:var(--got-color);}
+.toggle-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.15em;color:var(--white-dim);transition:color 0.2s;text-transform:uppercase;}
+.is-got .toggle-label{color:var(--got-color);}
+.collecting-badge{display:inline-flex;margin-top:6px;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--toffee-light);border:1px solid rgba(212,160,23,0.35);background:rgba(212,160,23,0.07);padding:2px 7px;border-radius:2px;}
+.empty-state{grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--white-dim);}
+.empty-state p{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.3em;}
+::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<header>
+    <a class="back-link" href="https://card-tracker-six.vercel.app/">Back</a>
+    <div class="header-inner">
+        <svg class="crest" viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50 5 L90 18 L90 60 Q90 90 50 105 Q10 90 10 60 L10 18 Z" fill="#003399" stroke="#1a3faa" stroke-width="1.5"/>
+            <path d="M50 12 L84 23 L84 60 Q84 86 50 99 Q16 86 16 60 L16 23 Z" fill="none" stroke="rgba(212,160,23,0.5)" stroke-width="1"/>
+            <rect x="43" y="28" width="14" height="22" fill="#1a3faa"/><rect x="40" y="42" width="20" height="12" fill="#1a3faa"/>
+            <rect x="46" y="20" width="3" height="10" fill="#d4a017"/><rect x="51" y="20" width="3" height="10" fill="#d4a017"/>
+            <text x="50" y="80" font-family="Arial" font-size="7" font-weight="bold" fill="#d4a017" text-anchor="middle" letter-spacing="2">NSNO</text>
+        </svg>
+        <div class="header-text">
+            <div class="header-eyebrow">Card Collection</div>
+            <h1>Extra <span>Collections</span></h1>
+            <div class="header-sub">Everton FC - Additional Cards</div>
+        </div>
+    </div>
+</header>
+
+<div class="stats-bar">
+    <div class="stat"><span class="stat-value" id="statTotal" style="color:var(--white)">0</span><span class="stat-label">Total</span></div>
+    <div class="stat"><span class="stat-value" id="statGot" style="color:var(--got-color)">0</span><span class="stat-label">Obtained</span></div>
+    <div class="stat"><span class="stat-value" id="statMissing" style="color:var(--missing-color)">0</span><span class="stat-label">Missing</span></div>
+</div>
+
+<nav>
+    <button class="nav-btn active" onclick="switchView('all',this)">All Cards</button>
+    <button class="nav-btn" onclick="switchView('collecting',this)">Collecting</button>
+    <button class="nav-btn" onclick="switchView('got',this)">Obtained</button>
+    <button class="nav-btn" onclick="switchView('missing',this)">Missing</button>
+</nav>
+
+<div class="filters">
+    <input type="text" id="searchBox" placeholder="Search by player, set or variant..." oninput="renderCards()">
+</div>
+
+<div id="cardGrid" class="card-grid"></div>
+
+<script>
+let cards = [];
+let currentView = "all";
+
+function animateCounter(el, to) {
+    const from = parseInt(el.textContent) || 0;
+    if (from === to) return;
+    const dur = 400, start = performance.now();
+    (function step(now) {
+        const p = Math.min((now-start)/dur, 1);
+        el.textContent = Math.round(from + (to-from) * (1-Math.pow(1-p,3)));
+        if (p < 1) requestAnimationFrame(step);
+    })(performance.now());
+}
+
+function updateStats() {
+    animateCounter(document.getElementById('statTotal'),   cards.length);
+    animateCounter(document.getElementById('statGot'),     cards.filter(c=>c.got).length);
+    animateCounter(document.getElementById('statMissing'), cards.filter(c=>!c.got).length);
+}
+
+function switchView(view, btn) {
+    currentView = view;
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    renderCards();
+}
+
+function getFiltered() {
+    const search = document.getElementById('searchBox').value.toLowerCase();
+    return cards.filter(c => {
+        const matchesSearch = !search ||
+            c.player.toLowerCase().includes(search) ||
+            c.cardSet.toLowerCase().includes(search) ||
+            c.variant.toLowerCase().includes(search) ||
+            String(c.cardNo).includes(search);
+        const matchesView =
+            currentView === 'collecting' ? c.collecting === true :
+            currentView === 'got'        ? c.got === true :
+            currentView === 'missing'    ? c.got === false :
+            true;
+        return matchesSearch && matchesView;
+    });
+}
+
+function renderCards() {
+    const grid = document.getElementById('cardGrid');
+    const filtered = getFiltered();
+
+    if (!filtered.length) {
+        grid.innerHTML = '<div class="empty-state"><p>No cards found</p></div>';
+        return;
+    }
+
+    grid.innerHTML = '';
+    filtered.forEach((card, i) => {
+        const div = document.createElement('div');
+        div.className = 'card ' + (card.got ? 'is-got' : 'is-missing');
+        div.dataset.id = card.id;
+        div.style.animationDelay = Math.min(i*25,350)+'ms';
+        const badge = card.collecting ? '<div class="collecting-badge">Collecting</div>' : '';
+
+        div.innerHTML = `
+            <div class="card-top">
+                <div class="card-number">#${card.cardNo} - ${card.year}</div>
+                <div class="card-name">${card.player}</div>
+                <div class="card-set">${card.cardSet}</div>
+                ${card.variant ? `<div class="card-variant">${card.variant}</div>` : ''}
+            </div>
+            <div class="card-body">
+                <label class="got-toggle">
+                    <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                    <span class="toggle-label">${card.got ? 'OBTAINED' : 'MISSING'}</span>
+                </label>
+                ${badge}
+            </div>`;
+
+        div.querySelector('.got-toggle').addEventListener('click', () => toggleGot(card.id));
+        grid.appendChild(div);
+    });
+}
+
+function toggleGot(cardId) {
+    const card = cards.find(c => c.id === cardId);
+    if (!card) return;
+    card.got = !card.got;
+    const el = document.querySelector(`.card[data-id="${cardId}"]`);
+    if (el) {
+        el.classList.toggle('is-got', card.got);
+        el.classList.toggle('is-missing', !card.got);
+        el.querySelector('.toggle-label').textContent = card.got ? 'OBTAINED' : 'MISSING';
+        el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+    }
+    updateStats();
+    fetch('/api/extra-collections-update', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ rowIndex: card.rowIndex, got: card.got })
+    }).catch(err => console.error('Update failed:', err));
+}
+
+function showSkeletons() {
+    const g = document.getElementById('cardGrid');
+    g.innerHTML = '';
+    for (let i=0; i<12; i++) {
+        const s = document.createElement('div');
+        s.className = 'skeleton-card';
+        g.appendChild(s);
+    }
+}
+
+async function loadCards() {
+    try {
+        const res = await fetch('/api/extra-collections');
+        const data = await res.json();
+
+        if (!data.success) {
+            console.error('API error:', data.error);
+            document.getElementById('cardGrid').innerHTML = '<div class="empty-state"><p>Failed to load - check console</p></div>';
+            return;
+        }
+
+        console.log('Rows returned:', data.rows.length);
+        if (data.rows.length > 1) console.log('Sample row:', JSON.stringify(data.rows[1]));
+
+        // A=Card ID, B=Year, C=Card Set, D=Card No, E=Player Name, F=Variant, G=Collecting, H=Got
+        cards = data.rows.slice(1).map((row, i) => ({
+            id:         String(row[0] || i),
+            year:       String(row[1] || ''),
+            cardSet:    row[2] || '',
+            cardNo:     row[3] || '',
+            player:     row[4] || '',
+            variant:    row[5] || '',
+            collecting: (row[6] || '').toString().toLowerCase() === 'true',
+            got:        (row[7] || '').toString().toLowerCase() === 'true',
+            rowIndex:   i + 2
+        }));
+
+        console.log('Total:', cards.length, '| Collecting:', cards.filter(c=>c.collecting).length, '| Got:', cards.filter(c=>c.got).length);
+        updateStats();
+        renderCards();
+    } catch(err) {
+        console.error('Load error:', err);
+        document.getElementById('cardGrid').innerHTML = '<div class="empty-state"><p>Failed to load - check console</p></div>';
+    }
+}
+
+(async function(){ showSkeletons(); await loadCards(); })();
+</script>
+</body>
+</html>
