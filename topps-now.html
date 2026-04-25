@@ -272,9 +272,9 @@ function toggleGot(cardId) {
         el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
     }
     updateStats();
-    fetch('/api/topps-now-update', {
+    fetch('/api/update', {
         method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ rowIndex: card.rowIndex, got: card.got })
+        body: JSON.stringify({ sheet: 'topps-now', rowIndex: card.rowIndex, got: card.got })
     }).catch(err => console.error('Update failed:', err));
 }
 
@@ -314,9 +314,9 @@ async function saveImg() {
     const btn = document.getElementById('imgSave');
     btn.disabled = true; btn.textContent = 'Saving...';
     try {
-        await fetch('/api/image-save', {
+        await fetch('/api/update', {
             method: 'POST', headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ rowIndex: card.rowIndex, imageUrl: pendingUrl, sheet: 'topps-now' })
+            body: JSON.stringify({ sheet: 'topps-now', rowIndex: card.rowIndex, imageUrl: pendingUrl })
         });
         card.imageUrl = pendingUrl;
         closeImg(); renderCards();
@@ -338,7 +338,7 @@ function showSkeletons() {
 
 async function loadCards() {
     try {
-        const res = await fetch('/api/topps-now');
+        const res = await fetch('/api/sheets?sheet=topps-now');
         const data = await res.json();
 
         if (!data.success) {
