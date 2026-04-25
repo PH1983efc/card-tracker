@@ -607,13 +607,13 @@ function toggleGot(cardId) {
     fetch('/api/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: cardId, got: card.got })
+        body: JSON.stringify({ sheet: 'master', rowIndex: card.rowIndex, got: card.got })
     }).catch(err => console.error('Update failed:', err));
 }
 
 /* ── LOAD CARDS ── */
 async function loadCardsFromGoogleSheets() {
-    const res = await fetch('/api/read');
+    const res = await fetch('/api/sheets?sheet=master');
     const data = await res.json();
     if (!data.success) throw new Error('API returned success:false');
     cards = data.rows.slice(1).map((row, i) => ({
@@ -876,7 +876,7 @@ async function saveCardImage() {
     const btn = document.getElementById('imgSaveBtn');
     btn.disabled = true; btn.textContent = 'Saving...';
     try {
-        await fetch('/api/image-save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rowIndex: card.rowIndex, imageUrl: imgSelectedUrl, sheet: 'main' }) });
+        await fetch('/api/update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sheet: 'master', rowIndex: card.rowIndex, imageUrl: imgSelectedUrl }) });
         card.imageUrl = imgSelectedUrl;
         hidePanel('imgModal');
         applyFilters();
