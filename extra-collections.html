@@ -206,9 +206,9 @@ function toggleGot(cardId) {
         el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
     }
     updateStats();
-    fetch('/api/extra-collections-update', {
+    fetch('/api/update', {
         method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ rowIndex: card.rowIndex, got: card.got })
+        body: JSON.stringify({ sheet: 'extra-collections', rowIndex: card.rowIndex, got: card.got })
     }).catch(err => console.error('Update failed:', err));
 }
 
@@ -224,7 +224,7 @@ function showSkeletons() {
 
 async function loadCards() {
     try {
-        const res = await fetch('/api/extra-collections');
+        const res = await fetch('/api/sheets?sheet=extra-collections');
         const data = await res.json();
 
         if (!data.success) {
