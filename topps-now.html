@@ -97,7 +97,12 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
 .img-save:disabled{opacity:0.4;cursor:not-allowed;}
 .close-btn{position:absolute;top:12px;right:12px;background:transparent;border:1px solid var(--border);color:var(--white-dim);font-size:14px;width:26px;height:26px;border-radius:4px;cursor:pointer;}
 .img-hint{font-size:11px;color:var(--white-faint);margin-top:8px;}
-::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:3px;}
+
+    .last-synced{text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:0.15em;color:var(--white-faint);padding:6px;position:relative;z-index:2;background:rgba(0,0,0,0.2);}
+    .readonly-banner{display:none;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;padding:8px;background:rgba(212,160,23,0.12);border-bottom:1px solid var(--toffee-dim);color:var(--toffee-light);position:relative;z-index:2;}
+    .readonly-banner.visible{display:block;}
+    .got-toggle.readonly-hide{pointer-events:none;opacity:0.5;}
+    ::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:3px;}
 </style>
 </head>
 <body>
@@ -379,7 +384,27 @@ async function loadCards() {
     }
 }
 
-(async function(){ showSkeletons(); await loadCards(); })();
+
+// Read-only mode
+const IS_READONLY = new URLSearchParams(window.location.search).get('readonly') === 'true';
+if (IS_READONLY) {
+    document.getElementById('readonlyBanner').classList.add('visible');
+}
+
+function setLastSynced() {
+    const el = document.getElementById('lastSynced');
+    if (el) el.textContent = 'Last synced: ' + new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'}) + ' on ' + new Date().toLocaleDateString('en-GB');
+}
+
+function applyReadonly() {
+    if (!IS_READONLY) return;
+    document.querySelectorAll('.got-toggle').forEach(t => t.classList.add('readonly-hide'));
+    document.querySelectorAll('.card-image-placeholder').forEach(t => t.style.pointerEvents='none');
+    const imgSave = document.getElementById('imgSave');
+    if (imgSave) imgSave.style.display='none';
+}
+
+(async function(){ showSkeletons(); await loadCards(); setLastSynced(); setTimeout(applyReadonly, 500); })();
 </script>
 </body>
 </html>
