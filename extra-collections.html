@@ -70,7 +70,12 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
 .collecting-badge{display:inline-flex;margin-top:6px;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--toffee-light);border:1px solid rgba(212,160,23,0.35);background:rgba(212,160,23,0.07);padding:2px 7px;border-radius:2px;}
 .empty-state{grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--white-dim);}
 .empty-state p{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.3em;}
-::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:3px;}
+
+    .last-synced{text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:0.15em;color:var(--white-faint);padding:6px;position:relative;z-index:2;background:rgba(0,0,0,0.2);}
+    .readonly-banner{display:none;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;padding:8px;background:rgba(212,160,23,0.12);border-bottom:1px solid var(--toffee-dim);color:var(--toffee-light);position:relative;z-index:2;}
+    .readonly-banner.visible{display:block;}
+    .got-toggle.readonly-hide{pointer-events:none;opacity:0.5;}
+    ::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:3px;}
 </style>
 </head>
 <body>
@@ -97,7 +102,9 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
     <div class="stat"><span class="stat-value" id="statTotal" style="color:var(--white)">0</span><span class="stat-label">Total</span></div>
     <div class="stat"><span class="stat-value" id="statGot" style="color:var(--got-color)">0</span><span class="stat-label">Obtained</span></div>
     <div class="stat"><span class="stat-value" id="statMissing" style="color:var(--missing-color)">0</span><span class="stat-label">Missing</span></div>
-</div>
+
+<div class="readonly-banner" id="readonlyBanner">Read-Only Mode - View Only</div>
+<div class="last-synced" id="lastSynced"></div>
 
 <nav>
     <button class="nav-btn active" onclick="switchView('all',this)">All Cards</button>
@@ -258,7 +265,27 @@ async function loadCards() {
     }
 }
 
-(async function(){ showSkeletons(); await loadCards(); })();
+
+// Read-only mode
+const IS_READONLY = new URLSearchParams(window.location.search).get('readonly') === 'true';
+if (IS_READONLY) {
+    document.getElementById('readonlyBanner').classList.add('visible');
+}
+
+function setLastSynced() {
+    const el = document.getElementById('lastSynced');
+    if (el) el.textContent = 'Last synced: ' + new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'}) + ' on ' + new Date().toLocaleDateString('en-GB');
+}
+
+function applyReadonly() {
+    if (!IS_READONLY) return;
+    document.querySelectorAll('.got-toggle').forEach(t => t.classList.add('readonly-hide'));
+    document.querySelectorAll('.card-image-placeholder').forEach(t => t.style.pointerEvents='none');
+    const imgSave = document.getElementById('imgSave');
+    if (imgSave) imgSave.style.display='none';
+}
+
+(async function(){ showSkeletons(); await loadCards(); setLastSynced(); setTimeout(applyReadonly, 500); })();
 </script>
 </body>
 </html>
