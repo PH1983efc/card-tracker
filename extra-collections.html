@@ -75,6 +75,25 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
     .readonly-banner{display:none;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;padding:8px;background:rgba(212,160,23,0.12);border-bottom:1px solid var(--toffee-dim);color:var(--toffee-light);position:relative;z-index:2;}
     .readonly-banner.visible{display:block;}
     .got-toggle.readonly-hide{pointer-events:none;opacity:0.5;}
+
+    /* COLLAPSIBLE SECTIONS */
+    .content{padding:20px 20px 50px;position:relative;z-index:1;}
+    .set-group{margin-bottom:10px;}
+    .set-header{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:var(--surface);border:1px solid var(--border);border-radius:4px;cursor:pointer;transition:all 0.2s;user-select:none;}
+    .set-header:hover{border-color:var(--royal);background:var(--surface-2);}
+    .set-header.open{border-radius:4px 4px 0 0;border-bottom-color:var(--border-bright);}
+    .set-header-left{display:flex;align-items:center;gap:10px;}
+    .set-chevron{font-size:10px;color:var(--white-dim);transition:transform 0.25s;display:inline-block;}
+    .set-header.open .set-chevron{transform:rotate(90deg);}
+    .set-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--white);}
+    .set-meta{display:flex;align-items:center;gap:10px;}
+    .set-progress-inline{width:80px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+    .set-progress-inline-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--toffee));border-radius:2px;transition:width 0.6s ease;}
+    .set-count{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--toffee-light);white-space:nowrap;}
+    .set-body{display:none;border:1px solid var(--border);border-top:none;border-radius:0 0 4px 4px;overflow:hidden;}
+    .set-body.open{display:block;animation:slideDown 0.2s ease;}
+    @keyframes slideDown{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+    .set-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1px;background:var(--border);}
     ::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:3px;}
 </style>
 </head>
@@ -117,7 +136,7 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
     <input type="text" id="searchBox" placeholder="Search by player, set or variant..." oninput="renderCards()">
 </div>
 
-<div id="cardGrid" class="card-grid"></div>
+<div class="content" id="content"></div>
 
 <script>
 let cards = [];
@@ -165,40 +184,81 @@ function getFiltered() {
 }
 
 function renderCards() {
-    const grid = document.getElementById('cardGrid');
+    const container = document.getElementById('content');
     const filtered = getFiltered();
 
     if (!filtered.length) {
-        grid.innerHTML = '<div class="empty-state"><p>No cards found</p></div>';
+        container.innerHTML = '<div class="empty-state"><p>No cards found</p></div>';
         return;
     }
 
-    grid.innerHTML = '';
-    filtered.forEach((card, i) => {
-        const div = document.createElement('div');
-        div.className = 'card ' + (card.got ? 'is-got' : 'is-missing');
-        div.dataset.id = card.id;
-        div.style.animationDelay = Math.min(i*25,350)+'ms';
-        const badge = card.collecting ? '<div class="collecting-badge">Collecting</div>' : '';
-
-        div.innerHTML = `
-            <div class="card-top">
-                <div class="card-number">#${card.cardNo} - ${card.year}</div>
-                <div class="card-name">${card.player}</div>
-                <div class="card-set">${card.cardSet}</div>
-                ${card.variant ? `<div class="card-variant">${card.variant}</div>` : ''}
-            </div>
-            <div class="card-body">
-                <label class="got-toggle">
-                    <div class="toggle-track"><div class="toggle-thumb"></div></div>
-                    <span class="toggle-label">${card.got ? 'OBTAINED' : 'MISSING'}</span>
-                </label>
-                ${badge}
-            </div>`;
-
-        div.querySelector('.got-toggle').addEventListener('click', () => toggleGot(card.id));
-        grid.appendChild(div);
+    // Group by cardSet
+    const setMap = new Map();
+    filtered.forEach(card => {
+        if (!setMap.has(card.cardSet)) setMap.set(card.cardSet, []);
+        setMap.get(card.cardSet).push(card);
     });
+
+    const sortedSets = Array.from(setMap.keys()).sort();
+
+    container.innerHTML = sortedSets.map(setName => {
+        const setCards = setMap.get(setName);
+        const got   = setCards.filter(c => c.got).length;
+        const total = setCards.length;
+        const pct   = Math.round((got/total)*100);
+        const key   = setName.replace(/[^a-z0-9]/gi, '-');
+
+        const cardItems = setCards
+            .sort((a,b) => String(a.cardNo).localeCompare(String(b.cardNo), undefined, {numeric:true}))
+            .map((card,i) => {
+                const badge = card.collecting ? '<div class="collecting-badge">Collecting</div>' : '';
+                return `<div class="card ${card.got?'is-got':'is-missing'}" data-id="${card.id}" style="animation-delay:${Math.min(i*20,300)}ms">
+                    <div class="card-top">
+                        <div class="card-number">#${card.cardNo} - ${card.year}</div>
+                        <div class="card-name">${card.player}</div>
+                        ${card.variant ? `<div class="card-variant">${card.variant}</div>` : ''}
+                    </div>
+                    <div class="card-body">
+                        <label class="got-toggle">
+                            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                            <span class="toggle-label">${card.got?'OBTAINED':'MISSING'}</span>
+                        </label>
+                        ${badge}
+                    </div>
+                </div>`;
+            }).join('');
+
+        return `<div class="set-group">
+            <div class="set-header" onclick="toggleSection('${key}')" id="header-${key}">
+                <div class="set-header-left">
+                    <span class="set-chevron">&#9658;</span>
+                    <span class="set-name">${setName}</span>
+                </div>
+                <div class="set-meta">
+                    <div class="set-progress-inline">
+                        <div class="set-progress-inline-fill" style="width:${pct}%"></div>
+                    </div>
+                    <span class="set-count">${got} / ${total}</span>
+                </div>
+            </div>
+            <div class="set-body" id="body-${key}">
+                <div class="set-card-grid">${cardItems}</div>
+            </div>
+        </div>`;
+    }).join('');
+
+    // Attach toggle listeners
+    document.querySelectorAll('.got-toggle').forEach(toggle => {
+        toggle.addEventListener('click', () => {
+            const cardEl = toggle.closest('.card');
+            if (cardEl) toggleGot(cardEl.dataset.id);
+        });
+    });
+}
+
+function toggleSection(key) {
+    document.getElementById(`header-${key}`).classList.toggle('open');
+    document.getElementById(`body-${key}`).classList.toggle('open');
 }
 
 function toggleGot(cardId) {
