@@ -286,6 +286,10 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
     <div class="stat"><span class="stat-value" id="statCollecting" style="color:var(--toffee-light)">0</span><span class="stat-label">Collecting</span></div>
 </div>
 
+
+<div class="readonly-banner" id="readonlyBanner">Read-Only Mode - View Only</div>
+<div class="last-synced" id="lastSynced"></div>
+
 <!-- SET PROGRESS -->
 <div class="set-progress" id="setProgress">
     <div class="set-progress-header">
@@ -315,6 +319,7 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
         <input type="text" id="searchBox" placeholder="Search cards..." oninput="applyFilters()">
     </div>
     <div class="toolbar">
+        <button class="toolbar-btn gold" onclick="showPanel('dashPanel')">Dashboard</button>
         <button class="toolbar-btn" onclick="showPanel('backendPanel')">How to Save Changes</button>
         <button class="toolbar-btn gold" onclick="exportMissingPDF()">Export Missing (PDF)</button>
         <button class="toolbar-btn gold" onclick="exportVisiblePDF()">Export Visible (PDF)</button>
@@ -410,6 +415,16 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
             <button class="btn-cancel" onclick="hidePanel('imgModal')">Cancel</button>
             <button class="btn-primary" id="imgSaveBtn" onclick="saveCardImage()" disabled>Save Image</button>
         </div>
+    </div>
+</div>
+
+
+<!-- DASHBOARD PANEL -->
+<div class="panel-overlay" id="dashPanel">
+    <div class="panel-box" style="max-width:680px">
+        <button class="close-btn" onclick="hidePanel('dashPanel')">x</button>
+        <h2>Collection Dashboard</h2>
+        <div id="dashContent"><div class="img-searching">Loading...</div></div>
     </div>
 </div>
 
@@ -566,6 +581,9 @@ function renderCardGrid() {
         div.className = 'card' + (card.got ? ' is-got' : ' is-missing');
         div.style.animationDelay = Math.min(i * 25, 350) + 'ms';
         div.dataset.id = card.id;
+        const setCards = cards.filter(c => c.set === card.set && c.year === card.year);
+        const setGot   = setCards.filter(c => c.got).length;
+        const setPct   = setCards.length > 0 ? Math.round((setGot/setCards.length)*100) : 0;
         const badge = card.collecting ? '<div class="collecting-badge">Collecting</div>' : '';
         const imgHtml = card.imageUrl
             ? `<img class="card-image" src="${card.imageUrl}" alt="${card.name}" loading="lazy">`
@@ -575,7 +593,7 @@ function renderCardGrid() {
             <div class="card-top">
                 <div class="card-number">#${card.number} - ${card.year}</div>
                 <div class="card-name">${card.name}</div>
-                <div class="card-set">${card.set}</div>
+                <div class="card-set">${card.set} <span style="color:var(--toffee-dim);font-size:10px">${setPct}%</span></div>
             </div>
             <div class="card-body">
                 <div class="card-variant">${card.variant || ''}</div>
@@ -884,11 +902,112 @@ async function saveCardImage() {
     btn.textContent = 'Save Image';
 }
 
+/* ── LAST SYNCED ── */
+function setLastSynced() {
+    const el = document.getElementById('lastSynced');
+    if (el) el.textContent = 'Last synced: ' + new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'}) + ' on ' + new Date().toLocaleDateString('en-GB');
+}
+
+/* ── READ-ONLY MODE ── */
+const IS_READONLY = new URLSearchParams(window.location.search).get('readonly') === 'true';
+
+function applyReadonly() {
+    if (!IS_READONLY) return;
+    document.getElementById('readonlyBanner').classList.add('visible');
+    // Hide toggles and edit controls
+    document.querySelectorAll('.got-toggle').forEach(t => { t.style.pointerEvents='none'; t.style.opacity='0.5'; });
+    document.querySelectorAll('.card-image-placeholder').forEach(t => t.style.pointerEvents='none');
+    document.querySelectorAll('.toolbar-btn, .add-order-btn').forEach(t => t.style.display='none');
+}
+
+/* ── DASHBOARD ── */
+async function loadDashboard() {
+    const content = document.getElementById('dashContent');
+    content.innerHTML = '<div class="img-searching">Loading all collections...</div>';
+
+    try {
+        // Fetch all sheets in parallel
+        const [master, donruss, toppsNow, extra] = await Promise.all([
+            fetch('/api/sheets?sheet=master').then(r=>r.json()),
+            fetch('/api/sheets?sheet=donruss').then(r=>r.json()),
+            fetch('/api/sheets?sheet=topps-now').then(r=>r.json()),
+            fetch('/api/sheets?sheet=extra-collections').then(r=>r.json()),
+        ]);
+
+        const collections = [
+            { name: 'Everton Collection', link: '/', rows: master.rows, gotCol: 8 },
+            { name: 'Donruss', link: '/donruss.html', rows: donruss.rows, gotCol: 6 },
+            { name: 'Topps Now', link: '/topps-now.html', rows: toppsNow.rows, gotCol: 9 },
+            { name: 'Extra Collections', link: '/extra-collections.html', rows: extra.rows, gotCol: 7 },
+        ].map(c => {
+            const data = (c.rows || []).slice(1);
+            const total = data.length;
+            const got   = data.filter(r => (r[c.gotCol]||'').toString().toLowerCase() === 'true').length;
+            const pct   = total > 0 ? Math.round((got/total)*100) : 0;
+            return { ...c, total, got, missing: total-got, pct };
+        });
+
+        const grandTotal   = collections.reduce((s,c) => s+c.total, 0);
+        const grandGot     = collections.reduce((s,c) => s+c.got, 0);
+        const grandMissing = grandTotal - grandGot;
+        const grandPct     = grandTotal > 0 ? Math.round((grandGot/grandTotal)*100) : 0;
+
+        content.innerHTML = `
+            <div class="dash-grid">
+                <div class="dash-card">
+                    <div class="dash-card-title">Total Cards</div>
+                    <div class="dash-card-value">${grandTotal}</div>
+                    <div class="dash-card-sub">Across all collections</div>
+                </div>
+                <div class="dash-card">
+                    <div class="dash-card-title">Obtained</div>
+                    <div class="dash-card-value" style="color:var(--got-color)">${grandGot}</div>
+                    <div class="dash-card-sub">${grandPct}% of total collection</div>
+                    <div class="dash-progress-bar"><div class="dash-progress-fill" style="width:${grandPct}%"></div></div>
+                </div>
+                <div class="dash-card">
+                    <div class="dash-card-title">Still Missing</div>
+                    <div class="dash-card-value" style="color:var(--missing-color)">${grandMissing}</div>
+                    <div class="dash-card-sub">Cards still needed</div>
+                </div>
+            </div>
+            <div class="dash-card" style="margin-bottom:0">
+                <div class="dash-card-title">Collections Breakdown</div>
+                ${collections.map(c => `
+                    <div class="dash-collection-row">
+                        <a class="dash-collection-name" href="${c.link}">${c.name}</a>
+                        <div style="display:flex;align-items:center;gap:12px;flex:1;margin-left:16px">
+                            <div class="dash-progress-bar" style="flex:1">
+                                <div class="dash-progress-fill" style="width:${c.pct}%"></div>
+                            </div>
+                            <div>
+                                <span class="dash-collection-stat">${c.got}/${c.total}</span>
+                                <span class="dash-collection-pct">${c.pct}%</span>
+                            </div>
+                        </div>
+                    </div>`).join('')}
+            </div>`;
+
+    } catch(err) {
+        content.innerHTML = '<div class="img-searching">Failed to load dashboard</div>';
+        console.error('Dashboard error:', err);
+    }
+}
+
+// Load dashboard when panel opens
+const _origShowPanel = showPanel;
+function showPanel(id) {
+    _origShowPanel(id);
+    if (id === 'dashPanel') loadDashboard();
+}
+
 /* ── INIT ── */
 (async function init() {
     showSkeletons(12);
     try { await loadCardsFromGoogleSheets(); } catch (err) { console.error('Cards load failed:', err); document.getElementById('cardGrid').innerHTML = '<div class="empty-state"><p>Failed to load - check console</p></div>'; }
     try { await loadOrdersFromSheets(); } catch (err) { console.error('Orders load failed:', err); }
+    setLastSynced();
+    applyReadonly();
 })();
 </script>
 </body>
