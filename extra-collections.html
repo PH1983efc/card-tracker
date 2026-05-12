@@ -115,6 +115,36 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
 .empty-state{text-align:center;padding:60px 20px;color:var(--white-dim);}
 .empty-state p{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.25em;}
 
+
+/* CARD IMAGE */
+.card-image{width:100%;height:80px;object-fit:cover;display:block;cursor:pointer;transition:opacity 0.2s;}
+.card-image:hover{opacity:0.85;}
+.card-image-placeholder{width:100%;height:24px;display:flex;align-items:center;justify-content:center;background:var(--surface-2);cursor:pointer;transition:background 0.2s;border-bottom:1px solid var(--border);}
+.card-image-placeholder:hover{background:rgba(212,160,23,0.06);}
+.card-image-placeholder p{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--white-faint);}
+
+/* IMAGE MODAL */
+.img-modal{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.88);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;}
+.img-modal.open{display:flex;}
+.img-modal-box{background:var(--surface);border:1px solid var(--border-bright);border-radius:6px;max-width:480px;width:100%;padding:24px;position:relative;}
+.img-modal-box h3{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--toffee-light);margin-bottom:4px;}
+.img-modal-sub{font-size:12px;color:var(--white-dim);margin-bottom:14px;}
+.img-preview{width:100%;max-height:260px;object-fit:contain;border-radius:4px;background:var(--surface-2);margin-bottom:14px;display:block;}
+.img-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--white-dim);margin-bottom:8px;}
+.img-row{display:flex;gap:8px;}
+.img-row input{flex:1;font-family:'Barlow',sans-serif;font-size:13px;padding:8px 12px;background:var(--surface-2);color:var(--white);border:1px solid var(--border);border-radius:3px;outline:none;}
+.img-row input:focus{border-color:var(--royal);}
+.img-preview-btn,.img-cancel,.img-save{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;padding:8px 16px;border-radius:3px;cursor:pointer;transition:all 0.2s;}
+.img-preview-btn{border:1px solid var(--border);background:var(--surface-2);color:var(--white-dim);}
+.img-preview-btn:hover{color:var(--white);border-color:var(--royal);}
+.img-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+.img-cancel{border:1px solid var(--border);background:transparent;color:var(--white-dim);}
+.img-cancel:hover{color:var(--white);}
+.img-save{border:1px solid var(--toffee);background:rgba(212,160,23,0.12);color:var(--toffee-light);}
+.img-save:hover{background:rgba(212,160,23,0.22);}
+.img-save:disabled{opacity:0.4;cursor:not-allowed;}
+.img-close{position:absolute;top:12px;right:12px;background:transparent;border:1px solid var(--border);color:var(--white-dim);font-size:14px;width:26px;height:26px;border-radius:4px;cursor:pointer;}
+.img-hint{font-size:11px;color:var(--white-faint);margin-top:8px;}
 ::-webkit-scrollbar{width:6px;}
 ::-webkit-scrollbar-track{background:var(--bg);}
 ::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:3px;}
@@ -162,6 +192,26 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
 </div>
 
 <div class="content" id="content"></div>
+
+<!-- IMAGE MODAL -->
+<div class="img-modal" id="imgModal">
+    <div class="img-modal-box">
+        <button class="img-close" onclick="closeImg()">x</button>
+        <h3 id="imgTitle"></h3>
+        <div class="img-modal-sub" id="imgSub"></div>
+        <img class="img-preview" id="imgPreview" src="" alt="" style="display:none">
+        <div class="img-label">Paste image URL</div>
+        <div class="img-row">
+            <input type="text" id="imgUrl" placeholder="https://i.imgur.com/example.jpg">
+            <button class="img-preview-btn" onclick="previewImg()">Preview</button>
+        </div>
+        <p class="img-hint">Right-click any card image on imgur.com, mavin.io or ebay.com and copy image address</p>
+        <div class="img-actions">
+            <button class="img-cancel" onclick="closeImg()">Cancel</button>
+            <button class="img-save" id="imgSave" onclick="saveImg()" disabled>Save Image</button>
+        </div>
+    </div>
+</div>
 
 <script>
 let cards = [];
@@ -249,6 +299,7 @@ function renderCards() {
                 const badge = card.collecting ? '<div class="collecting-badge">Collecting</div>' : '';
                 return `
                     <div class="card ${card.got ? 'is-got' : 'is-missing'}" data-id="${card.id}" style="animation-delay:${Math.min(i*20,300)}ms">
+                        ${card.imageUrl ? `<img class="card-image" src="${card.imageUrl}" alt="${card.player}" loading="lazy">` : '<div class="card-image-placeholder"><p>+ Image</p></div>'}
                         <div class="card-number">#${card.cardNo} - ${card.year}</div>
                         <div class="card-name">${card.player}</div>
                         ${card.variant ? `<div class="card-variant">${card.variant}</div>` : '<div class="card-variant"></div>'}
@@ -285,6 +336,13 @@ function renderCards() {
         toggle.addEventListener('click', () => {
             const cardEl = toggle.closest('.card');
             if (cardEl) toggleGot(cardEl.dataset.id);
+        });
+    });
+    // Attach image listeners
+    document.querySelectorAll('.card-image, .card-image-placeholder').forEach(el => {
+        el.addEventListener('click', () => {
+            const cardEl = el.closest('.card');
+            if (cardEl) openImg(cardEl.dataset.id);
         });
     });
 }
@@ -351,6 +409,7 @@ async function loadCards() {
             variant:    row[5] || '',
             collecting: (row[6] || '').toString().toLowerCase() === 'true',
             got:        (row[7] || '').toString().toLowerCase() === 'true',
+            imageUrl:   row[8] || '',
             rowIndex:   i + 2
         }));
 
@@ -364,6 +423,58 @@ async function loadCards() {
         document.getElementById('content').innerHTML = '<div class="empty-state"><p>Failed to load - check console</p></div>';
     }
 }
+
+
+let activeCardId = null;
+let pendingUrl   = null;
+
+function openImg(cardId) {
+    const card = cards.find(c => c.id === cardId);
+    if (!card) return;
+    activeCardId = cardId;
+    pendingUrl   = card.imageUrl || null;
+    document.getElementById('imgTitle').textContent = card.player;
+    document.getElementById('imgSub').textContent   = `${card.cardSet} - ${card.year} - #${card.cardNo}`;
+    document.getElementById('imgUrl').value         = '';
+    document.getElementById('imgSave').disabled     = !card.imageUrl;
+    const preview = document.getElementById('imgPreview');
+    if (card.imageUrl) { preview.src = card.imageUrl; preview.style.display = 'block'; }
+    else { preview.style.display = 'none'; }
+    document.getElementById('imgModal').classList.add('open');
+}
+
+function closeImg() {
+    document.getElementById('imgModal').classList.remove('open');
+    activeCardId = null; pendingUrl = null;
+}
+
+function previewImg() {
+    const url = document.getElementById('imgUrl').value.trim();
+    if (!url) return;
+    document.getElementById('imgPreview').src = url;
+    document.getElementById('imgPreview').style.display = 'block';
+    pendingUrl = url;
+    document.getElementById('imgSave').disabled = false;
+}
+
+async function saveImg() {
+    if (!pendingUrl || !activeCardId) return;
+    const card = cards.find(c => c.id === activeCardId);
+    if (!card) return;
+    const btn = document.getElementById('imgSave');
+    btn.disabled = true; btn.textContent = 'Saving...';
+    try {
+        await fetch('/api/update', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ sheet: 'extra-collections', rowIndex: card.rowIndex, imageUrl: pendingUrl })
+        });
+        card.imageUrl = pendingUrl;
+        closeImg(); renderCards();
+    } catch(e) { console.error('Save failed:', e); }
+    btn.textContent = 'Save Image'; btn.disabled = false;
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeImg(); });
 
 (async function(){ showSkeletons(); await loadCards(); })();
 </script>
