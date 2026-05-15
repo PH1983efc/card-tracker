@@ -254,16 +254,18 @@ function renderCards() {
     const groups = new Map();
     filtered.forEach(card => {
         const year = String(card.year || '').trim();
-        const player = String(card.player || '').trim();
+        const setName = String(card.cardSet || '').trim();
         const cardNo = String(card.cardNo || '').trim();
+        const player = String(card.player || '').trim();
         const description = String(card.description || '').trim();
-        const groupKey = `${year}|||${player}|||${cardNo}|||${description}|||${card.id}`;
+        const groupKey = `${year}|||${setName}|||${cardNo}|||${player}|||${description}`;
         if (!groups.has(groupKey)) {
             groups.set(groupKey, {
-                label: `${year || 'Unknown Year'} - ${player || 'Unknown Player'} - #${cardNo || '?'}${description ? ' - ' + description : ''}`,
+                label: `${year || 'Unknown Year'} - ${setName || 'Unknown Set'} - #${cardNo || '?'} - ${player || 'Unknown Player'}${description ? ' - ' + description : ''}`,
                 year,
-                player,
+                setName,
                 cardNo,
+                player,
                 description,
                 cards: []
             });
@@ -274,10 +276,12 @@ function renderCards() {
     const sortedGroups = Array.from(groups.entries()).sort(([, a], [, b]) => {
         const yearCompare = String(b.year).localeCompare(String(a.year), undefined, { numeric: true });
         if (yearCompare !== 0) return yearCompare;
-        const playerCompare = a.player.localeCompare(b.player);
-        if (playerCompare !== 0) return playerCompare;
+        const setCompare = a.setName.localeCompare(b.setName);
+        if (setCompare !== 0) return setCompare;
         const cardNoCompare = String(a.cardNo).localeCompare(String(b.cardNo), undefined, { numeric: true });
-        return cardNoCompare !== 0 ? cardNoCompare : a.description.localeCompare(b.description);
+        if (cardNoCompare !== 0) return cardNoCompare;
+        const playerCompare = a.player.localeCompare(b.player);
+        return playerCompare !== 0 ? playerCompare : a.description.localeCompare(b.description);
     });
 
     grid.innerHTML = sortedGroups.map(([rawKey, group]) => {
@@ -287,7 +291,7 @@ function renderCards() {
         const pct = total > 0 ? Math.round((got / total) * 100) : 0;
         const key = rawKey.replace(/[^a-z0-9]/gi, '-');
         const cardItems = groupCards
-            .sort((a, b) => String(a.cardNo).localeCompare(String(b.cardNo), undefined, { numeric: true }))
+            .sort(sortToppsVariants)
             .map((card, i) => renderCardHtml(card, i))
             .join('');
 
@@ -310,6 +314,18 @@ function renderCards() {
     }).join('');
 
     attachCardListeners(grid);
+}
+
+function sortToppsVariants(a, b) {
+    const rank = variant => {
+        const text = String(variant || '').toLowerCase();
+        if (!text || text === 'base') return 0;
+        const numbered = text.match(/\/(\d+)/);
+        if (numbered) return 100 - Number(numbered[1]);
+        return 50;
+    };
+    const rankCompare = rank(a.variant) - rank(b.variant);
+    return rankCompare !== 0 ? rankCompare : String(a.variant).localeCompare(String(b.variant), undefined, { numeric: true });
 }
 
 function renderCardHtml(card, i) {
