@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders – Card Tracker</title>
+
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Orders CSS -->
+    <style>
+        /* ORDERS */
+        #ordersView{display:block;position:relative;z-index:1;padding:20px 20px 50px;}
+        .orders-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+        .orders-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.08em;color:var(--toffee-light);}
+        .orders-title span{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.2em;color:var(--white-dim);margin-left:10px;vertical-align:middle;}
+        .add-order-btn{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;padding:10px 20px;border-radius:3px;cursor:pointer;border:1px solid var(--toffee);background:rgba(212,160,23,0.1);color:var(--toffee-light);transition:all 0.2s;}
+        .add-order-btn:hover{background:rgba(212,160,23,0.2);}
+        .orders-list{display:flex;flex-direction:column;gap:14px;}
+        .orders-empty{text-align:center;padding:60px 20px;color:var(--white-dim);}
+        .orders-empty .empty-icon{font-size:48px;opacity:0.2;display:block;margin-bottom:12px;}
+        .orders-empty p{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.25em;}
+        .order-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden;animation:cardIn 0.3s ease both;position:relative;}
+        .order-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--toffee));}
+        .order-card.all-received::before{background:linear-gradient(90deg,var(--blue),var(--got-color));}
+        .order-header{display:flex;justify-content:space-between;align-items:flex-start;padding:14px 16px 10px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--surface-2),var(--surface));flex-wrap:wrap;gap:8px;}
+        .order-seller{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.05em;color:var(--white);}
+        .order-meta{display:flex;gap:16px;flex-wrap:wrap;}
+        .order-meta-item{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.1em;color:var(--white-dim);}
+        .order-meta-item span{color:var(--toffee-light);margin-left:4px;}
+        .order-status{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;padding:3px 10px;border-radius:2px;border:1px solid;white-space:nowrap;}
+        .order-status.awaiting{color:var(--toffee-light);border-color:rgba(212,160,23,0.4);background:rgba(212,160,23,0.08);}
+        .order-status.received{color:var(--got-color);border-color:rgba(46,204,113,0.4);background:rgba(46,204,113,0.08);}
+        .order-cards-list{padding:12px 16px 14px;display:flex;flex-wrap:wrap;gap:8px;}
+        .order-card-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:3px;border:1px solid var(--border);background:var(--surface-2);font-size:13px;color:var(--white-dim);cursor:pointer;transition:all 0.15s;user-select:none;}
+        .order-card-chip:hover{border-color:var(--royal);color:var(--white);}
+        .order-card-chip.received{border-color:rgba(46,204,113,0.35);background:rgba(46,204,113,0.07);color:var(--got-color);text-decoration:line-through;text-decoration-color:rgba(46,204,113,0.5);}
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <header style="padding:20px;">
+        <a href="index.html" style="color:var(--white);font-family:'Bebas Neue';font-size:20px;">← Back to Collection</a>
+    </header>
+
+    <!-- ORDERS VIEW -->
+    <div id="ordersView">
+        <div class="orders-toolbar">
+            <div class="orders-title">Pending Orders <span id="ordersCount"></span></div>
+            <button class="add-order-btn" onclick="showPanel('orderModal')">+ New Order</button>
+        </div>
+        <div id="ordersList" class="orders-list"></div>
+    </div>
+
+    <!-- ORDER MODAL -->
+    <div class="panel-overlay" id="orderModal">
+        <div class="panel-box" style="max-width:580px">
+            <button class="close-btn" onclick="hidePanel('orderModal')">x</button>
+            <h2>New Order</h2>
+
+            <div class="order-field">
+                <label>Seller / Source</label>
+                <input type="text" id="orderSeller" placeholder="e.g. eBay, Footy Cards">
+            </div>
+
+            <div class="order-field">
+                <label>Date Ordered</label>
+                <input type="date" id="orderDate">
+            </div>
+
+            <div class="order-field">
+                <label>Price Paid (GBP)</label>
+                <input type="number" id="orderPrice" placeholder="0.00" step="0.01" min="0">
+            </div>
+
+            <div class="order-field">
+                <label>Cards in Order</label>
+                <input type="text" class="card-picker-search" id="cardPickerSearch" placeholder="Search cards to add..." oninput="filterCardPicker()">
+                <div class="card-picker-list" id="cardPickerList"></div>
+                <div class="selected-chips" id="selectedChips"></div>
+            </div>
+
+            <div class="panel-actions">
+                <button class="btn-cancel" onclick="hidePanel('orderModal')">Cancel</button>
+                <button class="btn-primary" onclick="saveOrder()">Save Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ORDERS LOGIC -->
+    <script src="orders.js"></script>
+
+</body>
+</html>
