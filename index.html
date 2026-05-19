@@ -262,7 +262,13 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
 ::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:3px;}
 ::-webkit-scrollbar-thumb:hover{background:var(--royal);}
 #excelUploadSection{display:none !important;}
-</style>
+
+        /* ON ORDER BADGE */
+        .on-order-badge{display:inline-flex;align-items:center;gap:4px;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--toffee-light);background:rgba(212,160,23,0.1);border:1px solid rgba(212,160,23,0.35);border-radius:2px;padding:2px 7px;margin-top:5px;}
+        .on-order-badge::before{content:'📦';font-size:9px;}
+        .card.is-on-order::before{background:var(--toffee) !important;}
+        .variant-row.is-on-order::before{background:var(--toffee) !important;}
+    </style>
 </head>
 <body>
 
@@ -610,7 +616,7 @@ function renderCollectingGroups() {
                 const imgHtml = card.imageUrl
                     ? `<img class="card-image" src="${card.imageUrl}" alt="${card.name}" loading="lazy">`
                     : '<div class="card-image-placeholder"><p>+ Find Image</p></div>';
-                return `<div class="card ${card.got?'is-got':'is-missing'}" data-id="${card.id}" style="animation-delay:${Math.min(i*20,300)}ms">
+                return `<div class="card ${card.got?'is-got':'is-missing'} ${!card.got && onOrderIds.has(card.id) ? 'is-on-order' : ''}" data-id="${card.id}" style="animation-delay:${Math.min(i*20,300)}ms">
                     ${imgHtml}
                     <div class="card-top">
                         <div class="card-number">#${card.number} - ${card.year}</div>
@@ -623,6 +629,7 @@ function renderCollectingGroups() {
                             <div class="toggle-track"><div class="toggle-thumb"></div></div>
                             <span class="toggle-label">${card.got?'OBTAINED':'MISSING'}</span>
                         </label>
+                        ${!card.got && onOrderIds.has(card.id) ? '<div class="on-order-badge">On Order</div>' : ''}
                         <div class="collecting-badge">Collecting</div>
                     </div>
                 </div>`;
@@ -1012,8 +1019,28 @@ function showPanel(id) {
 }
 
 /* ── INIT ── */
+
+let onOrderIds = new Set();
+
+async function loadOnOrderIds() {
+    try {
+        const res = await fetch('/api/orders/read');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data.success || !data.orders) return;
+        onOrderIds = new Set(
+            data.orders.flatMap(o =>
+                o.cardIds.filter(id => !o.received.includes(id))
+            )
+        );
+    } catch(err) {
+        console.error('Orders load failed:', err);
+    }
+}
+
 (async function init() {
     showSkeletons(12);
+    await loadOnOrderIds();
     try { await loadCardsFromGoogleSheets(); } catch (err) { console.error('Cards load failed:', err); document.getElementById('cardGrid').innerHTML = '<div class="empty-state"><p>Failed to load - check console</p></div>'; }
     setLastSynced();
     applyReadonly();
