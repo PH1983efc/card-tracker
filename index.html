@@ -193,6 +193,14 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
 .needs-current-filter input[type="checkbox"]{accent-color:var(--toffee);width:14px;height:14px;flex-shrink:0;cursor:pointer;}
 .needs-current-label{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;color:var(--white);}
 
+/* EXPORT PANEL */
+.export-field{margin-bottom:18px;}
+.export-field label{display:block;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--white-dim);margin-bottom:8px;}
+.export-field select{width:100%;font-family:'Barlow',sans-serif;font-size:14px;padding:9px 12px;background:var(--surface-2);color:var(--white);border:1px solid var(--border);border-radius:3px;outline:none;}
+.export-field select:focus{border-color:var(--royal);}
+.export-field select option{background:var(--surface);}
+.export-status{font-size:12px;color:var(--toffee-light);margin-top:10px;min-height:16px;}
+
 /* ORDER MODAL FIELDS */
 .order-field{margin-bottom:16px;}
 .order-field label{display:block;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:var(--white-dim);margin-bottom:6px;}
@@ -340,6 +348,7 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
         <button class="toolbar-btn gold" onclick="exportMissingPDF()">Export Missing (PDF)</button>
         <button class="toolbar-btn gold" onclick="exportVisiblePDF()">Export Visible (PDF)</button>
         <button class="toolbar-btn gold" onclick="openNeedsPanel()">Needs List (PDF)</button>
+        <button class="toolbar-btn gold" onclick="openExportPanel()">Export to Excel</button>
     </div>
     <div class="print-header"><h2>Everton FC · Card Collection</h2><p id="printSubtitle"></p></div>
     <div id="cardGrid" class="card-grid"></div>
@@ -363,6 +372,45 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
         <div class="panel-actions">
             <button class="btn-cancel" onclick="hidePanel('needsPanel')">Cancel</button>
             <button class="btn-primary" id="needsDownloadBtn" onclick="downloadNeedsList()" disabled>Download PDF</button>
+        </div>
+    </div>
+</div>
+
+<!-- EXPORT PANEL -->
+<div class="panel-overlay" id="exportPanel">
+    <div class="panel-box" style="max-width:560px">
+        <button class="close-btn" onclick="hidePanel('exportPanel')">x</button>
+        <h2>Export to Excel</h2>
+        <p style="margin-bottom:16px;font-size:13px;">Pick which collections to include and how to sort the export.</p>
+
+        <div class="needs-section-label">Collections to Include</div>
+        <div class="needs-set-list" id="exportCollectionList" style="grid-template-columns:1fr;"></div>
+
+        <div class="export-field">
+            <label>Sort By</label>
+            <select id="exportSort">
+                <option value="recent-desc">Recently Added (newest first)</option>
+                <option value="recent-asc">Recently Added (oldest first)</option>
+                <option value="name-asc">Name A-Z</option>
+                <option value="year-desc">Year (newest first)</option>
+                <option value="year-asc">Year (oldest first)</option>
+            </select>
+        </div>
+
+        <div class="export-field">
+            <label>Status</label>
+            <select id="exportStatus">
+                <option value="all">All Cards</option>
+                <option value="got">Obtained Only</option>
+                <option value="missing">Missing Only</option>
+            </select>
+        </div>
+
+        <div class="export-status" id="exportStatusMsg"></div>
+
+        <div class="panel-actions">
+            <button class="btn-cancel" onclick="hidePanel('exportPanel')">Cancel</button>
+            <button class="btn-primary" id="exportDownloadBtn" onclick="downloadExcelExport()">Download Excel</button>
         </div>
     </div>
 </div>
@@ -867,6 +915,104 @@ function downloadNeedsList() {
     hidePanel('needsPanel');
     window.print();
     pa.innerHTML = '';
+}
+
+/* ── EXCEL EXPORT (all collections) ── */
+const EXPORT_COLLECTIONS = [
+    { key: 'master',            label: 'Everton Collection', sheet: 'master',            gotCol: 8,
+      map: row => ({ year: row[1]||'', set: row[2]||'', number: row[3]||'', name: row[4]||'', variant: row[6]||'', printRun: '', description: row[5]||'', collecting: (row[7]||'').toString().toLowerCase()==='true', got: (row[8]||'').toString().toLowerCase()==='true' }) },
+    { key: 'donruss',           label: 'Donruss',            sheet: 'donruss',           gotCol: 6,
+      map: row => ({ year: row[1]||'', set: row[4]||'', number: row[2]||'', name: row[3]||'', variant: '', printRun: '', description: '', collecting: false, got: (row[6]||'').toString().toLowerCase()==='true' }) },
+    { key: 'topps-now',         label: 'Topps Now',          sheet: 'topps-now',         gotCol: 9,
+      map: row => ({ year: row[1]||'', set: row[2]||'', number: row[3]||'', name: row[4]||'', variant: row[6]||'', printRun: row[5]||'', description: row[7]||'', collecting: (row[8]||'').toString().toLowerCase()==='true', got: (row[9]||'').toString().toLowerCase()==='true' }) },
+    { key: 'extra-collections', label: 'Extra Collections',  sheet: 'extra-collections', gotCol: 7,
+      map: row => ({ year: row[1]||'', set: row[2]||'', number: row[3]||'', name: row[4]||'', variant: row[5]||'', printRun: '', description: '', collecting: (row[6]||'').toString().toLowerCase()==='true', got: (row[7]||'').toString().toLowerCase()==='true' }) },
+];
+
+function openExportPanel() {
+    const list = document.getElementById('exportCollectionList');
+    list.innerHTML = EXPORT_COLLECTIONS.map(c => `
+        <div class="needs-set-item selected" data-collkey="${c.key}">
+            <input type="checkbox" checked onclick="event.stopPropagation();this.closest('.needs-set-item').classList.toggle('selected', this.checked)">
+            <div class="needs-set-name">${c.label}</div>
+        </div>`).join('');
+    list.querySelectorAll('.needs-set-item').forEach(div => {
+        div.addEventListener('click', () => {
+            const cb = div.querySelector('input');
+            cb.checked = !cb.checked;
+            div.classList.toggle('selected', cb.checked);
+        });
+    });
+    document.getElementById('exportStatusMsg').textContent = '';
+    document.getElementById('exportDownloadBtn').disabled = false;
+    document.getElementById('exportDownloadBtn').textContent = 'Download Excel';
+    showPanel('exportPanel');
+}
+
+async function downloadExcelExport() {
+    const selectedKeys = Array.from(document.querySelectorAll('#exportCollectionList .needs-set-item.selected')).map(el => el.dataset.collkey);
+    const msg = document.getElementById('exportStatusMsg');
+    const btn = document.getElementById('exportDownloadBtn');
+    if (!selectedKeys.length) { msg.textContent = 'Select at least one collection.'; return; }
+
+    const sortMode = document.getElementById('exportSort').value;
+    const statusMode = document.getElementById('exportStatus').value;
+    btn.disabled = true; btn.textContent = 'Loading...'; msg.textContent = 'Fetching collections...';
+
+    try {
+        const selected = EXPORT_COLLECTIONS.filter(c => selectedKeys.includes(c.key));
+        const results = await Promise.all(selected.map(c => fetch(`/api/sheets?sheet=${c.sheet}`).then(r => r.json())));
+
+        let allRows = [];
+        selected.forEach((c, ci) => {
+            const rows = (results[ci].rows || []).slice(1);
+            rows.forEach((row, i) => {
+                const mapped = c.map(row);
+                allRows.push({
+                    Collection: c.label,
+                    Year: mapped.year,
+                    Set: mapped.set,
+                    'Card #': mapped.number,
+                    'Name / Player': mapped.name,
+                    Variant: mapped.variant,
+                    'Print Run': mapped.printRun,
+                    Description: mapped.description,
+                    Collecting: mapped.collecting ? 'Yes' : 'No',
+                    Status: mapped.got ? 'Obtained' : 'Missing',
+                    _sortRow: i
+                });
+            });
+        });
+
+        if (statusMode === 'got') allRows = allRows.filter(r => r.Status === 'Obtained');
+        if (statusMode === 'missing') allRows = allRows.filter(r => r.Status === 'Missing');
+
+        if (!allRows.length) { msg.textContent = 'No cards match those filters.'; btn.disabled = false; btn.textContent = 'Download Excel'; return; }
+
+        const sorters = {
+            'recent-desc': (a, b) => b._sortRow - a._sortRow,
+            'recent-asc':  (a, b) => a._sortRow - b._sortRow,
+            'name-asc':    (a, b) => (a['Name / Player']||'').localeCompare(b['Name / Player']||''),
+            'year-desc':   (a, b) => (b.Year||'').localeCompare(a.Year||''),
+            'year-asc':    (a, b) => (a.Year||'').localeCompare(b.Year||''),
+        };
+        allRows.sort(sorters[sortMode] || sorters['recent-desc']);
+        allRows.forEach(r => delete r._sortRow);
+
+        const ws = XLSX.utils.json_to_sheet(allRows);
+        ws['!cols'] = [{wch:18},{wch:8},{wch:16},{wch:10},{wch:24},{wch:16},{wch:10},{wch:26},{wch:10},{wch:10}];
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Card Collection');
+        const dateStr = new Date().toISOString().slice(0,10);
+        XLSX.writeFile(wb, `card-collection-export-${dateStr}.xlsx`);
+
+        msg.textContent = `Exported ${allRows.length} cards.`;
+        btn.disabled = false; btn.textContent = 'Download Excel';
+    } catch (err) {
+        console.error('Export failed:', err);
+        msg.textContent = 'Export failed - check console.';
+        btn.disabled = false; btn.textContent = 'Download Excel';
+    }
 }
 
 /* ── IMAGE MODAL ── */
