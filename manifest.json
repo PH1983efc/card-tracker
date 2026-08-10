@@ -1,0 +1,30 @@
+{
+  "name": "Everton Card Collection Tracker",
+  "short_name": "Card Tracker",
+  "description": "Personal registry for Everton FC card collection",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#010a1f",
+  "theme_color": "#003399",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
