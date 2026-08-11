@@ -2,7 +2,7 @@
   "name": "Everton Card Collection Tracker",
   "short_name": "Card Tracker",
   "description": "Personal registry for Everton FC card collection",
-  "start_url": "/",
+  "start_url": "/?view=collecting",
   "display": "standalone",
   "background_color": "#010a1f",
   "theme_color": "#003399",
