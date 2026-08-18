@@ -109,10 +109,6 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
 .collecting-card-grid .card-set{font-size:11px;}
 .collecting-card-grid .card-body{padding:8px 12px 10px;}
 .collecting-card-grid .card-variant{font-size:11px;margin-bottom:7px;min-height:13px;}
-.collecting-card-grid .got-toggle{gap:8px;}
-.collecting-card-grid .toggle-track{width:36px;height:20px;}
-.collecting-card-grid .toggle-thumb{width:14px;height:14px;}
-.collecting-card-grid .is-got .toggle-thumb{transform:translateX(16px);}
 .collecting-card-grid .collecting-badge{margin-top:7px;font-size:9px;padding:2px 7px;}
 @media (max-width:640px){.view-summary{align-items:flex-start;flex-direction:column;gap:2px;}.collecting-header{align-items:flex-start;flex-direction:column;}.collecting-group-meta{width:100%;}.collecting-group-progress{flex:1;width:auto;}}
 
@@ -143,16 +139,17 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
 .card-variant{font-size:12px;color:var(--white-dim);margin-bottom:5px;min-height:15px;}
 .card-description{font-size:13px;color:var(--white-dim);line-height:1.4;margin-bottom:12px;min-height:18px;}
 
-/* TOGGLE */
-.got-toggle{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;}
-.toggle-track{width:40px;height:22px;border-radius:11px;background:rgba(255,255,255,0.06);border:1px solid var(--border);position:relative;transition:background 0.25s,border-color 0.25s;flex-shrink:0;}
-.toggle-thumb{width:16px;height:16px;border-radius:50%;background:var(--white-dim);position:absolute;top:2px;left:2px;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),background 0.25s;}
-.is-got .toggle-track{background:rgba(46,204,113,0.15);border-color:var(--got-color);}
-.is-got .toggle-thumb{transform:translateX(18px);background:var(--got-color);}
-.toggle-label{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.15em;color:var(--white-dim);transition:color 0.2s;text-transform:uppercase;}
-.is-got .toggle-label{color:var(--got-color);}
+/* STATUS BADGE — single consolidated obtained / on-order / missing indicator.
+   Replaces the old toggle-switch + text-label + separate on-order-badge stack. */
+.status-badge{display:inline-flex;align-items:center;gap:6px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;padding:6px 11px;border-radius:3px;cursor:pointer;user-select:none;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:var(--white-dim);transition:all 0.2s;}
+.status-badge:hover{filter:brightness(1.2);}
+.status-badge .status-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.status-badge.status-got{color:var(--got-color);border-color:rgba(46,204,113,0.4);background:rgba(46,204,113,0.1);}
+.status-badge.status-onorder{color:var(--toffee-light);border-color:rgba(212,160,23,0.45);background:rgba(212,160,23,0.1);}
+.status-badge.status-missing{color:var(--white-dim);border-color:var(--border);background:rgba(255,255,255,0.03);}
+.collecting-card-grid .status-badge{font-size:10px;padding:4px 9px;}
 
-/* COLLECTING BADGE */
+/* COLLECTING FLAG — small secondary tag, kept separate from status since it's a different concept (belongs to the active checklist, not obtained/missing state) */
 .collecting-badge{display:inline-flex;align-items:center;gap:5px;margin-top:9px;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--toffee-light);border:1px solid rgba(212,160,23,0.35);background:rgba(212,160,23,0.07);padding:3px 8px;border-radius:2px;}
 
 /* EMPTY STATE */
@@ -252,7 +249,7 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
     .card-top{background:#f0f0f0 !important;border-bottom:1px solid #ccc;}
     .card-number,.card-set,.card-variant,.card-description{color:#555 !important;}
     .card-name{color:#000 !important;}
-    .got-toggle,.card-image,.card-image-placeholder{display:none;}
+    .status-badge,.card-image,.card-image-placeholder{display:none;}
     .collecting-badge{color:#a07010 !important;border-color:#a07010 !important;background:#fff8e0 !important;}
     .print-status{display:inline-block !important;font-size:11px;font-weight:bold;padding:2px 6px;border-radius:3px;margin-top:8px;}
     .print-status.missing{background:#fee;color:#c00;border:1px solid #c00;}
@@ -283,9 +280,7 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
   .nav-btn{padding:12px 16px;font-size:12px;}
 }
 
-        /* ON ORDER BADGE */
-        .on-order-badge{display:inline-flex;align-items:center;gap:4px;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--white);background:rgba(0,51,153,0.25);border:1px solid rgba(26,63,170,0.6);border-radius:2px;padding:2px 7px;margin-top:5px;}
-        .on-order-badge::before{content:'📦';font-size:9px;}
+        /* ON ORDER: card top accent stripe turns blue when on order (status-badge itself shows the amber "On Order" label) */
         .card.is-on-order::before{background:var(--royal) !important;}
         .variant-row.is-on-order::before{background:var(--royal) !important;}
     </style>
@@ -670,7 +665,10 @@ function renderCollectingGroups() {
                 const imgHtml = card.imageUrl
                     ? `<img class="card-image" src="${card.imageUrl}" alt="${card.name}" loading="lazy">`
                     : '<div class="card-image-placeholder"><p>+ Find Image</p></div>';
-                return `<div class="card ${card.got?'is-got':'is-missing'} ${!card.got && onOrderIds.has(card.id) ? 'is-on-order' : ''}" data-id="${card.id}" style="animation-delay:${Math.min(i*20,300)}ms">
+                const isOnOrder = !card.got && onOrderIds.has(card.id);
+                const statusClass = card.got ? 'status-got' : (isOnOrder ? 'status-onorder' : 'status-missing');
+                const statusLabel = card.got ? 'Obtained' : (isOnOrder ? 'On Order' : 'Missing');
+                return `<div class="card ${card.got?'is-got':'is-missing'} ${isOnOrder ? 'is-on-order' : ''}" data-id="${card.id}" style="animation-delay:${Math.min(i*20,300)}ms">
                     ${imgHtml}
                     <div class="card-top">
                         <div class="card-number">#${card.number} - ${card.year}</div>
@@ -679,11 +677,7 @@ function renderCollectingGroups() {
                     </div>
                     <div class="card-body">
                         <div class="card-variant">${card.variant||''}</div>
-                        <label class="got-toggle">
-                            <div class="toggle-track"><div class="toggle-thumb"></div></div>
-                            <span class="toggle-label">${card.got?'OBTAINED':'MISSING'}</span>
-                        </label>
-                        ${!card.got && onOrderIds.has(card.id) ? '<div class="on-order-badge">On Order</div>' : ''}
+                        <div class="status-badge ${statusClass}"><span class="status-dot"></span>${statusLabel}</div>
                         <div class="collecting-badge">Collecting</div>
                     </div>
                 </div>`;
@@ -710,9 +704,9 @@ function renderCollectingGroups() {
     }).join('');
 
     // Attach listeners
-    container.querySelectorAll('.got-toggle').forEach(toggle => {
-        toggle.addEventListener('click', () => {
-            const cardEl = toggle.closest('.card');
+    container.querySelectorAll('.status-badge').forEach(badge => {
+        badge.addEventListener('click', () => {
+            const cardEl = badge.closest('.card');
             if (cardEl) toggleGot(cardEl.dataset.id);
         });
     });
@@ -744,6 +738,9 @@ function renderCardGrid() {
         const imgHtml = card.imageUrl
             ? `<img class="card-image" src="${card.imageUrl}" alt="${card.name}" loading="lazy">`
             : '<div class="card-image-placeholder"><p>+ Find Image</p></div>';
+        const isOnOrder = !card.got && onOrderIds.has(card.id);
+        const statusClass = card.got ? 'status-got' : (isOnOrder ? 'status-onorder' : 'status-missing');
+        const statusLabel = card.got ? 'Obtained' : (isOnOrder ? 'On Order' : 'Missing');
         div.innerHTML = `
             ${imgHtml}
             <div class="card-top">
@@ -754,14 +751,11 @@ function renderCardGrid() {
             <div class="card-body">
                 <div class="card-variant">${card.variant || ''}</div>
                 <div class="card-description">${card.description || ''}</div>
-                <label class="got-toggle">
-                    <div class="toggle-track"><div class="toggle-thumb"></div></div>
-                    <span class="toggle-label">${card.got ? 'OBTAINED' : 'MISSING'}</span>
-                </label>
+                <div class="status-badge ${statusClass}"><span class="status-dot"></span>${statusLabel}</div>
                 ${badge}
                 <span class="print-status ${card.got ? 'got' : 'missing'}">${card.got ? 'OBTAINED' : 'MISSING'}</span>
             </div>`;
-        div.querySelector('.got-toggle').addEventListener('click', () => toggleGot(card.id));
+        div.querySelector('.status-badge').addEventListener('click', () => toggleGot(card.id));
         const imgEl = div.querySelector('.card-image, .card-image-placeholder');
         if (imgEl) imgEl.addEventListener('click', () => openImgModal(card.id));
         grid.appendChild(div);
@@ -1064,7 +1058,7 @@ function applyReadonly() {
     if (!IS_READONLY) return;
     document.getElementById('readonlyBanner').classList.add('visible');
     // Hide toggles and edit controls
-    document.querySelectorAll('.got-toggle').forEach(t => { t.style.pointerEvents='none'; t.style.opacity='0.5'; });
+    document.querySelectorAll('.status-badge').forEach(t => { t.style.pointerEvents='none'; t.style.opacity='0.5'; });
     document.querySelectorAll('.card-image-placeholder').forEach(t => t.style.pointerEvents='none');
     document.querySelectorAll('.toolbar-btn, .add-order-btn').forEach(t => t.style.display='none');
 }
