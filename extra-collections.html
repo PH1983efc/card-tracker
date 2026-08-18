@@ -102,13 +102,12 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
 .card-variant{font-size:11px;color:var(--white-dim);font-style:italic;margin-bottom:10px;}
 
 /* TOGGLE */
-.got-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;}
-.toggle-track{width:36px;height:20px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid var(--border);position:relative;transition:background 0.25s,border-color 0.25s;flex-shrink:0;}
-.toggle-thumb{width:14px;height:14px;border-radius:50%;background:var(--white-dim);position:absolute;top:2px;left:2px;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),background 0.25s;}
-.is-got .toggle-track{background:rgba(46,204,113,0.15);border-color:var(--got-color);}
-.is-got .toggle-thumb{transform:translateX(16px);background:var(--got-color);}
-.toggle-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.15em;color:var(--white-dim);transition:color 0.2s;text-transform:uppercase;}
-.is-got .toggle-label{color:var(--got-color);}
+.status-badge{display:inline-flex;align-items:center;gap:6px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;padding:6px 11px;border-radius:3px;cursor:pointer;user-select:none;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:var(--white-dim);transition:all 0.2s;}
+.status-badge:hover{filter:brightness(1.2);}
+.status-badge .status-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.status-badge.status-got{color:var(--got-color);border-color:rgba(46,204,113,0.4);background:rgba(46,204,113,0.1);}
+.status-badge.status-onorder{color:var(--toffee-light);border-color:rgba(212,160,23,0.45);background:rgba(212,160,23,0.1);}
+.status-badge.status-missing{color:var(--white-dim);border-color:var(--border);background:rgba(255,255,255,0.03);}
 .collecting-badge{display:inline-flex;margin-top:6px;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--toffee-light);border:1px solid rgba(212,160,23,0.35);background:rgba(212,160,23,0.07);padding:2px 7px;border-radius:2px;}
 
 /* EMPTY */
@@ -150,9 +149,7 @@ nav{display:flex;justify-content:center;position:relative;z-index:2;background:v
 ::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:3px;}
 ::-webkit-scrollbar-thumb:hover{background:var(--royal);}
 
-        /* ON ORDER BADGE */
-        .on-order-badge{display:inline-flex;align-items:center;gap:4px;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--white);background:rgba(0,51,153,0.25);border:1px solid rgba(26,63,170,0.6);border-radius:2px;padding:2px 7px;margin-top:5px;}
-        .on-order-badge::before{content:'📦';font-size:9px;}
+        /* ON ORDER: card top accent stripe turns blue when on order (status-badge shows the amber "On Order" label) */
         .card.is-on-order::before{background:var(--royal) !important;}
         .variant-row.is-on-order::before{background:var(--royal) !important;}
     </style>
@@ -303,18 +300,17 @@ function renderCards() {
             .sort((a, b) => String(a.cardNo).localeCompare(String(b.cardNo), undefined, {numeric:true}))
             .map((card, i) => {
                 const badge = card.collecting ? '<div class="collecting-badge">Collecting</div>' : '';
-                const orderBadge = !card.got && onOrderIds.has(card.id) ? '<div class="on-order-badge">On Order</div>' : '';
+                const isOnOrder = !card.got && onOrderIds.has(card.id);
+                const statusClass = card.got ? 'status-got' : (isOnOrder ? 'status-onorder' : 'status-missing');
+                const statusLabel = card.got ? 'Obtained' : (isOnOrder ? 'On Order' : 'Missing');
                 return `
-                    <div class="card ${card.got ? 'is-got' : 'is-missing'} ${!card.got && onOrderIds.has(card.id) ? 'is-on-order' : ''}" data-id="${card.id}" style="animation-delay:${Math.min(i*20,300)}ms">
+                    <div class="card ${card.got ? 'is-got' : 'is-missing'} ${isOnOrder ? 'is-on-order' : ''}" data-id="${card.id}" style="animation-delay:${Math.min(i*20,300)}ms">
                         ${card.imageUrl ? `<img class="card-image" src="${card.imageUrl}" alt="${card.player}" loading="lazy">` : '<div class="card-image-placeholder"><p>+ Image</p></div>'}
                         <div class="card-number">#${card.cardNo} - ${card.year}</div>
                         <div class="card-name">${card.player}</div>
                         ${card.variant ? `<div class="card-variant">${card.variant}</div>` : '<div class="card-variant"></div>'}
-                        <label class="got-toggle">
-                            <div class="toggle-track"><div class="toggle-thumb"></div></div>
-                            <span class="toggle-label">${card.got ? 'OBTAINED' : 'MISSING'}</span>
-                        </label>
-                        ${badge}${orderBadge}
+                        <div class="status-badge ${statusClass}"><span class="status-dot"></span>${statusLabel}</div>
+                        ${badge}
                     </div>`;
             }).join('');
 
@@ -338,10 +334,10 @@ function renderCards() {
             </div>`;
     }).join('');
 
-    // Attach got toggle listeners
-    document.querySelectorAll('.got-toggle').forEach(toggle => {
-        toggle.addEventListener('click', () => {
-            const cardEl = toggle.closest('.card');
+    // Attach status badge listeners
+    document.querySelectorAll('.status-badge').forEach(badge => {
+        badge.addEventListener('click', () => {
+            const cardEl = badge.closest('.card');
             if (cardEl) toggleGot(cardEl.dataset.id);
         });
     });
@@ -362,7 +358,11 @@ function toggleGot(cardId) {
     if (el) {
         el.classList.toggle('is-got', card.got);
         el.classList.toggle('is-missing', !card.got);
-        el.querySelector('.toggle-label').textContent = card.got ? 'OBTAINED' : 'MISSING';
+        const isOnOrder = !card.got && onOrderIds.has(card.id);
+        el.classList.toggle('is-on-order', isOnOrder);
+        const badge = el.querySelector('.status-badge');
+        badge.className = 'status-badge ' + (card.got ? 'status-got' : (isOnOrder ? 'status-onorder' : 'status-missing'));
+        badge.innerHTML = `<span class="status-dot"></span>${card.got ? 'Obtained' : (isOnOrder ? 'On Order' : 'Missing')}`;
         el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
     }
     updateStats();
@@ -377,7 +377,7 @@ const IS_READONLY = new URLSearchParams(window.location.search).get('readonly') 
 function applyReadonly() {
     if (!IS_READONLY) return;
     document.getElementById('readonlyBanner').classList.add('visible');
-    document.querySelectorAll('.got-toggle').forEach(t => { t.style.pointerEvents='none'; t.style.opacity='0.5'; });
+    document.querySelectorAll('.status-badge').forEach(t => { t.style.pointerEvents='none'; t.style.opacity='0.5'; });
 }
 
 function setLastSynced() {
