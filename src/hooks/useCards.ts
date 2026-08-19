@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Card, Collection, SortBy, FilterStatus } from "../types";
+import type { Card, Collection, SortBy, FilterStatus } from "../types";
 
 export function useCards() {
   const [cards, setCards] = useState<Card[]>([]);
@@ -16,10 +16,10 @@ export function useCards() {
       const res = await fetch("/api/read");
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      if (!data.success) throw new Error("Failed to load cards");
+      if (!data.success) throw new Error(data.error || "Failed to load cards");
 
       const rows: string[][] = data.rows;
-      const parsed: Card[] = rows.slice(1).map((row) => ({
+      const parsed: Card[] = rows.slice(1).map((row, index) => ({
         id: row[0] || "",
         year: row[1] || "",
         cardSet: row[2] || "",
@@ -30,7 +30,9 @@ export function useCards() {
         collecting: row[7] === "TRUE",
         got: row[8] === "TRUE",
         imageUrl: row[9] || undefined,
+        rowIndex: index + 2,
       }));
+
       setCards(parsed);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to load cards";
@@ -44,27 +46,20 @@ export function useCards() {
     fetchCards();
   }, [fetchCards]);
 
-  const toggleGot = useCallback(async (cardId: string, got: boolean) => {
+  const toggleGot = useCallback(async (cardId: string, got: boolean, rowIndex: number) => {
     setUpdating((prev) => new Set(prev).add(cardId));
-
-    // Optimistic update
-    setCards((prev) =>
-      prev.map((c) => (c.id === cardId ? { ...c, got } : c))
-    );
+    setCards((prev) => prev.map((c) => (c.id === cardId ? { ...c, got } : c)));
 
     try {
       const res = await fetch("/api/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: cardId, got }),
+        body: JSON.stringify({ sheet: "master", rowIndex, got }),
       });
       const data = await res.json();
       if (!data.success) throw new Error("Update failed");
     } catch {
-      // Revert on failure
-      setCards((prev) =>
-        prev.map((c) => (c.id === cardId ? { ...c, got: !got } : c))
-      );
+      setCards((prev) => prev.map((c) => (c.id === cardId ? { ...c, got: !got } : c)));
     } finally {
       setUpdating((prev) => {
         const next = new Set(prev);
