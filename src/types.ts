@@ -20,6 +20,6 @@ export interface Collection {
   collectingCards: number;
 }
 
-export type SortBy = 'cardNo' | 'playerName' | 'variant';
-export type FilterStatus = 'all' | 'got' | 'need' | 'collecting';
-export type ViewMode = 'grid' | 'list';
+export type SortBy = "cardNo" | "playerName" | "variant";
+export type FilterStatus = "all" | "got" | "need" | "collecting";
+export type ViewMode = "grid" | "list";

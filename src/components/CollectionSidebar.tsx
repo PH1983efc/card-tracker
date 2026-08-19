@@ -1,5 +1,7 @@
-import { Folder, ChevronRight } from 'lucide-react';
-import { Collection } from '../types';
+"use client";
+
+import { Folder, ChevronRight } from "lucide-react";
+import { Collection } from "../types";
 
 interface CollectionSidebarProps {
   collections: Collection[];
@@ -7,7 +9,11 @@ interface CollectionSidebarProps {
   onSelect: (name: string | null) => void;
 }
 
-export default function CollectionSidebar({ collections, selected, onSelect }: CollectionSidebarProps) {
+export default function CollectionSidebar({
+  collections,
+  selected,
+  onSelect,
+}: CollectionSidebarProps) {
   const totalGot = collections.reduce((s, c) => s + c.gotCards, 0);
   const totalCards = collections.reduce((s, c) => s + c.totalCards, 0);
 
@@ -26,28 +32,33 @@ export default function CollectionSidebar({ collections, selected, onSelect }: C
           onClick={() => onSelect(null)}
           className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
             selected === null
-              ? 'bg-indigo-600/20 border border-indigo-500/30 text-white'
-              : 'hover:bg-white/5 text-gray-400 border border-transparent'
+              ? "bg-indigo-600/20 border border-indigo-500/30 text-white"
+              : "hover:bg-white/5 text-gray-400 border border-transparent"
           }`}
         >
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold truncate">All Collections</p>
-            <p className="text-xs text-gray-500">{totalCards} cards · {totalGot} got</p>
+            <p className="text-xs text-gray-500">
+              {totalCards} cards · {totalGot} got
+            </p>
           </div>
           <ChevronRight className="h-4 w-4 shrink-0 opacity-50" />
         </button>
 
         {/* Individual collections */}
         {collections.map((col) => {
-          const progress = col.collectingCards > 0 ? Math.round((col.gotCards / col.collectingCards) * 100) : 0;
+          const progress =
+            col.collectingCards > 0
+              ? Math.round((col.gotCards / col.collectingCards) * 100)
+              : 0;
           return (
             <button
               key={col.name}
               onClick={() => onSelect(col.name)}
               className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
                 selected === col.name
-                  ? 'bg-indigo-600/20 border border-indigo-500/30 text-white'
-                  : 'hover:bg-white/5 text-gray-400 border border-transparent'
+                  ? "bg-indigo-600/20 border border-indigo-500/30 text-white"
+                  : "hover:bg-white/5 text-gray-400 border border-transparent"
               }`}
             >
               <div className="flex-1 min-w-0">
@@ -59,7 +70,9 @@ export default function CollectionSidebar({ collections, selected, onSelect }: C
                       style={{ width: `${progress}%` }}
                     />
                   </div>
-                  <span className="text-[10px] text-gray-500 font-medium">{col.gotCards}/{col.collectingCards}</span>
+                  <span className="text-[10px] text-gray-500 font-medium">
+                    {col.gotCards}/{col.collectingCards}
+                  </span>
                 </div>
               </div>
               <ChevronRight className="h-4 w-4 shrink-0 opacity-50" />

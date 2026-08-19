@@ -1,4 +1,6 @@
-import { Layers, RefreshCw, Download, Settings } from 'lucide-react';
+"use client";
+
+import { Layers, RefreshCw, Download, Settings } from "lucide-react";
 
 interface HeaderProps {
   totalCards: number;
@@ -10,9 +12,18 @@ interface HeaderProps {
   loading: boolean;
 }
 
-export default function Header({ totalCards, gotCards, collectingCards, onRefresh, onExport, onSettings, loading }: HeaderProps) {
+export default function Header({
+  totalCards,
+  gotCards,
+  collectingCards,
+  onRefresh,
+  onExport,
+  onSettings,
+  loading,
+}: HeaderProps) {
   const needCards = collectingCards - gotCards;
-  const progress = collectingCards > 0 ? Math.round((gotCards / collectingCards) * 100) : 0;
+  const progress =
+    collectingCards > 0 ? Math.round((gotCards / collectingCards) * 100) : 0;
 
   return (
     <header className="sticky top-0 z-50 bg-gray-950/80 backdrop-blur-xl border-b border-white/5">
@@ -24,8 +35,12 @@ export default function Header({ totalCards, gotCards, collectingCards, onRefres
               <Layers className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-white leading-tight">Card Tracker</h1>
-              <p className="text-xs text-gray-500 leading-tight">Collection Manager</p>
+              <h1 className="text-lg font-bold text-white leading-tight">
+                Card Tracker
+              </h1>
+              <p className="text-xs text-gray-500 leading-tight">
+                Collection Manager
+              </p>
             </div>
           </div>
 
@@ -33,27 +48,41 @@ export default function Header({ totalCards, gotCards, collectingCards, onRefres
           <div className="hidden md:flex items-center gap-6">
             <div className="flex items-center gap-2">
               <div className="text-right">
-                <p className="text-xs text-gray-500 uppercase tracking-wider">Total</p>
-                <p className="text-lg font-bold text-white">{totalCards.toLocaleString()}</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider">
+                  Total
+                </p>
+                <p className="text-lg font-bold text-white">
+                  {totalCards.toLocaleString()}
+                </p>
               </div>
             </div>
             <div className="w-px h-8 bg-white/10" />
             <div className="flex items-center gap-2">
               <div className="text-right">
-                <p className="text-xs text-gray-500 uppercase tracking-wider">Got</p>
-                <p className="text-lg font-bold text-emerald-400">{gotCards.toLocaleString()}</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider">
+                  Got
+                </p>
+                <p className="text-lg font-bold text-emerald-400">
+                  {gotCards.toLocaleString()}
+                </p>
               </div>
             </div>
             <div className="w-px h-8 bg-white/10" />
             <div className="flex items-center gap-2">
               <div className="text-right">
-                <p className="text-xs text-gray-500 uppercase tracking-wider">Need</p>
-                <p className="text-lg font-bold text-amber-400">{Math.max(0, needCards).toLocaleString()}</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider">
+                  Need
+                </p>
+                <p className="text-lg font-bold text-amber-400">
+                  {Math.max(0, needCards).toLocaleString()}
+                </p>
               </div>
             </div>
             <div className="w-px h-8 bg-white/10" />
             <div className="flex flex-col items-center gap-1">
-              <p className="text-xs text-gray-500 uppercase tracking-wider">Progress</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider">
+                Progress
+              </p>
               <div className="flex items-center gap-2">
                 <div className="w-24 h-2 bg-gray-800 rounded-full overflow-hidden">
                   <div
@@ -73,7 +102,9 @@ export default function Header({ totalCards, gotCards, collectingCards, onRefres
               className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all"
               title="Refresh"
             >
-              <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`h-5 w-5 ${loading ? "animate-spin" : ""}`}
+              />
             </button>
             <button
               onClick={onExport}
@@ -94,9 +125,16 @@ export default function Header({ totalCards, gotCards, collectingCards, onRefres
 
         {/* Stats - Mobile */}
         <div className="md:hidden pb-3 flex items-center gap-4 text-xs">
-          <span className="text-gray-400">Total: <strong className="text-white">{totalCards}</strong></span>
-          <span className="text-gray-400">Got: <strong className="text-emerald-400">{gotCards}</strong></span>
-          <span className="text-gray-400">Need: <strong className="text-amber-400">{Math.max(0, needCards)}</strong></span>
+          <span className="text-gray-400">
+            Total: <strong className="text-white">{totalCards}</strong>
+          </span>
+          <span className="text-gray-400">
+            Got: <strong className="text-emerald-400">{gotCards}</strong>
+          </span>
+          <span className="text-gray-400">
+            Need:{" "}
+            <strong className="text-amber-400">{Math.max(0, needCards)}</strong>
+          </span>
           <div className="flex-1 flex items-center gap-2">
             <div className="flex-1 h-1.5 bg-gray-800 rounded-full overflow-hidden">
               <div

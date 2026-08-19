@@ -1,5 +1,7 @@
-import { Search, Grid3X3, List, SlidersHorizontal } from 'lucide-react';
-import { SortBy, FilterStatus, ViewMode } from '../types';
+"use client";
+
+import { Search, Grid3X3, List, SlidersHorizontal } from "lucide-react";
+import { SortBy, FilterStatus, ViewMode } from "../types";
 
 interface FilterBarProps {
   search: string;
@@ -17,19 +19,25 @@ interface FilterBarProps {
 }
 
 const statusOptions: { value: FilterStatus; label: string; color: string }[] = [
-  { value: 'all', label: 'All', color: 'bg-gray-700' },
-  { value: 'collecting', label: 'Collecting', color: 'bg-indigo-600' },
-  { value: 'got', label: 'Got', color: 'bg-emerald-600' },
-  { value: 'need', label: 'Need', color: 'bg-amber-600' },
+  { value: "all", label: "All", color: "bg-gray-700" },
+  { value: "collecting", label: "Collecting", color: "bg-indigo-600" },
+  { value: "got", label: "Got", color: "bg-emerald-600" },
+  { value: "need", label: "Need", color: "bg-amber-600" },
 ];
 
 export default function FilterBar({
-  search, onSearchChange,
-  status, onStatusChange,
-  sortBy, onSortChange,
-  viewMode, onViewChange,
-  variantFilter, onVariantChange,
-  variants, resultCount
+  search,
+  onSearchChange,
+  status,
+  onStatusChange,
+  sortBy,
+  onSortChange,
+  viewMode,
+  onViewChange,
+  variantFilter,
+  onVariantChange,
+  variants,
+  resultCount,
 }: FilterBarProps) {
   return (
     <div className="bg-gray-900/50 border border-white/5 rounded-2xl p-4 space-y-4">
@@ -47,14 +55,22 @@ export default function FilterBar({
         </div>
         <div className="flex bg-gray-800/50 border border-white/10 rounded-xl overflow-hidden">
           <button
-            onClick={() => onViewChange('grid')}
-            className={`p-2.5 transition-all ${viewMode === 'grid' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'}`}
+            onClick={() => onViewChange("grid")}
+            className={`p-2.5 transition-all ${
+              viewMode === "grid"
+                ? "bg-indigo-600 text-white"
+                : "text-gray-400 hover:text-white"
+            }`}
           >
             <Grid3X3 className="h-4 w-4" />
           </button>
           <button
-            onClick={() => onViewChange('list')}
-            className={`p-2.5 transition-all ${viewMode === 'list' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'}`}
+            onClick={() => onViewChange("list")}
+            className={`p-2.5 transition-all ${
+              viewMode === "list"
+                ? "bg-indigo-600 text-white"
+                : "text-gray-400 hover:text-white"
+            }`}
           >
             <List className="h-4 w-4" />
           </button>
@@ -71,7 +87,7 @@ export default function FilterBar({
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 status === opt.value
                   ? `${opt.color} text-white shadow-lg`
-                  : 'bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-800'
+                  : "bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-800"
               }`}
             >
               {opt.label}
@@ -97,12 +113,16 @@ export default function FilterBar({
           >
             <option value="all">All Variants</option>
             {variants.map((v) => (
-              <option key={v} value={v}>{v}</option>
+              <option key={v} value={v}>
+                {v}
+              </option>
             ))}
           </select>
         </div>
 
-        <span className="text-xs text-gray-500 sm:ml-2">{resultCount} cards</span>
+        <span className="text-xs text-gray-500 sm:ml-2">
+          {resultCount} cards
+        </span>
       </div>
     </div>
   );
