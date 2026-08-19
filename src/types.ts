@@ -9,6 +9,7 @@ export interface Card {
   collecting: boolean;
   got: boolean;
   imageUrl?: string;
+  rowIndex: number;
 }
 
 export interface Collection {
