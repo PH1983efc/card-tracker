@@ -13,9 +13,104 @@ import SettingsModal from "./SettingsModal";
 import LoadingSkeleton from "./LoadingSkeleton";
 import { AlertCircle, Layers, Menu, X } from "lucide-react";
 
-export default function CardTracker() {
-  const { cards, collections, loading, error, updating, toggleGot, refetch } =
-    useCards();
+type TrackerSheet =
+  | "all"
+  | "master"
+  | "donruss"
+  | "topps-now"
+  | "extra-collections";
+
+export default function CardTracker({
+  initialSheet = "all",
+}: {
+  initialSheet?: TrackerSheet;
+}) {
+  const {
+    cards: allCards,
+    loading,
+    error,
+    updating,
+    toggleGot,
+    refetch,
+  } = useCards();
+
+  const cards = useMemo(() => {
+    if (initialSheet === "all") return allCards;
+    return allCards.filter((card) => card.sheet === initialSheet);
+  }, [allCards, initialSheet]);
+
+  const collections = useMemo((): Collection[] => {
+    const map = new Map<string, typeof cards>();
+
+    cards.forEach((card) => {
+      const key = `${card.year} – ${card.cardSet}`;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(card);
+    });
+
+    return Array.from(map.entries()).map(([name, colCards]) => ({
+      name,
+      year: colCards[0]?.year || "",
+      cards: colCards,
+      totalCards: colCards.length,
+      gotCards: colCards.filter((c) => c.got).length,
+      collectingCards: colCards.filter((c) => c.collecting).length,
+    }));
+  }, [cards]);
+        <nav className="border-b border-white/5 bg-gray-950/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap gap-2 text-sm">
+          <Link
+            href="/"
+            className={`rounded-lg px-3 py-2 ${
+              initialSheet === "all"
+                ? "bg-indigo-600 text-white"
+                : "bg-white/5 text-gray-300 hover:text-white"
+            }`}
+          >
+            All Collections
+          </Link>
+
+          <Link
+            href="/donruss"
+            className={`rounded-lg px-3 py-2 ${
+              initialSheet === "donruss"
+                ? "bg-indigo-600 text-white"
+                : "bg-white/5 text-gray-300 hover:text-white"
+            }`}
+          >
+            Donruss
+          </Link>
+
+          <Link
+            href="/topps-now"
+            className={`rounded-lg px-3 py-2 ${
+              initialSheet === "topps-now"
+                ? "bg-indigo-600 text-white"
+                : "bg-white/5 text-gray-300 hover:text-white"
+            }`}
+          >
+            Topps Now
+          </Link>
+
+          <Link
+            href="/extra-collections"
+            className={`rounded-lg px-3 py-2 ${
+              initialSheet === "extra-collections"
+                ? "bg-indigo-600 text-white"
+                : "bg-white/5 text-gray-300 hover:text-white"
+            }`}
+          >
+            Extra Collections
+          </Link>
+
+          <Link
+            href="/orders"
+            className="rounded-lg bg-white/5 px-3 py-2 text-gray-300 hover:text-white"
+          >
+            Orders
+          </Link>
+        </div>
+      </nav>
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<FilterStatus>("all");
   const [sortBy, setSortBy] = useState<SortBy>("cardNo");
@@ -163,10 +258,10 @@ export default function CardTracker() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
                   {filteredCards.map((card) => (
                     <CardItem
-                      key={`${card.id}-${card.rowIndex}`}
+                      key={`${card.sheet}-${card.rowIndex}`}
                       card={card}
                       viewMode={viewMode}
-                      updating={updating.has(card.id)}
+                      updating={updating.has(`${card.sheet}-${card.rowIndex}`)}
                       onToggleGot={toggleGot}
                     />
                   ))}
@@ -175,10 +270,10 @@ export default function CardTracker() {
                 <div className="space-y-2">
                   {filteredCards.map((card) => (
                     <CardItem
-                      key={`${card.id}-${card.rowIndex}`}
+                      key={`${card.sheet}-${card.rowIndex}`}
                       card={card}
                       viewMode={viewMode}
-                      updating={updating.has(card.id)}
+                      updating={updating.has(`${card.sheet}-${card.rowIndex}`)}
                       onToggleGot={toggleGot}
                     />
                   ))}
