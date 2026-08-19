@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Everton Card Tracker",
-  description: "Track your Everton football card collection",
+  title: "Card Tracker – Collection Manager",
+  description: "A modern card collection tracker.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
