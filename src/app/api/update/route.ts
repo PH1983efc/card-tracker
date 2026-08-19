@@ -3,8 +3,8 @@ import { getAuthenticatedSheets } from "@/lib/sheets";
 
 const SHEET_CONFIG: Record<string, { name: string; gotCol: string; imageCol: string }> = {
   master:              { name: "Master",            gotCol: "I", imageCol: "J" },
-  donruss:             { name: "Donruss",           gotCol: "G", imageCol: "H" },
-  "topps-now":         { name: "Topps Now",         gotCol: "J", imageCol: "K" },
+  donruss:             { name: "Donruss",           gotCol: "H", imageCol: "I" },
+  "topps-now":         { name: "Topps Now",         gotCol: "H", imageCol: "I" },
   "extra-collections": { name: "Extra Collections", gotCol: "H", imageCol: "I" },
 };
 
@@ -16,10 +16,8 @@ export async function POST(req: NextRequest) {
       rowIndex?: number;
       got?: boolean;
       imageUrl?: string;
-      id?: string;
     };
 
-    // Support both old format {id, got} and new format {sheet, rowIndex, got}
     const sheetKey = sheet || "master";
     const config = SHEET_CONFIG[sheetKey];
 
@@ -39,27 +37,21 @@ export async function POST(req: NextRequest) {
 
     const { sheets, sheetId } = getAuthenticatedSheets();
 
-    // Update got column
     if (got !== undefined) {
       await sheets.spreadsheets.values.update({
         spreadsheetId: sheetId,
         range: `${config.name}!${config.gotCol}${rowIndex}`,
         valueInputOption: "USER_ENTERED",
-        requestBody: {
-          values: [[got === true ? true : false]],
-        },
+        requestBody: { values: [[got === true ? true : false]] },
       });
     }
 
-    // Update image column
     if (imageUrl !== undefined && config.imageCol) {
       await sheets.spreadsheets.values.update({
         spreadsheetId: sheetId,
         range: `${config.name}!${config.imageCol}${rowIndex}`,
         valueInputOption: "RAW",
-        requestBody: {
-          values: [[imageUrl]],
-        },
+        requestBody: { values: [[imageUrl]] },
       });
     }
 
