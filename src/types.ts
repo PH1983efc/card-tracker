@@ -9,7 +9,8 @@ export interface Card {
   collecting: boolean;
   got: boolean;
   imageUrl?: string;
-  rowIndex: number; // 1-indexed row in the Google Sheet (header = row 1)
+  rowIndex: number;
+  sheet: string;
 }
 
 export interface Collection {
