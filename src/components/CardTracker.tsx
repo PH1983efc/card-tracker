@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { useCards, filterAndSort } from "../hooks/useCards";
-import type { SortBy, FilterStatus, ViewMode } from "../types";
+import type { SortBy, FilterStatus, ViewMode, Collection } from "../types";
+import Link from "next/link";
 import Header from "./Header";
 import FilterBar from "./FilterBar";
 import CardItem from "./CardItem";
