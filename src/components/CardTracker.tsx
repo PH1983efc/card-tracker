@@ -32,14 +32,14 @@ export default function CardTracker({
 }: {
   initialSheet?: TrackerSheet;
 }) {
-  const {
-    cards: allCards,
-    loading,
-    error,
-    updating,
-    toggleGot,
-    refetch,
-  } = useCards();
+const {
+  cards: allCards,
+  loading,
+  error,
+  updating,
+  toggleGot,
+  refetch,
+} = useCards();
 
   const cards = useMemo(() => {
     if (initialSheet === "all") return allCards;
