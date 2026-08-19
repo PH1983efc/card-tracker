@@ -20,6 +20,13 @@ type TrackerSheet =
   | "topps-now"
   | "extra-collections";
 
+type TrackerSheet =
+  | "all"
+  | "master"
+  | "donruss"
+  | "topps-now"
+  | "extra-collections";
+
 export default function CardTracker({
   initialSheet = "all",
 }: {
@@ -33,6 +40,30 @@ export default function CardTracker({
     toggleGot,
     refetch,
   } = useCards();
+
+  const cards = useMemo(() => {
+    if (initialSheet === "all") return allCards;
+    return allCards.filter((card) => card.sheet === initialSheet);
+  }, [allCards, initialSheet]);
+
+  const collections = useMemo((): Collection[] => {
+    const map = new Map<string, typeof cards>();
+
+    cards.forEach((card) => {
+      const key = `${card.year} – ${card.cardSet}`;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(card);
+    });
+
+    return Array.from(map.entries()).map(([name, colCards]) => ({
+      name,
+      year: colCards[0]?.year || "",
+      cards: colCards,
+      totalCards: colCards.length,
+      gotCards: colCards.filter((c) => c.got).length,
+      collectingCards: colCards.filter((c) => c.collecting).length,
+    }));
+  }, [cards]);
 
   const cards = useMemo(() => {
     if (initialSheet === "all") return allCards;
@@ -159,7 +190,60 @@ export default function CardTracker({
         onSettings={() => setShowSettings(true)}
         loading={loading}
       />
+            <nav className="border-b border-white/5 bg-gray-950/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap gap-2 text-sm">
+          <Link
+            href="/"
+            className={`rounded-lg px-3 py-2 ${
+              initialSheet === "all"
+                ? "bg-indigo-600 text-white"
+                : "bg-white/5 text-gray-300 hover:text-white"
+            }`}
+          >
+            All Collections
+          </Link>
 
+          <Link
+            href="/donruss"
+            className={`rounded-lg px-3 py-2 ${
+              initialSheet === "donruss"
+                ? "bg-indigo-600 text-white"
+                : "bg-white/5 text-gray-300 hover:text-white"
+            }`}
+          >
+            Donruss
+          </Link>
+
+          <Link
+            href="/topps-now"
+            className={`rounded-lg px-3 py-2 ${
+              initialSheet === "topps-now"
+                ? "bg-indigo-600 text-white"
+                : "bg-white/5 text-gray-300 hover:text-white"
+            }`}
+          >
+            Topps Now
+          </Link>
+
+          <Link
+            href="/extra-collections"
+            className={`rounded-lg px-3 py-2 ${
+              initialSheet === "extra-collections"
+                ? "bg-indigo-600 text-white"
+                : "bg-white/5 text-gray-300 hover:text-white"
+            }`}
+          >
+            Extra Collections
+          </Link>
+
+          <Link
+            href="/orders"
+            className="rounded-lg bg-white/5 px-3 py-2 text-gray-300 hover:text-white"
+          >
+            Orders
+          </Link>
+        </div>
+      </nav>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Mobile sidebar toggle */}
         <button
