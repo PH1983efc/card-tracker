@@ -3,6 +3,23 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import type { Card, Collection, SortBy, FilterStatus } from "../types";
 
+function parseRowsAsCards(rows: string[][]): Card[] {
+  return rows.slice(1).map((row, index) => ({
+    id: row[0] || "",
+    year: row[1] || "",
+    cardSet: row[2] || "",
+    cardNo: row[3] || "",
+    playerName: (row[4] || "").replace(/,\s*$/, ""),
+    cardDescription: row[5] || "",
+    variant: row[6] || "",
+    collecting: row[7] === "TRUE",
+    got: row[8] === "TRUE",
+    imageUrl: row[9] || undefined,
+    rowIndex: index + 2,
+    sheet: "master",
+  }));
+}
+
 export function useCards() {
   const [cards, setCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true);
@@ -13,15 +30,25 @@ export function useCards() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch("/api/read");
+      const res = await fetch("/api/read", { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (!data.success) throw new Error(data.error || "Failed to load cards");
 
-      const parsed: Card[] = data.cards.map((c: Card) => ({
-        ...c,
-        imageUrl: c.imageUrl || undefined,
-      }));
+      let parsed: Card[] = [];
+
+      if (Array.isArray(data.cards)) {
+        parsed = data.cards.map((c: Card) => ({
+          ...c,
+          imageUrl: c.imageUrl || undefined,
+          sheet: c.sheet || "master",
+          rowIndex: c.rowIndex || 0,
+        }));
+      } else if (Array.isArray(data.rows)) {
+        parsed = parseRowsAsCards(data.rows);
+      } else {
+        throw new Error("Invalid API response: no cards or rows found");
+      }
 
       setCards(parsed);
     } catch (err: unknown) {
@@ -55,7 +82,7 @@ export function useCards() {
         body: JSON.stringify({ sheet: card.sheet, rowIndex: card.rowIndex, got }),
       });
       const data = await res.json();
-      if (!data.success) throw new Error("Update failed");
+      if (!data.success) throw new Error(data.error || "Update failed");
     } catch {
       setCards((prev) =>
         prev.map((c) =>
