@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { useCards, filterAndSort } from "../hooks/useCards";
 import type { SortBy, FilterStatus, ViewMode, Collection } from "../types";
-import Link from "next/link";
 import Header from "./Header";
 import FilterBar from "./FilterBar";
 import CardItem from "./CardItem";
@@ -20,128 +20,20 @@ type TrackerSheet =
   | "topps-now"
   | "extra-collections";
 
-type TrackerSheet =
-  | "all"
-  | "master"
-  | "donruss"
-  | "topps-now"
-  | "extra-collections";
-
 export default function CardTracker({
   initialSheet = "all",
 }: {
   initialSheet?: TrackerSheet;
 }) {
-const {
-  cards: allCards,
-  loading,
-  error,
-  updating,
-  toggleGot,
-  refetch,
-} = useCards();
+  const {
+    cards: allCards,
+    loading,
+    error,
+    updating,
+    toggleGot,
+    refetch,
+  } = useCards();
 
-  const cards = useMemo(() => {
-    if (initialSheet === "all") return allCards;
-    return allCards.filter((card) => card.sheet === initialSheet);
-  }, [allCards, initialSheet]);
-
-  const collections = useMemo((): Collection[] => {
-    const map = new Map<string, typeof cards>();
-
-    cards.forEach((card) => {
-      const key = `${card.year} – ${card.cardSet}`;
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(card);
-    });
-
-    return Array.from(map.entries()).map(([name, colCards]) => ({
-      name,
-      year: colCards[0]?.year || "",
-      cards: colCards,
-      totalCards: colCards.length,
-      gotCards: colCards.filter((c) => c.got).length,
-      collectingCards: colCards.filter((c) => c.collecting).length,
-    }));
-  }, [cards]);
-
-  const cards = useMemo(() => {
-    if (initialSheet === "all") return allCards;
-    return allCards.filter((card) => card.sheet === initialSheet);
-  }, [allCards, initialSheet]);
-
-  const collections = useMemo((): Collection[] => {
-    const map = new Map<string, typeof cards>();
-
-    cards.forEach((card) => {
-      const key = `${card.year} – ${card.cardSet}`;
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(card);
-    });
-
-    return Array.from(map.entries()).map(([name, colCards]) => ({
-      name,
-      year: colCards[0]?.year || "",
-      cards: colCards,
-      totalCards: colCards.length,
-      gotCards: colCards.filter((c) => c.got).length,
-      collectingCards: colCards.filter((c) => c.collecting).length,
-    }));
-  }, [cards]);
-        <nav className="border-b border-white/5 bg-gray-950/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap gap-2 text-sm">
-          <Link
-            href="/"
-            className={`rounded-lg px-3 py-2 ${
-              initialSheet === "all"
-                ? "bg-indigo-600 text-white"
-                : "bg-white/5 text-gray-300 hover:text-white"
-            }`}
-          >
-            All Collections
-          </Link>
-
-          <Link
-            href="/donruss"
-            className={`rounded-lg px-3 py-2 ${
-              initialSheet === "donruss"
-                ? "bg-indigo-600 text-white"
-                : "bg-white/5 text-gray-300 hover:text-white"
-            }`}
-          >
-            Donruss
-          </Link>
-
-          <Link
-            href="/topps-now"
-            className={`rounded-lg px-3 py-2 ${
-              initialSheet === "topps-now"
-                ? "bg-indigo-600 text-white"
-                : "bg-white/5 text-gray-300 hover:text-white"
-            }`}
-          >
-            Topps Now
-          </Link>
-
-          <Link
-            href="/extra-collections"
-            className={`rounded-lg px-3 py-2 ${
-              initialSheet === "extra-collections"
-                ? "bg-indigo-600 text-white"
-                : "bg-white/5 text-gray-300 hover:text-white"
-            }`}
-          >
-            Extra Collections
-          </Link>
-
-          <Link
-            href="/orders"
-            className="rounded-lg bg-white/5 px-3 py-2 text-gray-300 hover:text-white"
-          >
-            Orders
-          </Link>
-        </div>
-      </nav>
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<FilterStatus>("all");
   const [sortBy, setSortBy] = useState<SortBy>("cardNo");
@@ -154,30 +46,51 @@ const {
   const [showSettings, setShowSettings] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
 
-  // Get cards for selected collection
+  const cards = useMemo(() => {
+    if (initialSheet === "all") return allCards;
+    return allCards.filter((card) => card.sheet === initialSheet);
+  }, [allCards, initialSheet]);
+
+  const collections = useMemo((): Collection[] => {
+    const map = new Map<string, typeof cards>();
+
+    cards.forEach((card) => {
+      const key = `${card.year} – ${card.cardSet}`;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(card);
+    });
+
+    return Array.from(map.entries()).map(([name, colCards]) => ({
+      name,
+      year: colCards[0]?.year || "",
+      cards: colCards,
+      totalCards: colCards.length,
+      gotCards: colCards.filter((c) => c.got).length,
+      collectingCards: colCards.filter((c) => c.collecting).length,
+    }));
+  }, [cards]);
+
   const collectionCards = useMemo(() => {
     if (selectedCollection === null) return cards;
+
     return cards.filter(
-      (c) => `${c.year} – ${c.cardSet}` === selectedCollection
+      (card) => `${card.year} – ${card.cardSet}` === selectedCollection
     );
   }, [cards, selectedCollection]);
 
-  // Get unique variants for the current collection
   const variants = useMemo(() => {
-    const set = new Set(collectionCards.map((c) => c.variant));
+    const set = new Set(collectionCards.map((card) => card.variant));
     return Array.from(set).sort();
   }, [collectionCards]);
 
-  // Apply filters and sort
   const filteredCards = useMemo(
     () => filterAndSort(collectionCards, search, status, sortBy, variantFilter),
     [collectionCards, search, status, sortBy, variantFilter]
   );
 
-  // Stats
   const totalCards = collectionCards.length;
-  const gotCards = collectionCards.filter((c) => c.got).length;
-  const collectingCards = collectionCards.filter((c) => c.collecting).length;
+  const gotCards = collectionCards.filter((card) => card.got).length;
+  const collectingCards = collectionCards.filter((card) => card.collecting).length;
 
   return (
     <div className="min-h-screen bg-gray-950">
@@ -190,7 +103,8 @@ const {
         onSettings={() => setShowSettings(true)}
         loading={loading}
       />
-            <nav className="border-b border-white/5 bg-gray-950/80">
+
+      <nav className="border-b border-white/5 bg-gray-950/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap gap-2 text-sm">
           <Link
             href="/"
@@ -244,8 +158,8 @@ const {
           </Link>
         </div>
       </nav>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Mobile sidebar toggle */}
         <button
           onClick={() => setShowSidebar(!showSidebar)}
           className="lg:hidden mb-4 flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-all bg-gray-900/50 border border-white/5 rounded-xl px-4 py-2"
@@ -280,7 +194,6 @@ const {
           <LoadingSkeleton />
         ) : (
           <div className="flex gap-6">
-            {/* Sidebar */}
             <div
               className={`${
                 showSidebar ? "block" : "hidden"
@@ -299,13 +212,11 @@ const {
               </div>
             </div>
 
-            {/* Main content */}
             <div
               className={`flex-1 min-w-0 space-y-4 ${
                 showSidebar ? "hidden lg:block" : ""
               }`}
             >
-              {/* Collection Header */}
               {selectedCollection && (
                 <div className="flex items-center gap-3 mb-2">
                   <Layers className="h-5 w-5 text-indigo-400" />
@@ -368,13 +279,13 @@ const {
         )}
       </div>
 
-      {/* Modals */}
       <ExportModal
         open={showExport}
         onClose={() => setShowExport(false)}
         collections={collections}
         cards={cards}
       />
+
       <SettingsModal
         open={showSettings}
         onClose={() => setShowSettings(false)}
