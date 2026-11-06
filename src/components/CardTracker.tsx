@@ -256,7 +256,7 @@ export default function CardTracker({
                       key={`${card.sheet}-${card.rowIndex}`}
                       card={card}
                       viewMode={viewMode}
-                      updating={updating.has(`${card.sheet}-${card.rowIndex}`)}
+                      updating={updating.has(card.databaseId)}
                       onToggleGot={toggleGot}
                     />
                   ))}
@@ -268,7 +268,7 @@ export default function CardTracker({
                       key={`${card.sheet}-${card.rowIndex}`}
                       card={card}
                       viewMode={viewMode}
-                      updating={updating.has(`${card.sheet}-${card.rowIndex}`)}
+                      updating={updating.has(card.databaseId)}
                       onToggleGot={toggleGot}
                     />
                   ))}

@@ -1,4 +1,7 @@
 export interface Card {
+  /** Stable PostgreSQL identity used for updates. */
+  databaseId: string;
+  /** Original card ID from the source spreadsheet. */
   id: string;
   year: string;
   cardSet: string;

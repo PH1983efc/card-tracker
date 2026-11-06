@@ -12,6 +12,8 @@
     "googleapis": "^148.0.0",
     "lucide-react": "^1.33.0",
     "next": "16.2.6",
+    "pg": "^8.23.1",
+    "postgres": "^4.0.0",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "xlsx": "^0.18.5"
