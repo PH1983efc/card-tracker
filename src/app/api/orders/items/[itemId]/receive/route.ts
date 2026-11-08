@@ -13,6 +13,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ it
       return NextResponse.json({ success: false, error: "Confirm a valid quantity and variant." }, { status: 400 });
     }
 
+    const receivedQty = Number(body.quantity);
+    const receivedVariant = body.variant.trim();
     const db = getDb();
     await db.begin(async (tx) => {
       const rows = await tx`
@@ -25,19 +27,19 @@ export async function POST(request: NextRequest, context: { params: Promise<{ it
       const item = rows[0];
       if (!item.card_id) throw new Error("This order item is not linked to a collection card.");
       const remaining = Number(item.quantity) - Number(item.received_quantity);
-      if (body.quantity! > remaining) throw new Error(`Only ${remaining} remaining on this order item.`);
+      if (receivedQty > remaining) throw new Error(`Only ${remaining} remaining on this order item.`);
 
       await tx`
         INSERT INTO card_ownership (card_id, variant, quantity)
-        VALUES (${item.card_id}, ${body.variant!.trim()}, ${body.quantity})
+        VALUES (${item.card_id}, ${receivedVariant}, ${receivedQty})
         ON CONFLICT (card_id, variant)
         DO UPDATE SET quantity = card_ownership.quantity + EXCLUDED.quantity, updated_at = now()
       `;
-      const receivedQuantity = Number(item.received_quantity) + body.quantity!;
+      const receivedQuantity = Number(item.received_quantity) + receivedQty;
       await tx`
         UPDATE order_items
         SET received_quantity = ${receivedQuantity},
-            received_variant = ${body.variant!.trim()},
+            received_variant = ${receivedVariant},
             received = (${receivedQuantity} >= quantity)
         WHERE order_item_id = ${itemId}::bigint
       `;
