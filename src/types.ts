@@ -11,6 +11,8 @@ export interface Card {
   variant: string;
   collecting: boolean;
   got: boolean;
+  /** Number of copies currently ordered but not yet received. */
+  onOrderQuantity: number;
   imageUrl?: string;
   rowIndex: number;
   sheet: string;
