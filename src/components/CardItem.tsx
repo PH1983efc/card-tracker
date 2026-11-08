@@ -35,6 +35,15 @@ function getVariantBadgeColor(variant: string): string {
   return "bg-indigo-500/20 text-indigo-300";
 }
 
+function OnOrderBadge({ quantity }: { quantity: number }) {
+  if (quantity <= 0) return null;
+  return (
+    <span className="text-[10px] font-bold px-2 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400/30">
+      ON ORDER{quantity > 1 ? ` ×${quantity}` : ""}
+    </span>
+  );
+}
+
 export default function CardItem({ card, viewMode, updating, onToggleGot }: CardItemProps) {
   const [imgError, setImgError] = useState(false);
 
@@ -44,9 +53,10 @@ export default function CardItem({ card, viewMode, updating, onToggleGot }: Card
         <div className="w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center text-sm font-bold text-gray-300 shrink-0">#{card.cardNo}</div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-white truncate">{card.playerName}</p>
-          <div className="flex items-center gap-2 mt-0.5">
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
             <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${getVariantBadgeColor(card.variant)}`}>{card.variant}</span>
             {card.cardDescription && <span className="text-xs text-gray-500 truncate">{card.cardDescription}</span>}
+            <OnOrderBadge quantity={card.onOrderQuantity ?? 0} />
           </div>
         </div>
         {card.collecting && <span className="hidden sm:inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300">Collecting</span>}
@@ -81,6 +91,11 @@ export default function CardItem({ card, viewMode, updating, onToggleGot }: Card
         )}
         <div className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-1 rounded-lg backdrop-blur-md ${getVariantBadgeColor(card.variant)}`}>{card.variant}</div>
         {card.collecting && <div className="absolute top-2 right-2 text-[10px] font-bold px-2 py-1 rounded-lg bg-indigo-500/80 text-white backdrop-blur-md">Collecting</div>}
+        {card.onOrderQuantity > 0 && (
+          <div className="absolute bottom-2 left-2">
+            <OnOrderBadge quantity={card.onOrderQuantity} />
+          </div>
+        )}
       </div>
       <div className="p-3">
         <div className="flex items-start justify-between gap-2">
