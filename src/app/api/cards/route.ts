@@ -29,10 +29,17 @@ export async function GET(request: NextRequest) {
         CASE WHEN c.collecting IS NULL AND c.collection_key = 'donruss' THEN true
              ELSE COALESCE(c.collecting, false) END AS collecting,
         COALESCE(c.got, false) AS got,
+        COALESCE(pending.pending_quantity, 0)::int AS "onOrderQuantity",
         COALESCE(c.image_url, '') AS "imageUrl",
         c.source_row_number AS "rowIndex",
         c.collection_key AS sheet
       FROM cards c
+      LEFT JOIN LATERAL (
+        SELECT SUM(GREATEST(oi.quantity - COALESCE(oi.received_quantity, 0), 0)) AS pending_quantity
+        FROM order_items oi
+        WHERE oi.card_id = c.card_id
+          AND oi.quantity > COALESCE(oi.received_quantity, 0)
+      ) pending ON true
       WHERE (${collection ?? null}::text IS NULL OR c.collection_key = ${collection ?? null})
         AND (${needsOnly}::boolean = false OR (COALESCE(c.collecting, c.collection_key = 'donruss') = true AND COALESCE(c.got, false) = false))
       ORDER BY c.collection_key, c.source_row_number, c.card_id
