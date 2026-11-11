@@ -93,7 +93,7 @@ export default function CardTracker({
   const collectingCards = collectionCards.filter((card) => card.collecting).length;
 
   return (
-    <div className="min-h-screen bg-gray-950">
+    <div className="min-h-screen bg-[#020b1c]">
       <Header
         totalCards={totalCards}
         gotCards={gotCards}
@@ -104,14 +104,14 @@ export default function CardTracker({
         loading={loading}
       />
 
-      <nav className="border-b border-white/5 bg-gray-950/80">
+      <nav className="border-b border-sky-300/15 bg-[#04132b]/95">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap gap-2 text-sm">
           <Link
             href="/"
             className={`rounded-lg px-3 py-2 ${
               initialSheet === "all"
-                ? "bg-indigo-600 text-white"
-                : "bg-white/5 text-gray-300 hover:text-white"
+                ? "bg-sky-500 text-white"
+                : "bg-white/5 text-blue-100/85 hover:text-white"
             }`}
           >
             All Collections
@@ -121,8 +121,8 @@ export default function CardTracker({
             href="/donruss"
             className={`rounded-lg px-3 py-2 ${
               initialSheet === "donruss"
-                ? "bg-indigo-600 text-white"
-                : "bg-white/5 text-gray-300 hover:text-white"
+                ? "bg-sky-500 text-white"
+                : "bg-white/5 text-blue-100/85 hover:text-white"
             }`}
           >
             Donruss
@@ -132,8 +132,8 @@ export default function CardTracker({
             href="/topps-now"
             className={`rounded-lg px-3 py-2 ${
               initialSheet === "topps-now"
-                ? "bg-indigo-600 text-white"
-                : "bg-white/5 text-gray-300 hover:text-white"
+                ? "bg-sky-500 text-white"
+                : "bg-white/5 text-blue-100/85 hover:text-white"
             }`}
           >
             Topps Now
@@ -143,8 +143,8 @@ export default function CardTracker({
             href="/extra-collections"
             className={`rounded-lg px-3 py-2 ${
               initialSheet === "extra-collections"
-                ? "bg-indigo-600 text-white"
-                : "bg-white/5 text-gray-300 hover:text-white"
+                ? "bg-sky-500 text-white"
+                : "bg-white/5 text-blue-100/85 hover:text-white"
             }`}
           >
             Extra Collections
@@ -152,7 +152,7 @@ export default function CardTracker({
 
           <Link
             href="/orders"
-            className="rounded-lg bg-white/5 px-3 py-2 text-gray-300 hover:text-white"
+            className="rounded-lg bg-white/5 px-3 py-2 text-blue-100/85 hover:text-white"
           >
             Orders
           </Link>
@@ -162,7 +162,7 @@ export default function CardTracker({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <button
           onClick={() => setShowSidebar(!showSidebar)}
-          className="lg:hidden mb-4 flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-all bg-gray-900/50 border border-white/5 rounded-xl px-4 py-2"
+          className="lg:hidden mb-4 flex items-center gap-2 text-sm text-blue-100/70 hover:text-white transition-all bg-[#071a37]/90 border border-sky-300/15 rounded-xl px-4 py-2"
         >
           {showSidebar ? (
             <X className="h-4 w-4" />
@@ -219,7 +219,7 @@ export default function CardTracker({
             >
               {selectedCollection && (
                 <div className="flex items-center gap-3 mb-2">
-                  <Layers className="h-5 w-5 text-indigo-400" />
+                  <Layers className="h-5 w-5 text-sky-300" />
                   <h2 className="text-lg font-bold text-white">
                     {selectedCollection}
                   </h2>
@@ -242,7 +242,7 @@ export default function CardTracker({
               />
 
               {filteredCards.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+                <div className="flex flex-col items-center justify-center py-20 text-blue-100/55">
                   <Layers className="h-12 w-12 mb-4 opacity-30" />
                   <p className="text-lg font-semibold">No cards found</p>
                   <p className="text-sm">
