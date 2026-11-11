@@ -20,7 +20,7 @@ interface FilterBarProps {
 
 const statusOptions: { value: FilterStatus; label: string; color: string }[] = [
   { value: "all", label: "All", color: "bg-gray-700" },
-  { value: "collecting", label: "Collecting", color: "bg-indigo-600" },
+  { value: "collecting", label: "Collecting", color: "bg-sky-500" },
   { value: "got", label: "Got", color: "bg-emerald-600" },
   { value: "need", label: "Need", color: "bg-amber-600" },
 ];
@@ -40,26 +40,26 @@ export default function FilterBar({
   resultCount,
 }: FilterBarProps) {
   return (
-    <div className="bg-gray-900/50 border border-white/5 rounded-2xl p-4 space-y-4">
+    <div className="bg-[#071a37]/90 border border-sky-300/15 rounded-2xl p-4 space-y-4">
       {/* Row 1: Search + View Toggle */}
       <div className="flex items-center gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-100/55" />
           <input
             type="text"
             placeholder="Search by player, card number, or variant..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full bg-gray-800/50 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all"
+            className="w-full bg-[#0b2347]/80 border border-sky-300/20 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-blue-100/55 focus:outline-none focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400/50 transition-all"
           />
         </div>
-        <div className="flex bg-gray-800/50 border border-white/10 rounded-xl overflow-hidden">
+        <div className="flex bg-[#0b2347]/80 border border-sky-300/20 rounded-xl overflow-hidden">
           <button
             onClick={() => onViewChange("grid")}
             className={`p-2.5 transition-all ${
               viewMode === "grid"
-                ? "bg-indigo-600 text-white"
-                : "text-gray-400 hover:text-white"
+                ? "bg-sky-500 text-white"
+                : "text-blue-100/70 hover:text-white"
             }`}
           >
             <Grid3X3 className="h-4 w-4" />
@@ -68,8 +68,8 @@ export default function FilterBar({
             onClick={() => onViewChange("list")}
             className={`p-2.5 transition-all ${
               viewMode === "list"
-                ? "bg-indigo-600 text-white"
-                : "text-gray-400 hover:text-white"
+                ? "bg-sky-500 text-white"
+                : "text-blue-100/70 hover:text-white"
             }`}
           >
             <List className="h-4 w-4" />
@@ -87,7 +87,7 @@ export default function FilterBar({
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 status === opt.value
                   ? `${opt.color} text-white shadow-lg`
-                  : "bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-800"
+                  : "bg-[#0b2347]/80 text-blue-100/70 hover:text-white hover:bg-[#102d56]"
               }`}
             >
               {opt.label}
@@ -96,11 +96,11 @@ export default function FilterBar({
         </div>
 
         <div className="flex items-center gap-2 sm:ml-auto">
-          <SlidersHorizontal className="h-4 w-4 text-gray-500" />
+          <SlidersHorizontal className="h-4 w-4 text-blue-100/55" />
           <select
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value as SortBy)}
-            className="bg-gray-800/50 border border-white/10 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 appearance-none cursor-pointer"
+            className="bg-[#0b2347]/80 border border-sky-300/20 rounded-lg px-3 py-1.5 text-xs font-medium text-blue-100/85 focus:outline-none focus:ring-1 focus:ring-sky-400 appearance-none cursor-pointer"
           >
             <option value="cardNo">Sort: Card No.</option>
             <option value="playerName">Sort: Player</option>
@@ -109,7 +109,7 @@ export default function FilterBar({
           <select
             value={variantFilter}
             onChange={(e) => onVariantChange(e.target.value)}
-            className="bg-gray-800/50 border border-white/10 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 appearance-none cursor-pointer max-w-[180px] truncate"
+            className="bg-[#0b2347]/80 border border-sky-300/20 rounded-lg px-3 py-1.5 text-xs font-medium text-blue-100/85 focus:outline-none focus:ring-1 focus:ring-sky-400 appearance-none cursor-pointer max-w-[180px] truncate"
           >
             <option value="all">All Variants</option>
             {variants.map((v) => (
@@ -120,7 +120,7 @@ export default function FilterBar({
           </select>
         </div>
 
-        <span className="text-xs text-gray-500 sm:ml-2">
+        <span className="text-xs text-blue-100/55 sm:ml-2">
           {resultCount} cards
         </span>
       </div>
