@@ -1,6 +1,6 @@
 "use client";
 
-import { Layers, RefreshCw, Download, Settings } from "lucide-react";
+import { RefreshCw, Download, Settings, ShieldCheck } from "lucide-react";
 
 interface HeaderProps {
   totalCards: number;
@@ -12,141 +12,46 @@ interface HeaderProps {
   loading: boolean;
 }
 
-export default function Header({
-  totalCards,
-  gotCards,
-  collectingCards,
-  onRefresh,
-  onExport,
-  onSettings,
-  loading,
-}: HeaderProps) {
-  const needCards = collectingCards - gotCards;
-  const progress =
-    collectingCards > 0 ? Math.round((gotCards / collectingCards) * 100) : 0;
+export default function Header({ totalCards, gotCards, collectingCards, onRefresh, onExport, onSettings, loading }: HeaderProps) {
+  const needCards = Math.max(0, collectingCards - gotCards);
+  const progress = collectingCards > 0 ? Math.round((gotCards / collectingCards) * 100) : 0;
 
   return (
-    <header className="sticky top-0 z-50 bg-[#04132b]/95 backdrop-blur-xl border-b border-sky-300/15">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-sky-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-              <Layers className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-white leading-tight">
-                Card Tracker
-              </h1>
-              <p className="text-xs text-blue-100/55 leading-tight">
-                Collection Manager
-              </p>
-            </div>
+    <header className="relative z-50 border-b border-sky-300/15 bg-[#04132b]">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(14,165,233,.13),transparent_60%)] pointer-events-none"/>
+      <div className="relative mx-auto flex max-w-[1500px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-sky-300/30 bg-gradient-to-br from-sky-400/25 to-blue-950 text-sm font-black tracking-tight text-sky-100 shadow-lg shadow-sky-950/40">
+            EFC
           </div>
-
-          {/* Stats - Desktop */}
-          <div className="hidden md:flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <div className="text-right">
-                <p className="text-xs text-blue-100/55 uppercase tracking-wider">
-                  Total
-                </p>
-                <p className="text-lg font-bold text-white">
-                  {totalCards.toLocaleString()}
-                </p>
-              </div>
-            </div>
-            <div className="w-px h-8 bg-white/10" />
-            <div className="flex items-center gap-2">
-              <div className="text-right">
-                <p className="text-xs text-blue-100/55 uppercase tracking-wider">
-                  Got
-                </p>
-                <p className="text-lg font-bold text-emerald-400">
-                  {gotCards.toLocaleString()}
-                </p>
-              </div>
-            </div>
-            <div className="w-px h-8 bg-white/10" />
-            <div className="flex items-center gap-2">
-              <div className="text-right">
-                <p className="text-xs text-blue-100/55 uppercase tracking-wider">
-                  Need
-                </p>
-                <p className="text-lg font-bold text-amber-400">
-                  {Math.max(0, needCards).toLocaleString()}
-                </p>
-              </div>
-            </div>
-            <div className="w-px h-8 bg-white/10" />
-            <div className="flex flex-col items-center gap-1">
-              <p className="text-xs text-blue-100/55 uppercase tracking-wider">
-                Progress
-              </p>
-              <div className="flex items-center gap-2">
-                <div className="w-24 h-2 bg-[#102d56] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-sky-500 to-sky-400 rounded-full transition-all duration-500"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-                <span className="text-sm font-bold text-white">
-                  {progress}%
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onRefresh}
-              className="p-2 rounded-lg text-blue-100/70 hover:text-white hover:bg-sky-400/10 transition-all"
-              title="Refresh"
-            >
-              <RefreshCw
-                className={`h-5 w-5 ${loading ? "animate-spin" : ""}`}
-              />
-            </button>
-            <button
-              onClick={onExport}
-              className="p-2 rounded-lg text-blue-100/70 hover:text-white hover:bg-sky-400/10 transition-all"
-              title="Export"
-            >
-              <Download className="h-5 w-5" />
-            </button>
-            <button
-              onClick={onSettings}
-              className="p-2 rounded-lg text-blue-100/70 hover:text-white hover:bg-sky-400/10 transition-all"
-              title="Settings"
-            >
-              <Settings className="h-5 w-5" />
-            </button>
+          <div className="min-w-0">
+            <p className="truncate text-lg font-black uppercase italic leading-tight tracking-tight text-white sm:text-xl">Everton <span className="text-sky-400">Card Tracker</span></p>
+            <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[.24em] text-blue-100/45 sm:text-xs">Our Blues. Our Collection.</p>
           </div>
         </div>
 
-        {/* Stats - Mobile */}
-        <div className="md:hidden pb-3 flex items-center gap-4 text-xs">
-          <span className="text-blue-100/70">
-            Total: <strong className="text-white">{totalCards}</strong>
-          </span>
-          <span className="text-blue-100/70">
-            Got: <strong className="text-emerald-400">{gotCards}</strong>
-          </span>
-          <span className="text-blue-100/70">
-            Need:{" "}
-            <strong className="text-amber-400">{Math.max(0, needCards)}</strong>
-          </span>
-          <div className="flex-1 flex items-center gap-2">
-            <div className="flex-1 h-1.5 bg-[#102d56] rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-sky-500 to-sky-400 rounded-full"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <span className="text-white font-bold">{progress}%</span>
-          </div>
+        <div className="hidden items-center gap-5 lg:flex">
+          <div className="text-right"><p className="text-[10px] font-bold uppercase tracking-wider text-blue-100/45">Total</p><p className="text-lg font-black text-white">{totalCards.toLocaleString()}</p></div>
+          <div className="h-8 w-px bg-white/10"/>
+          <div className="text-right"><p className="text-[10px] font-bold uppercase tracking-wider text-blue-100/45">Collected</p><p className="text-lg font-black text-emerald-300">{gotCards.toLocaleString()}</p></div>
+          <div className="h-8 w-px bg-white/10"/>
+          <div className="text-right"><p className="text-[10px] font-bold uppercase tracking-wider text-blue-100/45">Still needed</p><p className="text-lg font-black text-amber-200">{needCards.toLocaleString()}</p></div>
+          <div className="h-8 w-px bg-white/10"/>
+          <div className="min-w-32"><div className="mb-1 flex justify-between text-[10px] font-bold uppercase tracking-wider text-blue-100/50"><span>Progress</span><span className="text-white">{progress}%</span></div><div className="h-2 overflow-hidden rounded-full bg-[#18365d]"><div className="h-full rounded-full bg-gradient-to-r from-sky-500 to-cyan-300 transition-all duration-500" style={{width:`${progress}%`}}/></div></div>
         </div>
+
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <button onClick={onRefresh} disabled={loading} title="Refresh cards" aria-label="Refresh cards" className="rounded-xl p-2.5 text-blue-100/65 transition hover:bg-white/10 hover:text-white disabled:opacity-50"><RefreshCw className={`h-4 w-4 sm:h-5 sm:w-5 ${loading ? "animate-spin" : ""}`}/></button>
+          <button onClick={onExport} title="Export collection" aria-label="Export collection" className="rounded-xl p-2.5 text-blue-100/65 transition hover:bg-white/10 hover:text-white"><Download className="h-4 w-4 sm:h-5 sm:w-5"/></button>
+          <button onClick={onSettings} title="Settings" aria-label="Settings" className="rounded-xl p-2.5 text-blue-100/65 transition hover:bg-white/10 hover:text-white"><Settings className="h-4 w-4 sm:h-5 sm:w-5"/></button>
+        </div>
+      </div>
+
+      <div className="relative flex items-center gap-4 border-t border-white/5 px-4 py-2 text-[11px] sm:hidden">
+        <span className="text-blue-100/60">Cards <strong className="ml-1 text-white">{totalCards.toLocaleString()}</strong></span>
+        <span className="text-blue-100/60">Got <strong className="ml-1 text-emerald-300">{gotCards.toLocaleString()}</strong></span>
+        <span className="text-blue-100/60">Need <strong className="ml-1 text-amber-200">{needCards.toLocaleString()}</strong></span>
+        <span className="ml-auto flex items-center gap-1 text-sky-200"><ShieldCheck size={13}/>{progress}%</span>
       </div>
     </header>
   );
