@@ -1,5 +1,5 @@
-import CardTracker from "@/components/CardTracker";
+import HomeDashboard from "@/components/HomeDashboard";
 
 export default function HomePage() {
-  return <CardTracker />;
+  return <HomeDashboard />;
 }
