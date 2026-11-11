@@ -20,7 +20,7 @@ function getVariantColor(variant: string): string {
   if (v.includes("foil") || v.includes("refractor")) return "from-cyan-500/20 to-blue-600/20 border-cyan-500/30";
   if (v.includes("rainbow")) return "from-pink-500/20 to-purple-600/20 border-pink-500/30";
   if (v.includes("base")) return "from-gray-500/10 to-gray-600/10 border-gray-500/20";
-  return "from-indigo-500/10 to-blue-600/10 border-indigo-500/20";
+  return "from-sky-500/10 to-blue-600/10 border-indigo-500/20";
 }
 
 function getVariantBadgeColor(variant: string): string {
@@ -31,8 +31,8 @@ function getVariantBadgeColor(variant: string): string {
   if (v.includes("premier league parallel")) return "bg-purple-500/20 text-purple-300";
   if (v.includes("foil") || v.includes("refractor")) return "bg-cyan-500/20 text-cyan-300";
   if (v.includes("rainbow")) return "bg-pink-500/20 text-pink-300";
-  if (v.includes("base")) return "bg-gray-500/20 text-gray-300";
-  return "bg-indigo-500/20 text-indigo-300";
+  if (v.includes("base")) return "bg-gray-500/20 text-blue-100/85";
+  return "bg-sky-400/15 text-sky-200";
 }
 
 function OnOrderBadge({ quantity }: { quantity: number }) {
@@ -49,21 +49,21 @@ export default function CardItem({ card, viewMode, updating, onToggleGot }: Card
 
   if (viewMode === "list") {
     return (
-      <div className={`flex items-center gap-4 p-3 rounded-xl border transition-all hover:bg-white/[0.02] ${card.got ? "border-emerald-500/20 bg-emerald-500/5" : "border-white/5 bg-gray-900/30"}`}>
-        <div className="w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center text-sm font-bold text-gray-300 shrink-0">#{card.cardNo}</div>
+      <div className={`flex items-center gap-4 p-3 rounded-xl border transition-all hover:bg-white/[0.02] ${card.got ? "border-emerald-500/20 bg-emerald-500/5" : "border-sky-300/15 bg-[#071a37]/30"}`}>
+        <div className="w-12 h-12 rounded-lg bg-[#102d56] flex items-center justify-center text-sm font-bold text-blue-100/85 shrink-0">#{card.cardNo}</div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-white truncate">{card.playerName}</p>
           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
             <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${getVariantBadgeColor(card.variant)}`}>{card.variant}</span>
-            {card.cardDescription && <span className="text-xs text-gray-500 truncate">{card.cardDescription}</span>}
+            {card.cardDescription && <span className="text-xs text-blue-100/55 truncate">{card.cardDescription}</span>}
             <OnOrderBadge quantity={card.onOrderQuantity ?? 0} />
           </div>
         </div>
-        {card.collecting && <span className="hidden sm:inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300">Collecting</span>}
+        {card.collecting && <span className="hidden sm:inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sky-400/15 text-sky-200">Collecting</span>}
         <button
           onClick={() => onToggleGot(card, !card.got)}
           disabled={updating}
-          className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all ${card.got ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20" : "bg-gray-800 text-gray-500 hover:bg-gray-700 hover:text-gray-300"} ${updating ? "opacity-50" : ""}`}
+          className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all ${card.got ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20" : "bg-[#102d56] text-blue-100/55 hover:bg-[#1b477e] hover:text-blue-100/85"} ${updating ? "opacity-50" : ""}`}
         >
           {updating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
         </button>
@@ -73,7 +73,7 @@ export default function CardItem({ card, viewMode, updating, onToggleGot }: Card
 
   return (
     <div className={`group relative rounded-2xl border overflow-hidden transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-black/20 bg-gradient-to-br ${getVariantColor(card.variant)} ${card.got ? "ring-2 ring-emerald-500/50" : ""}`}>
-      <div className="aspect-[3/4] relative overflow-hidden bg-gray-800/50">
+      <div className="aspect-[3/4] relative overflow-hidden bg-[#0b2347]/80">
         {card.imageUrl && !imgError ? (
           <img src={card.imageUrl} alt={card.playerName} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" onError={() => setImgError(true)} />
         ) : (
@@ -101,12 +101,12 @@ export default function CardItem({ card, viewMode, updating, onToggleGot }: Card
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <p className="text-sm font-bold text-white truncate">{card.playerName}</p>
-            <p className="text-xs text-gray-400 mt-0.5">#{card.cardNo}{card.cardDescription ? ` · ${card.cardDescription}` : ""}</p>
+            <p className="text-xs text-blue-100/70 mt-0.5">#{card.cardNo}{card.cardDescription ? ` · ${card.cardDescription}` : ""}</p>
           </div>
           <button
             onClick={() => onToggleGot(card, !card.got)}
             disabled={updating}
-            className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all ${card.got ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/30" : "bg-gray-800 text-gray-500 hover:bg-gray-700 hover:text-white"} ${updating ? "opacity-50" : ""}`}
+            className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all ${card.got ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/30" : "bg-[#102d56] text-blue-100/55 hover:bg-[#1b477e] hover:text-white"} ${updating ? "opacity-50" : ""}`}
           >
             {updating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
           </button>
