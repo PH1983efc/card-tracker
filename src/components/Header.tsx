@@ -22,7 +22,7 @@ export default function Header({ totalCards, gotCards, collectingCards, onRefres
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(14,165,233,.13),transparent_60%)] pointer-events-none"/>
       <div className="relative mx-auto flex max-w-[1500px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-sky-300/30 bg-gradient-to-br from-sky-400/25 to-blue-950 text-sm font-black tracking-tight text-sky-100 shadow-lg shadow-sky-950/40">EFC</div>
+          <img src="https://thumb.wikimedia.org/wikipedia/sco/thumb/7/7c/Everton_FC_logo.svg/330px-Everton_FC_logo.svg.png" alt="Everton crest" className="h-12 w-12 shrink-0 object-contain" />
           <div className="min-w-0"><p className="truncate text-lg font-black uppercase italic leading-tight tracking-tight text-white sm:text-xl">Everton <span className="text-sky-400">Card Tracker</span></p><p className="mt-0.5 text-[10px] font-bold uppercase tracking-[.24em] text-blue-100/45 sm:text-xs">Our Blues. Our Collection.</p></div>
         </div>
         <div className="hidden items-center gap-5 lg:flex">
