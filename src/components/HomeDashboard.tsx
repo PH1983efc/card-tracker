@@ -6,10 +6,10 @@ import { ArrowRight, CheckCircle2, Layers3, ShoppingCart, Trophy } from "lucide-
 import type { Card } from "@/types";
 
 const collections = [
-  { key: "master", title: "Everton Cards", subtitle: "The main collection", href: "/everton", mark: "EFC", tone: "from-sky-500/30 to-blue-950/80" },
-  { key: "donruss", title: "Donruss", subtitle: "Donruss collection", href: "/donruss", mark: "D", tone: "from-slate-400/20 to-slate-950/80" },
-  { key: "topps-now", title: "Topps Now", subtitle: "Topps Now collection", href: "/topps-now", mark: "NOW", tone: "from-red-500/20 to-slate-950/80" },
-  { key: "extra-collections", title: "Extra Collections", subtitle: "Everything else", href: "/extra-collections", mark: "★", tone: "from-amber-400/20 to-slate-950/80" },
+  { key: "master", title: "Everton Cards", subtitle: "The main collection", href: "/everton", mark: "EFC", logo: "https://thumb.wikimedia.org/wikipedia/sco/thumb/7/7c/Everton_FC_logo.svg/330px-Everton_FC_logo.svg.png", tone: "from-sky-500/30 to-blue-950/80" },
+  { key: "donruss", title: "Donruss", subtitle: "Donruss collection", href: "/donruss", mark: "D", logo: "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/91/Donruss_logo_1966.png/250px-Donruss_logo_1966.png", tone: "from-slate-400/20 to-slate-950/80" },
+  { key: "topps-now", title: "Topps Now", subtitle: "Topps Now collection", href: "/topps-now", mark: "NOW", logo: "https://images.contentstack.io/v3/assets/bltc7206971cb4b2bfc/bltde849a55c8d19be0/699dc52c47c5b050bcc846d3/1.jpg", tone: "from-red-500/20 to-slate-950/80" },
+  { key: "extra-collections", title: "Extra Collections", subtitle: "Everything else", href: "/extra-collections", mark: "EXTRA", tone: "from-amber-400/20 to-slate-950/80" },
 ];
 
 export default function HomeDashboard() {
@@ -47,9 +47,7 @@ export default function HomeDashboard() {
       <section className="relative border-b border-sky-400/20 bg-[radial-gradient(ellipse_at_75%_15%,rgba(0,117,255,.35),transparent_42%),linear-gradient(115deg,#061b42_0%,#03102a_52%,#020817_100%)]">
         <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "linear-gradient(120deg,transparent 35%,rgba(37,146,255,.18) 50%,transparent 65%)" }} />
         <div className="relative mx-auto flex max-w-7xl items-center gap-5 px-5 py-8 sm:px-8 sm:py-12">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-2 border-[#e6d7a6] bg-[#08204b] text-center text-[#f2e7c5] shadow-[0_0_35px_rgba(0,132,255,.25)] sm:h-24 sm:w-24">
-            <div className="rounded-full border border-[#e6d7a6]/70 px-2 py-3"><div className="text-[10px] font-black tracking-[.18em]">EVERTON</div><div className="my-1 text-2xl">⚓</div><div className="text-[8px] font-bold tracking-widest">1878</div></div>
-          </div>
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-sky-300/25 bg-white/95 p-2 shadow-[0_0_35px_rgba(0,132,255,.25)] sm:h-24 sm:w-24"><img src="https://i.ibb.co/1GfN790Q/icon-512.png" alt="Card Tracker logo" className="h-full w-full object-contain" /></div>
           <div className="min-w-0">
             <p className="mb-1 text-xs font-bold uppercase tracking-[.32em] text-sky-300">Collect · Track · Complete</p>
             <h1 className="text-3xl font-black uppercase italic leading-none tracking-tight sm:text-5xl">Everton <span className="text-sky-400">Card Tracker</span></h1>
@@ -98,7 +96,7 @@ export default function HomeDashboard() {
               <Link key={collection.key} href={collection.href} className={`group relative min-h-48 overflow-hidden rounded-2xl border border-sky-300/20 bg-gradient-to-br ${collection.tone} p-5 transition hover:-translate-y-1 hover:border-sky-300/60 hover:shadow-xl hover:shadow-sky-950/50`}>
                 <div className="absolute -right-5 -top-7 text-8xl font-black italic text-white/[.06] transition group-hover:text-white/[.12]">{collection.mark}</div>
                 <div className="relative flex h-full flex-col">
-                  <div className="mb-7 flex h-12 w-12 items-center justify-center rounded-xl border border-white/20 bg-black/20 text-lg font-black text-sky-100">{collection.mark}</div>
+                  <div className="mb-7 flex h-14 w-24 items-center justify-center overflow-hidden rounded-xl border border-white/20 bg-white/95 p-2">{collection.logo ? <img src={collection.logo} alt={collection.title + " logo"} className="h-full w-full object-contain" /> : <div className="flex items-center gap-1 text-xs font-black tracking-widest text-amber-700"><span className="text-xl">✦</span> EXTRA</div>}</div>
                   <h3 className="text-lg font-extrabold">{collection.title}</h3>
                   <p className="mt-1 text-xs text-blue-100/60">{collection.subtitle}</p>
                   <div className="mt-auto flex items-center justify-between pt-5"><span className="text-sm font-bold text-sky-200">{loading ? "—" : (Number(counts[collection.key] ?? 0)).toLocaleString()} cards</span><ArrowRight size={18} className="text-sky-300 transition group-hover:translate-x-1"/></div>
