@@ -47,7 +47,7 @@ export default function HomeDashboard() {
       <section className="relative border-b border-sky-400/20 bg-[radial-gradient(ellipse_at_75%_15%,rgba(0,117,255,.35),transparent_42%),linear-gradient(115deg,#061b42_0%,#03102a_52%,#020817_100%)]">
         <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "linear-gradient(120deg,transparent 35%,rgba(37,146,255,.18) 50%,transparent 65%)" }} />
         <div className="relative mx-auto flex max-w-7xl items-center gap-5 px-5 py-8 sm:px-8 sm:py-12">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-sky-300/25 bg-white/95 p-2 shadow-[0_0_35px_rgba(0,132,255,.25)] sm:h-24 sm:w-24"><img src="https://i.ibb.co/1GfN790Q/icon-512.png" alt="Card Tracker logo" className="h-full w-full object-contain" /></div>
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center sm:h-24 sm:w-24"><img src="https://i.ibb.co/1GfN790Q/icon-512.png" alt="Card Tracker logo" className="h-full w-full object-contain" /></div>
           <div className="min-w-0">
             <p className="mb-1 text-xs font-bold uppercase tracking-[.32em] text-sky-300">Collect · Track · Complete</p>
             <h1 className="text-3xl font-black uppercase italic leading-none tracking-tight sm:text-5xl">Everton <span className="text-sky-400">Card Tracker</span></h1>
@@ -96,7 +96,7 @@ export default function HomeDashboard() {
               <Link key={collection.key} href={collection.href} className={`group relative min-h-48 overflow-hidden rounded-2xl border border-sky-300/20 bg-gradient-to-br ${collection.tone} p-5 transition hover:-translate-y-1 hover:border-sky-300/60 hover:shadow-xl hover:shadow-sky-950/50`}>
                 <div className="absolute -right-5 -top-7 text-8xl font-black italic text-white/[.06] transition group-hover:text-white/[.12]">{collection.mark}</div>
                 <div className="relative flex h-full flex-col">
-                  <div className="mb-7 flex h-14 w-24 items-center justify-center overflow-hidden rounded-xl border border-white/20 bg-white/95 p-2">{collection.logo ? <img src={collection.logo} alt={collection.title + " logo"} className="h-full w-full object-contain" /> : <div className="flex items-center gap-1 text-xs font-black tracking-widest text-amber-700"><span className="text-xl">✦</span> EXTRA</div>}</div>
+                  <div className="mb-7 flex h-16 w-full max-w-40 items-center justify-center overflow-hidden">{collection.logo ? <img src={collection.logo} alt={collection.title + " logo"} className="h-full w-full object-contain" /> : <div className="flex h-full w-full items-center justify-center gap-2 text-sm font-black tracking-widest text-amber-300"><span className="text-3xl">✦</span> EXTRA</div>}</div>
                   <h3 className="text-lg font-extrabold">{collection.title}</h3>
                   <p className="mt-1 text-xs text-blue-100/60">{collection.subtitle}</p>
                   <div className="mt-auto flex items-center justify-between pt-5"><span className="text-sm font-bold text-sky-200">{loading ? "—" : (Number(counts[collection.key] ?? 0)).toLocaleString()} cards</span><ArrowRight size={18} className="text-sky-300 transition group-hover:translate-x-1"/></div>
