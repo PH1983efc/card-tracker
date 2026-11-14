@@ -1,11 +1,10 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -27,9 +26,7 @@ export default function LoginPage() {
         return;
       }
 
-      const requested = searchParams.get("next") || "/";
-      const destination = requested.startsWith("/") && !requested.startsWith("//") ? requested : "/";
-      router.replace(destination);
+      router.replace("/");
       router.refresh();
     } catch {
       setError("Unable to sign in. Please check your connection and try again.");
