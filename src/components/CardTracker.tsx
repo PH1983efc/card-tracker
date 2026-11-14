@@ -16,12 +16,12 @@ import { AlertCircle, ArrowRight, Layers, Menu, X, Trophy, CheckCircle2, Package
 
 type TrackerSheet = "all" | "master" | "donruss" | "topps-now" | "extra-collections";
 
-const pageDetails: Record<TrackerSheet, { title: string; eyebrow: string; description: string; mark: string; href: string }> = {
+const pageDetails: Record<TrackerSheet, { title: string; eyebrow: string; description: string; mark: string; logo?: string; href: string }> = {
   all: { title: "All collections", eyebrow: "The complete collection", description: "Every card, every collection, all in one place.", mark: "EFC", href: "/" },
-  master: { title: "Everton cards", eyebrow: "The main collection", description: "The heart of the collection. Track every Everton card, variant and parallel.", mark: "EFC", href: "/everton" },
-  donruss: { title: "Donruss", eyebrow: "The Donruss collection", description: "Keep every Donruss card accounted for, from base cards to the rarest parallels.", mark: "D", href: "/donruss" },
-  "topps-now": { title: "Topps Now", eyebrow: "The moment, captured", description: "A season of moments, captured one card at a time.", mark: "NOW", href: "/topps-now" },
-  "extra-collections": { title: "Extra collections", eyebrow: "The rest of the collection", description: "Special releases, one-offs and everything that doesn't fit elsewhere.", mark: "★", href: "/extra-collections" },
+  master: { title: "Everton cards", eyebrow: "The main collection", description: "The heart of the collection. Track every Everton card, variant and parallel.", mark: "EFC", logo: "https://thumb.wikimedia.org/wikipedia/sco/thumb/7/7c/Everton_FC_logo.svg/330px-Everton_FC_logo.svg.png", href: "/everton" },
+  donruss: { title: "Donruss", eyebrow: "The Donruss collection", description: "Keep every Donruss card accounted for, from base cards to the rarest parallels.", mark: "D", logo: "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/91/Donruss_logo_1966.png/250px-Donruss_logo_1966.png", href: "/donruss" },
+  "topps-now": { title: "Topps Now", eyebrow: "The moment, captured", description: "A season of moments, captured one card at a time.", mark: "NOW", logo: "https://images.contentstack.io/v3/assets/bltc7206971cb4b2bfc/bltde849a55c8d19be0/699dc52c47c5b050bcc846d3/1.jpg", href: "/topps-now" },
+  "extra-collections": { title: "Extra collections", eyebrow: "The rest of the collection", description: "Special releases, one-offs and everything that doesn't fit elsewhere.", mark: "EXTRA", href: "/extra-collections" },
 };
 
 const navigation = [
@@ -96,7 +96,7 @@ export default function CardTracker({ initialSheet = "all" }: { initialSheet?: T
               <p className="mt-3 max-w-2xl text-sm leading-6 text-blue-100/70 sm:text-base">{page.description}</p>
             </div>
             <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 backdrop-blur-sm">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-sky-300/25 bg-sky-400/10 text-sm font-black text-sky-200">{page.mark}</div>
+              <div className="flex h-11 w-16 items-center justify-center overflow-hidden rounded-xl border border-sky-300/25 bg-white/95 p-1.5">{page.logo ? <img src={page.logo} alt={page.title + " logo"} className="h-full w-full object-contain" /> : <span className="text-[10px] font-black tracking-wider text-amber-700">✦ EXTRA</span>}</div>
               <div><p className="text-xs font-bold uppercase tracking-wider text-blue-100/50">Collection progress</p><p className="text-2xl font-black">{loading ? "—" : `${progress}%`}</p></div>
             </div>
           </div>
