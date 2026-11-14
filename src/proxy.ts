@@ -1,18 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isAuthenticated } from "@/lib/auth";
 
-const PUBLIC_PATHS = new Set(["/login", "/api/auth/login", "/api/auth/logout"]);
-
+// Keep same-origin protection for write requests, but the tracker itself is
+// intentionally accessible without an application password or login cookie.
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const method = request.method.toUpperCase();
-
-  if (PUBLIC_PATHS.has(pathname)) {
-    if (pathname === "/login" && isAuthenticated(request)) {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
-    return NextResponse.next();
-  }
 
   if (pathname.startsWith("/api/") && ["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
     if (request.headers.get("origin") !== request.nextUrl.origin) {
@@ -20,13 +12,7 @@ export function proxy(request: NextRequest) {
     }
   }
 
-  if (isAuthenticated(request)) return NextResponse.next();
-
-  if (pathname.startsWith("/api/")) {
-    return NextResponse.json({ success: false, error: "Authentication required." }, { status: 401 });
-  }
-
-  return NextResponse.redirect(new URL("/login", request.url));
+  return NextResponse.next();
 }
 
 export const config = {
