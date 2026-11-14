@@ -5,6 +5,7 @@ const PUBLIC_PATHS = new Set(["/login", "/api/auth/login", "/api/auth/logout"]);
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const method = request.method.toUpperCase();
 
   if (PUBLIC_PATHS.has(pathname)) {
     if (pathname === "/login" && isAuthenticated(request)) {
@@ -13,15 +14,19 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  if (pathname.startsWith("/api/") && ["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+    if (request.headers.get("origin") !== request.nextUrl.origin) {
+      return NextResponse.json({ success: false, error: "Request could not be verified." }, { status: 403 });
+    }
+  }
+
   if (isAuthenticated(request)) return NextResponse.next();
 
   if (pathname.startsWith("/api/")) {
     return NextResponse.json({ success: false, error: "Authentication required." }, { status: 401 });
   }
 
-  const loginUrl = new URL("/login", request.url);
-  loginUrl.searchParams.set("next", pathname);
-  return NextResponse.redirect(loginUrl);
+  return NextResponse.redirect(new URL("/login", request.url));
 }
 
 export const config = {
