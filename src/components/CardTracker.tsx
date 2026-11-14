@@ -96,7 +96,7 @@ export default function CardTracker({ initialSheet = "all" }: { initialSheet?: T
               <p className="mt-3 max-w-2xl text-sm leading-6 text-blue-100/70 sm:text-base">{page.description}</p>
             </div>
             <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 backdrop-blur-sm">
-              <div className="flex h-11 w-16 items-center justify-center overflow-hidden rounded-xl border border-sky-300/25 bg-white/95 p-1.5">{page.logo ? <img src={page.logo} alt={page.title + " logo"} className="h-full w-full object-contain" /> : <span className="text-[10px] font-black tracking-wider text-amber-700">✦ EXTRA</span>}</div>
+              <div className="flex h-14 w-24 items-center justify-center overflow-hidden">{page.logo ? <img src={page.logo} alt={page.title + " logo"} className="h-full w-full object-contain" /> : <span className="text-sm font-black tracking-wider text-amber-300">✦ EXTRA</span>}</div>
               <div><p className="text-xs font-bold uppercase tracking-wider text-blue-100/50">Collection progress</p><p className="text-2xl font-black">{loading ? "—" : `${progress}%`}</p></div>
             </div>
           </div>
