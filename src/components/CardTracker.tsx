@@ -9,6 +9,7 @@ import FilterBar from "./FilterBar";
 import CardItem from "./CardItem";
 import CollectionSidebar from "./CollectionSidebar";
 import ExportModal from "./ExportModal";
+import ImportModal from "./ImportModal";
 import SettingsModal from "./SettingsModal";
 import LoadingSkeleton from "./LoadingSkeleton";
 import { AlertCircle, ArrowRight, Layers, Menu, X, Trophy, CheckCircle2, Package, ShoppingCart } from "lucide-react";
@@ -41,6 +42,7 @@ export default function CardTracker({ initialSheet = "all" }: { initialSheet?: T
   const [variantFilter, setVariantFilter] = useState("all");
   const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
   const [showExport, setShowExport] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
 
@@ -73,7 +75,7 @@ export default function CardTracker({ initialSheet = "all" }: { initialSheet?: T
   return (
     <main className="min-h-screen bg-[#020b1c] text-white">
       <Header totalCards={totalCards} gotCards={gotCards} collectingCards={collectingCards} onRefresh={refetch}
-        onExport={() => setShowExport(true)} onSettings={() => setShowSettings(true)} loading={loading} />
+        onExport={() => setShowExport(true)} onSettings={() => setShowSettings(true)} onImport={() => setShowImport(true)} loading={loading} />
 
       <nav className="sticky top-0 z-40 border-b border-sky-400/15 bg-[#04132b]/95 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1500px] gap-1 overflow-x-auto px-4 py-3 sm:px-6 lg:px-8">
@@ -136,6 +138,7 @@ export default function CardTracker({ initialSheet = "all" }: { initialSheet?: T
 
       <footer className="mt-10 border-t border-white/10 px-4 py-6 text-center text-xs text-blue-100/35">Everton Card Tracker · Collect · Track · Complete</footer>
       <ExportModal open={showExport} onClose={() => setShowExport(false)} collections={collections} cards={cards}/>
+      <ImportModal open={showImport} onClose={() => setShowImport(false)} onImported={refetch}/>
       <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} onSyncComplete={refetch}/>
     </main>
   );
