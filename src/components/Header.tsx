@@ -1,7 +1,6 @@
 "use client";
 
-import { RefreshCw, Download, Settings, ShieldCheck, LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { RefreshCw, Download, Settings, ShieldCheck } from "lucide-react";
 
 interface HeaderProps {
   totalCards: number;
@@ -14,14 +13,7 @@ interface HeaderProps {
 }
 
 export default function Header({ totalCards, gotCards, collectingCards, onRefresh, onExport, onSettings, loading }: HeaderProps) {
-  const router = useRouter();
   const needCards = Math.max(0, collectingCards - gotCards);
-
-  async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.replace("/login");
-    router.refresh();
-  }
   const progress = collectingCards > 0 ? Math.round((gotCards / collectingCards) * 100) : 0;
 
   return (
@@ -52,7 +44,6 @@ export default function Header({ totalCards, gotCards, collectingCards, onRefres
           <button onClick={onRefresh} disabled={loading} title="Refresh cards" aria-label="Refresh cards" className="rounded-xl p-2.5 text-blue-100/65 transition hover:bg-white/10 hover:text-white disabled:opacity-50"><RefreshCw className={`h-4 w-4 sm:h-5 sm:w-5 ${loading ? "animate-spin" : ""}`}/></button>
           <button onClick={onExport} title="Export collection" aria-label="Export collection" className="rounded-xl p-2.5 text-blue-100/65 transition hover:bg-white/10 hover:text-white"><Download className="h-4 w-4 sm:h-5 sm:w-5"/></button>
           <button onClick={onSettings} title="Settings" aria-label="Settings" className="rounded-xl p-2.5 text-blue-100/65 transition hover:bg-white/10 hover:text-white"><Settings className="h-4 w-4 sm:h-5 sm:w-5"/></button>
-          <button onClick={logout} title="Lock tracker" aria-label="Lock tracker" className="rounded-xl p-2.5 text-blue-100/65 transition hover:bg-white/10 hover:text-white"><LogOut className="h-4 w-4 sm:h-5 sm:w-5"/></button>
         </div>
       </div>
 
