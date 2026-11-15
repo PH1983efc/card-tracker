@@ -29,8 +29,16 @@ function boolValue(value: unknown, fallback: boolean) {
   return fallback;
 }
 function signature(row: any) {
-  return [row.collection, row.year, row.cardSet, row.cardNo, row.playerName, row.variant || "Base"]
-    .map((v: unknown) => clean(v).toLowerCase()).join("|");
+  return [
+    row.collection,
+    row.year,
+    row.cardSet,
+    row.cardNo,
+    row.playerName,
+    row.variant || "Base",
+    row.printRun,
+    row.cardDescription,
+  ].map((v: unknown) => clean(v).toLowerCase()).join("|");
 }
 function normalize(input: ImportRow, collection: string) {
   return {
@@ -55,7 +63,9 @@ async function inspectRows(db: ReturnType<typeof getDb>, rows: any[]) {
   const existing = await db`
     SELECT collection_key AS collection, COALESCE(year,'') AS year,
       COALESCE(card_set,'') AS "cardSet", COALESCE(card_no,'') AS "cardNo",
-      COALESCE(player_name,'') AS "playerName", COALESCE(variant,'Base') AS variant
+      COALESCE(player_name,'') AS "playerName", COALESCE(variant,'Base') AS variant,
+      COALESCE(print_run,'') AS "printRun",
+      COALESCE(card_description,'') AS "cardDescription"
     FROM cards WHERE collection_key = ANY(${keys}::text[])
   `;
   const known = new Set(existing.map((r: any) => signature(r)));
@@ -103,7 +113,7 @@ export async function POST(request: NextRequest) {
       if (!ready.length) return { inserted: 0, skipped: rows.length, skippedReasons: checks };
       const [snapshot] = await tx`
         INSERT INTO source_snapshots (source_description, source_metadata)
-        VALUES (${"Website card import"}, ${tx.json({ collection, rowCount: rows.length, source: "website-import" })})
+        VALUES (Website card import, ${tx.json({ collection, rowCount: rows.length, source: "website-import" })})
         RETURNING snapshot_id
       `;
       const tab = COLLECTIONS[collection].tab;
