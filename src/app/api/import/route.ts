@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
       if (!ready.length) return { inserted: 0, skipped: rows.length, skippedReasons: checks };
       const [snapshot] = await tx`
         INSERT INTO source_snapshots (source_description, source_metadata)
-        VALUES (Website card import, ${tx.json({ collection, rowCount: rows.length, source: "website-import" })})
+        VALUES ('Website card import', ${tx.json({ collection, rowCount: rows.length, source: "website-import" })})
         RETURNING snapshot_id
       `;
       const tab = COLLECTIONS[collection].tab;
